@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solicitud de adopción — Proyecto OMEGA</title>
+  <meta name="description" content="Conoce a los menores disponibles para adopción y envía tu solicitud.">
+  <link rel="icon" type="image/svg+xml" href="/src/assets/icons/favicon.svg">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/src/css/styles.css">
+  <link rel="stylesheet" href="/src/css/public.css">
+</head>
+<body class="public-page">
+
+  <!-- Header -->
+  <header class="public-header">
+    <div class="public-header-inner">
+      <a class="public-brand" href="/solicitud.html">
+        <div class="public-brand-icon">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <div>
+          <span class="public-brand-name">Proyecto OMEGA</span>
+          <span class="public-brand-sub">Sistema de Adopciones</span>
+        </div>
+      </a>
+      <a class="btn btn-outlined btn-sm" href="/login.html">Acceso administrativo</a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-inner">
+      <h1>Cambia una vida,<br>transforma la tuya</h1>
+      <p>Conectamos familias con menores que esperan un hogar lleno de amor. Conoce a los niños disponibles y da el primer paso hoy.</p>
+      <div class="hero-actions">
+        <button class="btn btn-white btn-lg" id="btn-ver-menores">Ver menores disponibles</button>
+        <button class="btn btn-outline-white btn-lg" id="btn-solicitar-general">Solicitud general</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Process steps -->
+  <section class="steps-section">
+    <div class="steps-inner">
+      <p class="steps-title">¿Cómo funciona el proceso?</p>
+      <div class="steps-grid">
+        <div class="step-item">
+          <div class="step-number">1</div>
+          <h4>Explora</h4>
+          <p>Conoce a los menores disponibles para adopción</p>
+        </div>
+        <div class="step-item">
+          <div class="step-number">2</div>
+          <h4>Solicita</h4>
+          <p>Envía tus datos de contacto con tu solicitud</p>
+        </div>
+        <div class="step-item">
+          <div class="step-number">3</div>
+          <h4>Evaluación</h4>
+          <p>El equipo revisa y evalúa tu solicitud</p>
+        </div>
+        <div class="step-item">
+          <div class="step-number">4</div>
+          <h4>Aprobación</h4>
+          <p>Si es aprobada, se abre el expediente formal</p>
+        </div>
+        <div class="step-item">
+          <div class="step-number">5</div>
+          <h4>Seguimiento</h4>
+          <p>Acompañamiento durante todo el proceso</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <section id="galeria-section" class="section">
+    <div class="section-header">
+      <div>
+        <h2>Menores disponibles</h2>
+        <p>Haz clic en un menor para solicitar su adopción específicamente</p>
+      </div>
+    </div>
+
+    <div class="public-menores-grid" id="menores-grid">
+      <!-- Skeleton loading -->
+      <div class="card" style="height:220px;"></div>
+      <div class="card" style="height:220px;"></div>
+      <div class="card" style="height:220px;"></div>
+    </div>
+
+    <div id="menores-empty" style="display:none;" class="empty-state">
+      <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.3;">
+        <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/>
+      </svg>
+      <p>No hay menores disponibles en este momento.</p>
+    </div>
+  </section>
+
+  <!-- Solicitud form -->
+  <section id="solicitud-section" class="section" style="padding-top:0;">
+    <div class="solicitud-card">
+      <h3>Formulario de solicitud</h3>
+      <p id="form-subtitle">Llena tus datos de contacto. Un administrador se comunicará contigo.</p>
+
+      <!-- Selected minor tag -->
+      <div id="selected-tag" class="selected-menor-tag" style="display:none;">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--primary);flex-shrink:0;">
+          <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/>
+        </svg>
+        <div style="flex:1;">
+          <p>Cargando…</p>
+          <span></span>
+        </div>
+        <button id="tag-remove" class="btn btn-ghost btn-icon btn-sm" title="Quitar selección">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Form -->
+      <form id="solicitud-form" novalidate>
+        <div class="modal-body" style="gap:16px;">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="apellido">Apellido familiar *</label>
+              <input class="form-input" id="apellido" name="apellido" type="text"
+                placeholder="Ej. González" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="contacto">Email o teléfono *</label>
+              <input class="form-input" id="contacto" name="contacto" type="text"
+                placeholder="email@… / +57 300…" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="mensaje">Mensaje (opcional)</label>
+            <textarea class="form-textarea" id="mensaje" name="mensaje"
+              placeholder="Cuéntanos un poco sobre tu familia y por qué deseas adoptar…"
+              style="min-height:90px;"></textarea>
+          </div>
+
+          <p style="font-size:.8rem;color:var(--text-3);line-height:1.5;">
+            Al enviar este formulario, tus datos serán procesados por el equipo administrativo.
+            Recibirás respuesta a través del contacto proporcionado.
+          </p>
+
+          <button type="submit" class="btn btn-primary btn-full btn-lg">
+            Enviar solicitud
+          </button>
+        </div>
+      </form>
+
+      <!-- Success state -->
+      <div id="form-success" class="form-success" style="display:none;">
+        <div class="form-success-icon">
+          <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="color:var(--secondary);">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <h3>¡Solicitud enviada!</h3>
+        <p style="margin-top:6px;">Hemos recibido tu solicitud. El equipo la revisará y se pondrá en contacto contigo pronto.</p>
+        <button class="btn btn-outlined" style="margin-top:20px;" onclick="location.reload()">Enviar otra solicitud</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="public-footer">
+    <p>Proyecto OMEGA &copy; 2026 · Sistema de Gestión de Adopciones</p>
+  </footer>
+
+<script type="module" src="/src/js/solicitud.js"></script>
+
+</body>
+</html>

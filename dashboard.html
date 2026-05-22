@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Proyecto OMEGA</title>
+  <link rel="icon" type="image/svg+xml" href="/src/assets/icons/favicon.svg">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/src/css/styles.css">
+  <link rel="stylesheet" href="/src/css/dashboard.css">
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <a class="sidebar-brand" href="/dashboard.html">
+      <div class="sidebar-brand-icon">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <div class="sidebar-brand-text">
+        <span class="sidebar-brand-name">OMEGA</span>
+        <span class="sidebar-brand-sub">Gestión de Adopciones</span>
+      </div>
+    </a>
+
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Principal</span>
+
+      <a class="nav-item active" href="/dashboard.html">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Dashboard
+      </a>
+
+      <span class="nav-section-label">Gestión</span>
+
+      <a class="nav-item" href="/menores.html">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/>
+        </svg>
+        Menores
+      </a>
+
+      <a class="nav-item" href="/familias.html">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+        </svg>
+        Familias
+      </a>
+
+      <a class="nav-item" href="/casos.html">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+        </svg>
+        Casos
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar avatar-sm" id="sidebar-avatar">AD</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebar-username">Administrador</div>
+          <div class="sidebar-user-role">Admin</div>
+        </div>
+        <button class="btn btn-icon" title="Cerrar sesión" id="logout-btn" style="color:rgba(255,255,255,.5);">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-area">
+
+    <header class="app-header">
+      <div class="header-left">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <nav class="breadcrumb">
+          <span class="breadcrumb-item">OMEGA</span>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-item current">Dashboard</span>
+        </nav>
+      </div>
+      <div class="header-right">
+        <div class="header-user">
+          <div class="avatar avatar-sm" id="header-avatar">AD</div>
+          <span class="header-user-name" id="header-username">Administrador</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+
+      <div class="page-header">
+        <div class="page-header-info">
+          <h2>Panel de control</h2>
+          <p id="greeting">Bienvenido de regreso</p>
+        </div>
+        <div class="page-header-actions">
+          <a href="/casos.html" class="btn btn-primary btn-sm">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo caso
+          </a>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <div>
+              <div class="kpi-value" id="kpi-menores">—</div>
+              <div class="kpi-label">Menores registrados</div>
+            </div>
+            <div class="kpi-icon blue">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <div>
+              <div class="kpi-value" id="kpi-familias">—</div>
+              <div class="kpi-label">Familias registradas</div>
+            </div>
+            <div class="kpi-icon green">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <div>
+              <div class="kpi-value" id="kpi-casos">—</div>
+              <div class="kpi-label">Casos activos</div>
+            </div>
+            <div class="kpi-icon amber">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <div>
+              <div class="kpi-value" id="kpi-completados">—</div>
+              <div class="kpi-label">Casos cerrados</div>
+            </div>
+            <div class="kpi-icon purple">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Body grid -->
+      <div class="dash-grid">
+
+        <!-- Recent activity -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Bitácora de actividad</span>
+            <span style="font-size:.75rem;color:var(--text-3);">Últimas acciones</span>
+          </div>
+          <div class="activity-feed" id="activity-feed">
+            <div class="empty-state">
+              <p>Sin actividad registrada</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cases by stage -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Casos por etapa</span>
+          </div>
+          <div class="stage-summary" id="stage-summary">
+            <div class="spinner" style="margin:20px auto;display:block;"></div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script type="module" src="/src/js/dashboard.js"></script>
+<script type="module" src="/src/js/sw-register.js"></script>
+
+</body>
+</html>
