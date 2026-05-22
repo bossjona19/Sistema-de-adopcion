@@ -1,6 +1,5 @@
 import { supabase } from './supabase.js';
-import { showToast } from './ui.js';
-import '/src/js/sw-register.js';
+import { toast } from './ui.js';
 
 // ── Load available children ──────────────────────────────────
 async function loadMenores() {
@@ -114,7 +113,7 @@ form.addEventListener('submit', async e => {
   saveBtn.textContent = 'Enviar solicitud';
 
   if (error) {
-    showToast('Error al enviar solicitud. Intenta de nuevo.', 'error');
+    toast('Error al enviar solicitud. Intenta de nuevo.', 'error');
     return;
   }
 

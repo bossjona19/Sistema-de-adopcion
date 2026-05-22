@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard — Proyecto OMEGA</title>
+  <title>Panel — Proyecto OMEGA</title>
   <link rel="icon" type="image/svg+xml" href="/src/assets/icons/favicon.svg">
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/src/css/styles.css">
@@ -11,206 +11,473 @@
 </head>
 <body>
 
+<!-- Mobile sidebar backdrop -->
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
 <div class="app-shell">
 
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <a class="sidebar-brand" href="/dashboard.html">
-      <div class="sidebar-brand-icon">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-      </div>
-      <div class="sidebar-brand-text">
-        <span class="sidebar-brand-name">OMEGA</span>
-        <span class="sidebar-brand-sub">Gestión de Adopciones</span>
-      </div>
-    </a>
-
-    <nav class="sidebar-nav">
-      <span class="nav-section-label">Principal</span>
-
-      <a class="nav-item active" href="/dashboard.html">
-        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-        </svg>
-        Dashboard
-      </a>
-
-      <span class="nav-section-label">Gestión</span>
-
-      <a class="nav-item" href="/menores.html">
-        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/>
-        </svg>
-        Menores
-      </a>
-
-      <a class="nav-item" href="/familias.html">
-        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
-        </svg>
-        Familias
-      </a>
-
-      <a class="nav-item" href="/casos.html">
-        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
-        </svg>
-        Casos
-      </a>
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="sidebar-user">
-        <div class="avatar avatar-sm" id="sidebar-avatar">AD</div>
-        <div class="sidebar-user-info">
-          <div class="sidebar-user-name" id="sidebar-username">Administrador</div>
-          <div class="sidebar-user-role">Admin</div>
-        </div>
-        <button class="btn btn-icon" title="Cerrar sesión" id="logout-btn" style="color:rgba(255,255,255,.5);">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-  </aside>
+  <!-- Sidebar (injected by sidebar.js) -->
+  <div id="sidebar-root"></div>
 
   <!-- Main -->
   <div class="main-area">
 
+    <!-- Header -->
     <header class="app-header">
       <div class="header-left">
         <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="3" y1="6"  x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
         </button>
-        <nav class="breadcrumb">
-          <span class="breadcrumb-item">OMEGA</span>
-          <span class="breadcrumb-sep">›</span>
-          <span class="breadcrumb-item current">Dashboard</span>
+        <nav class="breadcrumb" aria-label="breadcrumb">
+          <a class="bc-link" href="/index.html">OMEGA</a>
+          <span class="bc-sep">›</span>
+          <span class="bc-current" id="bc-current">Dashboard</span>
         </nav>
       </div>
       <div class="header-right">
         <div class="header-user">
           <div class="avatar avatar-sm" id="header-avatar">AD</div>
-          <span class="header-user-name" id="header-username">Administrador</span>
+          <span class="header-user-name" id="header-user-name">Admin</span>
         </div>
       </div>
     </header>
 
-    <main class="page-content">
+    <!-- Content -->
+    <main class="page-content" id="page-content">
 
-      <div class="page-header">
-        <div class="page-header-info">
-          <h2>Panel de control</h2>
-          <p id="greeting">Bienvenido de regreso</p>
-        </div>
-        <div class="page-header-actions">
-          <a href="/casos.html" class="btn btn-primary btn-sm">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nuevo caso
-          </a>
-        </div>
-      </div>
+      <!-- ═══════════════════════════════════ -->
+      <!-- PANEL: OVERVIEW                      -->
+      <!-- ═══════════════════════════════════ -->
+      <div id="panel-overview" class="panel">
 
-      <!-- KPIs -->
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <div class="kpi-header">
-            <div>
-              <div class="kpi-value" id="kpi-menores">—</div>
-              <div class="kpi-label">Menores registrados</div>
-            </div>
+        <div class="page-hd">
+          <div>
+            <h3>Panel de control</h3>
+            <p>Resumen general del sistema de adopciones</p>
+          </div>
+          <div class="page-hd-actions">
+            <button class="btn btn-primary btn-sm" onclick="location.hash='casos'">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Nuevo caso
+            </button>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
             <div class="kpi-icon blue">
-              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                 <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/>
               </svg>
             </div>
+            <div class="kpi-value" id="kpi-menores">—</div>
+            <div class="kpi-label">Menores registrados</div>
           </div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-header">
-            <div>
-              <div class="kpi-value" id="kpi-familias">—</div>
-              <div class="kpi-label">Familias registradas</div>
-            </div>
+          <div class="kpi-card">
             <div class="kpi-icon green">
-              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
                 <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
               </svg>
             </div>
+            <div class="kpi-value" id="kpi-familias">—</div>
+            <div class="kpi-label">Familias registradas</div>
           </div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-header">
-            <div>
-              <div class="kpi-value" id="kpi-casos">—</div>
-              <div class="kpi-label">Casos activos</div>
-            </div>
+          <div class="kpi-card">
             <div class="kpi-icon amber">
-              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                 <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
               </svg>
             </div>
+            <div class="kpi-value" id="kpi-casos">—</div>
+            <div class="kpi-label">Casos activos</div>
           </div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-header">
-            <div>
-              <div class="kpi-value" id="kpi-completados">—</div>
-              <div class="kpi-label">Casos cerrados</div>
-            </div>
+          <div class="kpi-card">
             <div class="kpi-icon purple">
-              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                 <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
               </svg>
             </div>
+            <div class="kpi-value" id="kpi-cerrados">—</div>
+            <div class="kpi-label">Casos cerrados</div>
           </div>
         </div>
-      </div>
 
-      <!-- Body grid -->
-      <div class="dash-grid">
-
-        <!-- Recent activity -->
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Bitácora de actividad</span>
-            <span style="font-size:.75rem;color:var(--text-3);">Últimas acciones</span>
+        <!-- Two-col -->
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Bitácora de actividad</span>
+              <span style="font-size:.75rem;color:var(--text-3);">Últimas acciones</span>
+            </div>
+            <div id="activity-list">
+              <div style="padding:28px;text-align:center;"><div class="spinner"></div></div>
+            </div>
           </div>
-          <div class="activity-feed" id="activity-feed">
-            <div class="empty-state">
-              <p>Sin actividad registrada</p>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Casos por etapa</span>
+            </div>
+            <div id="stage-list" style="padding:16px 0 8px;">
+              <div style="padding:20px;text-align:center;"><div class="spinner"></div></div>
             </div>
           </div>
         </div>
+      </div><!-- /panel-overview -->
 
-        <!-- Cases by stage -->
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Casos por etapa</span>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- PANEL: MENORES                       -->
+      <!-- ═══════════════════════════════════ -->
+      <div id="panel-menores" class="panel">
+
+        <div class="page-hd">
+          <div>
+            <h3>Menores</h3>
+            <p>Gestión de menores en el sistema — <strong id="menores-count">0</strong> registros</p>
           </div>
-          <div class="stage-summary" id="stage-summary">
-            <div class="spinner" style="margin:20px auto;display:block;"></div>
+          <div class="page-hd-actions">
+            <button class="btn btn-primary btn-sm" id="btn-nuevo-menor">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Registrar menor
+            </button>
           </div>
         </div>
 
+        <div class="toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </span>
+            <input class="form-input search-input" id="menores-search" type="search" placeholder="Buscar por nombre…">
+          </div>
+          <select class="form-select" id="menores-filter" style="width:auto;">
+            <option value="">Todos los estados</option>
+            <option value="disponible">Disponible</option>
+            <option value="en_proceso">En proceso</option>
+            <option value="adoptado">Adoptado</option>
+          </select>
+        </div>
+
+        <div class="card" style="overflow:hidden;padding:0;">
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr>
+                <th>Nombre</th><th>Edad</th><th>Estado</th>
+                <th>Descripción</th><th>Registrado</th><th>Acciones</th>
+              </tr></thead>
+              <tbody id="menores-tbody">
+                <tr class="loading-row"><td colspan="6"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /panel-menores -->
+
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- PANEL: FAMILIAS                      -->
+      <!-- ═══════════════════════════════════ -->
+      <div id="panel-familias" class="panel">
+
+        <div class="page-hd">
+          <div>
+            <h3>Familias</h3>
+            <p>Familias solicitantes registradas — <strong id="familias-count">0</strong> registros</p>
+          </div>
+          <div class="page-hd-actions">
+            <button class="btn btn-primary btn-sm" id="btn-nueva-familia">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Registrar familia
+            </button>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </span>
+            <input class="form-input search-input" id="familias-search" type="search" placeholder="Buscar por apellido…">
+          </div>
+          <select class="form-select" id="familias-filter" style="width:auto;">
+            <option value="">Todos los estados</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="aprobada">Aprobada</option>
+            <option value="rechazada">Rechazada</option>
+          </select>
+        </div>
+
+        <div class="card" style="overflow:hidden;padding:0;">
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr>
+                <th>Apellido</th><th>Contacto</th><th>Estado</th>
+                <th>Solicitud</th><th>Acciones</th>
+              </tr></thead>
+              <tbody id="familias-tbody">
+                <tr class="loading-row"><td colspan="5"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /panel-familias -->
+
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- PANEL: CASOS                         -->
+      <!-- ═══════════════════════════════════ -->
+      <div id="panel-casos" class="panel">
+
+        <div class="page-hd">
+          <div>
+            <h3>Casos de adopción</h3>
+            <p>Expedientes activos y archivados — <strong id="casos-count">0</strong> casos</p>
+          </div>
+          <div class="page-hd-actions">
+            <button class="btn btn-primary btn-sm" id="btn-nuevo-caso">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Nuevo caso
+            </button>
+          </div>
+        </div>
+
+        <!-- Stage flow reference -->
+        <div class="flow-banner">
+          <span class="flow-label">Flujo</span>
+          <span class="badge badge-solicitud">Solicitud</span>
+          <span class="flow-arrow">→</span>
+          <span class="badge badge-evaluacion">Evaluación</span>
+          <span class="flow-arrow">→</span>
+          <span class="badge badge-asignacion">Asignación</span>
+          <span class="flow-arrow">→</span>
+          <span class="badge badge-seguimiento">Seguimiento</span>
+          <span class="flow-arrow">→</span>
+          <span class="badge badge-cierre">Cierre</span>
+        </div>
+
+        <div class="toolbar">
+          <select class="form-select" id="casos-filter" style="width:auto;">
+            <option value="">Todas las etapas</option>
+            <option value="solicitud">Solicitud</option>
+            <option value="evaluacion">Evaluación</option>
+            <option value="asignacion">Asignación</option>
+            <option value="seguimiento">Seguimiento</option>
+            <option value="cierre">Cierre</option>
+          </select>
+        </div>
+
+        <div class="card" style="overflow:hidden;padding:0;">
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr>
+                <th>ID</th><th>Familia</th><th>Menor</th><th>Etapa</th><th>Acciones</th>
+              </tr></thead>
+              <tbody id="casos-tbody">
+                <tr class="loading-row"><td colspan="5"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /panel-casos -->
+
+    </main><!-- /page-content -->
+  </div><!-- /main-area -->
+</div><!-- /app-shell -->
+
+
+<!-- ═══════════════════════════════ -->
+<!-- MODALS                          -->
+<!-- ═══════════════════════════════ -->
+
+<!-- Modal: Menor -->
+<div class="modal-overlay" id="modal-menor">
+  <div class="modal">
+    <div class="modal-header">
+      <h4 class="modal-title" id="menor-modal-title">Registrar menor</h4>
+      <button class="modal-close" data-close aria-label="Cerrar">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <form id="form-menor" novalidate>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="m-nombre">Nombre completo *</label>
+            <input class="form-input" id="m-nombre" type="text" placeholder="Ej. María García" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="m-edad">Edad *</label>
+            <input class="form-input" id="m-edad" type="number" min="0" max="17" placeholder="0–17">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="m-estado">Estado *</label>
+          <select class="form-select" id="m-estado">
+            <option value="disponible">Disponible</option>
+            <option value="en_proceso">En proceso</option>
+            <option value="adoptado">Adoptado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="m-foto">URL de fotografía</label>
+          <input class="form-input" id="m-foto" type="url" placeholder="https://…">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="m-desc">Descripción</label>
+          <textarea class="form-textarea" id="m-desc" placeholder="Información adicional…"></textarea>
+        </div>
       </div>
-    </main>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost btn-sm" data-close>Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+      </div>
+    </form>
   </div>
 </div>
 
-<script type="module" src="/src/js/dashboard.js"></script>
+<!-- Modal: Familia -->
+<div class="modal-overlay" id="modal-familia">
+  <div class="modal">
+    <div class="modal-header">
+      <h4 class="modal-title" id="familia-modal-title">Registrar familia</h4>
+      <button class="modal-close" data-close aria-label="Cerrar">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <form id="form-familia" novalidate>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="f-apellido">Apellido familiar *</label>
+            <input class="form-input" id="f-apellido" type="text" placeholder="Ej. González" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="f-estado">Estado evaluación *</label>
+            <select class="form-select" id="f-estado">
+              <option value="pendiente">Pendiente</option>
+              <option value="aprobada">Aprobada</option>
+              <option value="rechazada">Rechazada</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-contacto">Contacto (email o teléfono)</label>
+          <input class="form-input" id="f-contacto" type="text" placeholder="email@… / +57 300…">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-fecha">Fecha de solicitud</label>
+          <input class="form-input" id="f-fecha" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="f-notas">Notas internas</label>
+          <textarea class="form-textarea" id="f-notas" placeholder="Observaciones…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost btn-sm" data-close>Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Caso -->
+<div class="modal-overlay" id="modal-caso">
+  <div class="modal">
+    <div class="modal-header">
+      <h4 class="modal-title" id="caso-modal-title">Nuevo caso</h4>
+      <button class="modal-close" data-close aria-label="Cerrar">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <form id="form-caso" novalidate>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="c-familia">Familia *</label>
+          <select class="form-select" id="c-familia">
+            <option value="">-- Seleccionar familia aprobada --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="c-menor">Menor *</label>
+          <select class="form-select" id="c-menor">
+            <option value="">-- Seleccionar menor disponible --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="c-etapa">Etapa del proceso *</label>
+          <select class="form-select" id="c-etapa">
+            <option value="solicitud">Solicitud</option>
+            <option value="evaluacion">Evaluación</option>
+            <option value="asignacion">Asignación</option>
+            <option value="seguimiento">Seguimiento</option>
+            <option value="cierre">Cierre</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost btn-sm" data-close>Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Notas de seguimiento -->
+<div class="modal-overlay" id="modal-notas">
+  <div class="modal">
+    <div class="modal-header">
+      <h4 class="modal-title">Notas de seguimiento</h4>
+      <button class="modal-close" data-close aria-label="Cerrar">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding-bottom:8px;">
+      <div id="notas-list" style="max-height:200px;overflow-y:auto;"></div>
+      <hr style="margin:12px 0;">
+      <form id="form-notas" novalidate>
+        <input type="hidden" id="notas-caso-id">
+        <div class="form-group">
+          <label class="form-label" for="notas-desc">Agregar nota</label>
+          <textarea class="form-textarea" id="notas-desc" style="min-height:64px;" placeholder="Descripción del seguimiento…" required></textarea>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;">
+          <button type="button" class="btn btn-ghost btn-sm" data-close>Cerrar</button>
+          <button type="submit" class="btn btn-primary btn-sm">Guardar nota</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/src/js/main.js"></script>
 <script type="module" src="/src/js/sw-register.js"></script>
 
 </body>

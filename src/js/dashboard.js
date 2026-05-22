@@ -1,91 +1,78 @@
-import { requireAuth, signOut, getUser } from './auth.js';
 import { supabase } from './supabase.js';
-import { getInitials, formatDate, badgeHtml } from './ui.js';
-import { initMobileMenu } from './app.js';
+import { formatDate } from './ui.js';
 
-const session = await requireAuth();
-if (!session) throw new Error('No session');
-
-const user = await getUser();
-const displayName = user?.user_metadata?.nombre ?? user?.email?.split('@')[0] ?? 'Admin';
-const initials = getInitials(displayName);
-
-// Set user info in sidebar and header
-['sidebar-avatar', 'header-avatar'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.textContent = initials;
-});
-['sidebar-username', 'header-username'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.textContent = displayName;
-});
-
-document.getElementById('greeting').textContent =
-  `Bienvenido de regreso, ${displayName}`;
-
-// Logout
-document.getElementById('logout-btn')?.addEventListener('click', signOut);
-
-// Mobile menu
-initMobileMenu();
-
-// Load KPIs
-async function loadKPIs() {
-  const [menores, familias, casosActivos, casosCerrados] = await Promise.all([
-    supabase.from('menores').select('id', { count: 'exact', head: true }),
-    supabase.from('familias').select('id', { count: 'exact', head: true }),
-    supabase.from('casos').select('id', { count: 'exact', head: true }).neq('etapa', 'cierre'),
-    supabase.from('casos').select('id', { count: 'exact', head: true }).eq('etapa', 'cierre'),
-  ]);
-
-  document.getElementById('kpi-menores').textContent    = menores.count    ?? 0;
-  document.getElementById('kpi-familias').textContent   = familias.count   ?? 0;
-  document.getElementById('kpi-casos').textContent      = casosActivos.count ?? 0;
-  document.getElementById('kpi-completados').textContent = casosCerrados.count ?? 0;
+export async function initOverview() {
+  await Promise.all([loadKPIs(), loadStages(), loadActivity()]);
 }
 
-// Load cases by stage
+async function loadKPIs() {
+  const [a, b, c, d] = await Promise.all([
+    supabase.from('menores').select('*', { count:'exact', head:true }),
+    supabase.from('familias').select('*', { count:'exact', head:true }),
+    supabase.from('casos').select('*', { count:'exact', head:true }).neq('etapa','cierre'),
+    supabase.from('casos').select('*', { count:'exact', head:true }).eq('etapa','cierre'),
+  ]);
+  setKPI('kpi-menores',    a.count ?? 0);
+  setKPI('kpi-familias',   b.count ?? 0);
+  setKPI('kpi-casos',      c.count ?? 0);
+  setKPI('kpi-cerrados',   d.count ?? 0);
+}
+
+function setKPI(id, val) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.textContent = '0';
+    const target = Number(val);
+    if (target === 0) return;
+    let n = 0;
+    const step = Math.max(1, Math.ceil(target / 20));
+    const t = setInterval(() => {
+      n = Math.min(n + step, target);
+      el.textContent = n;
+      if (n >= target) clearInterval(t);
+    }, 40);
+  }
+}
+
 async function loadStages() {
-  const stages = ['solicitud', 'evaluacion', 'asignacion', 'seguimiento', 'cierre'];
-  const labels  = { solicitud: 'Solicitud', evaluacion: 'Evaluación', asignacion: 'Asignación', seguimiento: 'Seguimiento', cierre: 'Cierre' };
+  const stages = ['solicitud','evaluacion','asignacion','seguimiento','cierre'];
+  const labels  = { solicitud:'Solicitud', evaluacion:'Evaluación', asignacion:'Asignación', seguimiento:'Seguimiento', cierre:'Cierre' };
 
   const results = await Promise.all(
-    stages.map(s =>
-      supabase.from('casos').select('id', { count: 'exact', head: true }).eq('etapa', s)
-    )
+    stages.map(s => supabase.from('casos').select('*', { count:'exact', head:true }).eq('etapa', s))
   );
-
   const counts = results.map(r => r.count ?? 0);
-  const max = Math.max(...counts, 1);
+  const max    = Math.max(...counts, 1);
 
-  const container = document.getElementById('stage-summary');
-  container.innerHTML = stages.map((s, i) => `
+  const el = document.getElementById('stage-list');
+  if (!el) return;
+  el.innerHTML = stages.map((s, i) => `
     <div class="stage-row">
-      <span style="font-size:.8rem;color:var(--text-2);width:90px;flex-shrink:0;">${labels[s]}</span>
-      <div class="stage-bar-track">
-        <div class="stage-bar-fill" style="width:${(counts[i]/max*100).toFixed(1)}%"></div>
+      <span class="stage-name">${labels[s]}</span>
+      <div class="stage-track">
+        <div class="stage-fill" style="width:${(counts[i]/max*100).toFixed(1)}%"></div>
       </div>
       <span class="stage-count">${counts[i]}</span>
     </div>
   `).join('');
 }
 
-// Load activity log (bitacora)
 async function loadActivity() {
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from('bitacora')
     .select('accion, entidad, fecha')
     .order('fecha', { ascending: false })
     .limit(8);
 
-  const feed = document.getElementById('activity-feed');
+  const el = document.getElementById('activity-list');
+  if (!el) return;
 
-  if (error || !data?.length) {
-    feed.innerHTML = `<div class="empty-state"><p>Sin actividad registrada</p></div>`;
+  if (!data?.length) {
+    el.innerHTML = `<div style="padding:20px;text-align:center;font-size:.875rem;color:var(--text-3);">Sin actividad registrada</div>`;
     return;
   }
 
-  feed.innerHTML = data.map(item => `
+  el.innerHTML = `<div class="activity-list">${data.map(item => `
     <div class="activity-item">
       <div class="activity-dot"></div>
       <div>
@@ -93,8 +80,5 @@ async function loadActivity() {
         <div class="activity-time">${formatDate(item.fecha)}</div>
       </div>
     </div>
-  `).join('');
+  `).join('')}</div>`;
 }
-
-// Run all
-await Promise.all([loadKPIs(), loadStages(), loadActivity()]);
