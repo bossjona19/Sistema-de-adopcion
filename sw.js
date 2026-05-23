@@ -23,6 +23,9 @@ const STATIC = [
   '/src/assets/icons/favicon.svg',
   '/src/assets/icons/icon-192.svg',
   '/src/assets/icons/icon-512.svg',
+  '/src/assets/icons/proteger.png',
+  '/src/assets/icons/apoyo-tecnico.png',
+  '/src/assets/icons/resultados.png',
 ];
 
 self.addEventListener('install', ev => {
