@@ -1,4 +1,4 @@
-const CACHE = 'omega-v2';
+const CACHE = 'omega-v3';
 
 const STATIC = [
   '/',
@@ -21,6 +21,8 @@ const STATIC = [
   '/src/components/sidebar.js',
   '/src/components/cards.js',
   '/src/assets/icons/favicon.svg',
+  '/src/assets/icons/icon-192.svg',
+  '/src/assets/icons/icon-512.svg',
 ];
 
 self.addEventListener('install', ev => {
