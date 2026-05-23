@@ -3,179 +3,426 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Solicitud de adopción — Proyecto OMEGA</title>
-  <meta name="description" content="Conoce a los menores disponibles para adopción y envía tu solicitud.">
+  <title>Solicitud de Adopción — Proyecto OMEGA</title>
+  <meta name="description" content="Formulario oficial de solicitud de adopción del Sistema de Gestión de Adopciones Proyecto OMEGA.">
   <link rel="icon" type="image/svg+xml" href="/src/assets/icons/favicon.svg">
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/src/css/styles.css">
-  <link rel="stylesheet" href="/src/css/public.css">
+  <style>
+    body { overflow: auto; background: var(--bg); }
+
+    /* ── Header ── */
+    .pub-header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .pub-header-inner {
+      max-width: 860px; margin: 0 auto; padding: 0 24px;
+      height: 60px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .pub-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .pub-brand-icon {
+      width: 32px; height: 32px; border-radius: var(--r-md);
+      background: var(--primary); display: flex; align-items: center; justify-content: center;
+    }
+    .pub-brand-icon svg { color: #fff; }
+    .pub-brand-name  { font-family: var(--font-h); font-weight: 700; font-size: .9375rem; color: var(--text-1); }
+    .pub-brand-sub   { font-size: .75rem; color: var(--text-3); display: block; line-height: 1; }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(145deg, var(--primary) 0%, #1565C0 60%, #1976D2 100%);
+      padding: 56px 24px 52px;
+    }
+    .hero-inner { max-width: 640px; margin: 0 auto; text-align: center; }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+      border-radius: var(--r-full); padding: 4px 14px;
+      font-size: .8125rem; color: rgba(255,255,255,.85); margin-bottom: 18px;
+    }
+    .hero h1 {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 12px;
+    }
+    .hero p { font-size: 1rem; color: rgba(255,255,255,.75); max-width: 480px; margin: 0 auto; }
+
+    /* ── Steps ── */
+    .steps-section { background: #fff; border-bottom: 1px solid var(--border); padding: 32px 24px; }
+    .steps-inner   { max-width: 860px; margin: 0 auto; }
+    .steps-title   { font-size: .8125rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; text-align: center; margin-bottom: 20px; }
+    .steps-grid    { display: flex; gap: 0; }
+    .step-item {
+      flex: 1; text-align: center; position: relative;
+      padding: 0 8px;
+    }
+    .step-item:not(:last-child)::after {
+      content: ''; position: absolute; top: 16px; right: -4px;
+      width: calc(100% - 32px); height: 1px;
+      background: var(--border); left: 50%; transform: translateX(16px);
+    }
+    .step-number {
+      width: 32px; height: 32px; border-radius: var(--r-full);
+      background: var(--primary-bg); color: var(--primary);
+      font-family: var(--font-h); font-weight: 700; font-size: .875rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 8px; position: relative; z-index: 1;
+    }
+    .step-item h4  { font-size: .8125rem; font-weight: 600; margin-bottom: 3px; color: var(--text-1); }
+    .step-item p   { font-size: .75rem; color: var(--text-3); line-height: 1.4; }
+
+    /* ── Page wrapper ── */
+    .page-wrap { max-width: 860px; margin: 0 auto; padding: 36px 24px 60px; }
+
+    /* ── Form sections ── */
+    .form-card {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: var(--r-xl); overflow: hidden;
+      box-shadow: var(--shadow-sm); margin-bottom: 16px;
+    }
+    .form-section-hd {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 20px 24px; border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+    .section-num {
+      width: 32px; height: 32px; border-radius: var(--r-full);
+      background: var(--primary); color: #fff;
+      font-family: var(--font-h); font-weight: 700; font-size: .875rem;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .form-section-hd h4 { font-size: 1rem; font-weight: 700; margin-bottom: 2px; color: var(--text-1); }
+    .form-section-hd p  { font-size: .8125rem; color: var(--text-3); margin: 0; }
+    .form-section-body  { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+
+    /* ── Checkboxes ── */
+    .form-check-group { display: flex; flex-direction: column; gap: 12px; }
+    .form-check {
+      display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
+      padding: 12px 14px; border: 1px solid var(--border);
+      border-radius: var(--r-md); transition: border-color var(--t-base);
+    }
+    .form-check:hover { border-color: var(--primary-dim); }
+    .form-check input[type=checkbox] {
+      width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0;
+      accent-color: var(--primary); cursor: pointer;
+    }
+    .form-check span { font-size: .875rem; color: var(--text-2); line-height: 1.5; }
+
+    /* ── Confidentiality notice ── */
+    .notice-box {
+      padding: 14px 16px; background: var(--primary-bg);
+      border: 1px solid var(--primary-dim); border-radius: var(--r-md);
+      font-size: .8125rem; color: var(--text-2); line-height: 1.6;
+    }
+    .notice-box strong { color: var(--primary); }
+
+    /* ── Success state ── */
+    .form-success {
+      text-align: center; padding: 48px 24px;
+    }
+    .form-success-icon {
+      width: 64px; height: 64px; border-radius: var(--r-full);
+      background: var(--secondary-bg); display: flex; align-items: center;
+      justify-content: center; margin: 0 auto 20px;
+    }
+    .form-success h3 { font-size: 1.375rem; margin-bottom: 8px; }
+    .form-success p  { color: var(--text-3); max-width: 420px; margin: 0 auto; font-size: .9375rem; }
+
+    /* ── Footer ── */
+    .pub-footer {
+      background: var(--text-1); color: rgba(255,255,255,.4);
+      text-align: center; padding: 24px; font-size: .8125rem;
+    }
+    .pub-footer a { color: rgba(255,255,255,.55); }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .steps-grid { flex-wrap: wrap; gap: 16px; }
+      .step-item::after { display: none; }
+      .form-section-body { padding: 16px; }
+      .page-wrap { padding: 20px 16px 48px; }
+    }
+  </style>
 </head>
-<body class="public-page">
+<body>
 
-  <!-- Header -->
-  <header class="public-header">
-    <div class="public-header-inner">
-      <a class="public-brand" href="/solicitud.html">
-        <div class="public-brand-icon">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-        </div>
-        <div>
-          <span class="public-brand-name">Proyecto OMEGA</span>
-          <span class="public-brand-sub">Sistema de Adopciones</span>
-        </div>
-      </a>
-      <a class="btn btn-outlined btn-sm" href="/login.html">Acceso administrativo</a>
-    </div>
-  </header>
-
-  <!-- Hero -->
-  <section class="hero">
-    <div class="hero-inner">
-      <h1>Cambia una vida,<br>transforma la tuya</h1>
-      <p>Conectamos familias con menores que esperan un hogar lleno de amor. Conoce a los niños disponibles y da el primer paso hoy.</p>
-      <div class="hero-actions">
-        <button class="btn btn-white btn-lg" id="btn-ver-menores">Ver menores disponibles</button>
-        <button class="btn btn-outline-white btn-lg" id="btn-solicitar-general">Solicitud general</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Process steps -->
-  <section class="steps-section">
-    <div class="steps-inner">
-      <p class="steps-title">¿Cómo funciona el proceso?</p>
-      <div class="steps-grid">
-        <div class="step-item">
-          <div class="step-number">1</div>
-          <h4>Explora</h4>
-          <p>Conoce a los menores disponibles para adopción</p>
-        </div>
-        <div class="step-item">
-          <div class="step-number">2</div>
-          <h4>Solicita</h4>
-          <p>Envía tus datos de contacto con tu solicitud</p>
-        </div>
-        <div class="step-item">
-          <div class="step-number">3</div>
-          <h4>Evaluación</h4>
-          <p>El equipo revisa y evalúa tu solicitud</p>
-        </div>
-        <div class="step-item">
-          <div class="step-number">4</div>
-          <h4>Aprobación</h4>
-          <p>Si es aprobada, se abre el expediente formal</p>
-        </div>
-        <div class="step-item">
-          <div class="step-number">5</div>
-          <h4>Seguimiento</h4>
-          <p>Acompañamiento durante todo el proceso</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Gallery -->
-  <section id="galeria-section" class="section">
-    <div class="section-header">
-      <div>
-        <h2>Menores disponibles</h2>
-        <p>Haz clic en un menor para solicitar su adopción específicamente</p>
-      </div>
-    </div>
-
-    <div class="public-menores-grid" id="menores-grid">
-      <!-- Skeleton loading -->
-      <div class="card" style="height:220px;"></div>
-      <div class="card" style="height:220px;"></div>
-      <div class="card" style="height:220px;"></div>
-    </div>
-
-    <div id="menores-empty" style="display:none;" class="empty-state">
-      <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.3;">
-        <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/>
-      </svg>
-      <p>No hay menores disponibles en este momento.</p>
-    </div>
-  </section>
-
-  <!-- Solicitud form -->
-  <section id="solicitud-section" class="section" style="padding-top:0;">
-    <div class="solicitud-card">
-      <h3>Formulario de solicitud</h3>
-      <p id="form-subtitle">Llena tus datos de contacto. Un administrador se comunicará contigo.</p>
-
-      <!-- Selected minor tag -->
-      <div id="selected-tag" class="selected-menor-tag" style="display:none;">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--primary);flex-shrink:0;">
-          <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/>
+<!-- Header -->
+<header class="pub-header">
+  <div class="pub-header-inner">
+    <a class="pub-brand" href="/">
+      <div class="pub-brand-icon">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
         </svg>
-        <div style="flex:1;">
-          <p>Cargando…</p>
-          <span></span>
+      </div>
+      <div>
+        <span class="pub-brand-name">Proyecto OMEGA</span>
+        <span class="pub-brand-sub">Sistema de Adopciones</span>
+      </div>
+    </a>
+    <a class="btn btn-outlined btn-sm" href="/login.html">Acceso administrativo</a>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">
+      <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+      </svg>
+      Proceso oficial de adopción
+    </div>
+    <h1>Formulario de<br>Solicitud de Adopción</h1>
+    <p>Complete todos los campos con información veraz. Su solicitud será revisada por el equipo técnico y recibirá respuesta a través del contacto proporcionado.</p>
+  </div>
+</section>
+
+<!-- Process steps -->
+<section class="steps-section">
+  <div class="steps-inner">
+    <p class="steps-title">Etapas del proceso de adopción</p>
+    <div class="steps-grid">
+      <div class="step-item">
+        <div class="step-number">1</div>
+        <h4>Solicitud</h4>
+        <p>Complete este formulario</p>
+      </div>
+      <div class="step-item">
+        <div class="step-number">2</div>
+        <h4>Revisión</h4>
+        <p>El equipo evalúa los datos</p>
+      </div>
+      <div class="step-item">
+        <div class="step-number">3</div>
+        <h4>Evaluación</h4>
+        <p>Visita técnica e idoneidad</p>
+      </div>
+      <div class="step-item">
+        <div class="step-number">4</div>
+        <h4>Aprobación</h4>
+        <p>Expediente formal abierto</p>
+      </div>
+      <div class="step-item">
+        <div class="step-number">5</div>
+        <h4>Seguimiento</h4>
+        <p>Acompañamiento continuo</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Form -->
+<main class="page-wrap">
+
+  <form id="solicitud-form" novalidate>
+
+    <!-- Sección 1: Información personal -->
+    <div class="form-card">
+      <div class="form-section-hd">
+        <div class="section-num">1</div>
+        <div>
+          <h4>Información personal</h4>
+          <p>Datos del solicitante principal</p>
         </div>
-        <button id="tag-remove" class="btn btn-ghost btn-icon btn-sm" title="Quitar selección">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
+      </div>
+      <div class="form-section-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="nombre_completo">Nombre completo *</label>
+            <input class="form-input" id="nombre_completo" name="nombre_completo" type="text"
+              placeholder="Ej. María García López" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cedula">Cédula / Documento de identidad *</label>
+            <input class="form-input" id="cedula" name="cedula" type="text"
+              placeholder="Ej. 8-123-4567" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="fecha_nacimiento">Fecha de nacimiento *</label>
+            <input class="form-input" id="fecha_nacimiento" name="fecha_nacimiento" type="date" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="email">Correo electrónico *</label>
+            <input class="form-input" id="email" name="email" type="email"
+              placeholder="correo@ejemplo.com" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="telefono">Teléfono de contacto *</label>
+            <input class="form-input" id="telefono" name="telefono" type="tel"
+              placeholder="Ej. +507 6000-0000" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="direccion">Dirección de residencia *</label>
+            <input class="form-input" id="direccion" name="direccion" type="text"
+              placeholder="Provincia, Distrito, Corregimiento" required>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección 2: Información familiar -->
+    <div class="form-card">
+      <div class="form-section-hd">
+        <div class="section-num">2</div>
+        <div>
+          <h4>Información familiar</h4>
+          <p>Composición y situación del hogar</p>
+        </div>
+      </div>
+      <div class="form-section-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="estado_civil">Estado civil *</label>
+            <select class="form-select" id="estado_civil" name="estado_civil" required>
+              <option value="">-- Seleccionar --</option>
+              <option value="soltero">Soltero/a</option>
+              <option value="casado">Casado/a</option>
+              <option value="union_libre">Unión libre</option>
+              <option value="divorciado">Divorciado/a</option>
+              <option value="viudo">Viudo/a</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="ocupacion">Ocupación / Profesión *</label>
+            <input class="form-input" id="ocupacion" name="ocupacion" type="text"
+              placeholder="Ej. Docente, Ingeniero/a, Comerciante" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="num_hijos">Hijos actuales *</label>
+            <input class="form-input" id="num_hijos" name="num_hijos" type="number"
+              min="0" max="20" placeholder="0" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="num_personas_hogar">Personas en el hogar *</label>
+            <input class="form-input" id="num_personas_hogar" name="num_personas_hogar" type="number"
+              min="1" max="20" placeholder="2" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="ingresos_aprox">Ingresos familiares mensuales (aproximado)</label>
+            <select class="form-select" id="ingresos_aprox" name="ingresos_aprox">
+              <option value="">-- Seleccionar --</option>
+              <option value="menos_500">Menos de $500</option>
+              <option value="500_1000">$500 – $1,000</option>
+              <option value="1000_2000">$1,000 – $2,000</option>
+              <option value="mas_2000">Más de $2,000</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección 3: Motivación -->
+    <div class="form-card">
+      <div class="form-section-hd">
+        <div class="section-num">3</div>
+        <div>
+          <h4>Motivación y perfil</h4>
+          <p>Cuéntenos sobre su motivación para adoptar</p>
+        </div>
+      </div>
+      <div class="form-section-body">
+        <div class="form-group">
+          <label class="form-label" for="motivacion">¿Por qué desea adoptar? *</label>
+          <textarea class="form-textarea" id="motivacion" name="motivacion"
+            placeholder="Describa sus razones y motivaciones para adoptar un menor. Sea específico/a y sincero/a."
+            style="min-height:110px;" required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="experiencia_ninos">Experiencia previa con niños o adolescentes</label>
+          <textarea class="form-textarea" id="experiencia_ninos" name="experiencia_ninos"
+            placeholder="Voluntariado, cuidado de sobrinos/primos, trabajo con menores, tutorías, etc. (opcional)"
+            style="min-height:80px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="preferencia_edad">Preferencia de edad del menor</label>
+          <select class="form-select" id="preferencia_edad" name="preferencia_edad">
+            <option value="sin_preferencia">Sin preferencia</option>
+            <option value="0_3">0 – 3 años (primera infancia)</option>
+            <option value="4_7">4 – 7 años</option>
+            <option value="8_12">8 – 12 años</option>
+            <option value="13_17">13 – 17 años (adolescencia)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección 4: Condiciones -->
+    <div class="form-card">
+      <div class="form-section-hd">
+        <div class="section-num">4</div>
+        <div>
+          <h4>Condiciones y declaración</h4>
+          <p>Lea con atención y marque cada punto para continuar</p>
+        </div>
+      </div>
+      <div class="form-section-body">
+
+        <div class="form-check-group">
+          <label class="form-check">
+            <input type="checkbox" id="acepta_seguimiento" name="acepta_seguimiento" required>
+            <span>Acepto el proceso de seguimiento post-adopción por parte del equipo técnico de Proyecto OMEGA durante el período establecido por la legislación vigente de la República de Panamá.</span>
+          </label>
+          <label class="form-check">
+            <input type="checkbox" id="acepta_evaluacion" name="acepta_evaluacion" required>
+            <span>Acepto ser evaluado/a por el equipo técnico especializado (trabajadores sociales, psicólogos) como parte del proceso de determinación de idoneidad adoptiva.</span>
+          </label>
+          <label class="form-check">
+            <input type="checkbox" id="acepta_terminos" name="acepta_terminos" required>
+            <span>Declaro bajo fe de juramento que toda la información proporcionada en este formulario es veraz y completa, y acepto los términos, condiciones y obligaciones del proceso de adopción de Proyecto OMEGA.</span>
+          </label>
+        </div>
+
+        <div class="notice-box">
+          <strong>Confidencialidad de datos:</strong> La información personal proporcionada en este formulario será tratada con estricta confidencialidad conforme a la Ley 81 de 2019 de Protección de Datos Personales de la República de Panamá. Solo será accedida por el personal técnico autorizado del sistema de adopciones. Los datos de los menores en proceso no serán divulgados públicamente.
+        </div>
+
+        <div id="form-error" style="display:none; padding:12px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--r-md); font-size:.875rem; color:#DC2626;"></div>
+
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="btn-submit">
+          Enviar solicitud de adopción
         </button>
       </div>
-
-      <!-- Form -->
-      <form id="solicitud-form" novalidate>
-        <div class="modal-body" style="gap:16px;">
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label" for="apellido">Apellido familiar *</label>
-              <input class="form-input" id="apellido" name="apellido" type="text"
-                placeholder="Ej. González" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="contacto">Email o teléfono *</label>
-              <input class="form-input" id="contacto" name="contacto" type="text"
-                placeholder="email@… / +57 300…" required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="mensaje">Mensaje (opcional)</label>
-            <textarea class="form-textarea" id="mensaje" name="mensaje"
-              placeholder="Cuéntanos un poco sobre tu familia y por qué deseas adoptar…"
-              style="min-height:90px;"></textarea>
-          </div>
-
-          <p style="font-size:.8rem;color:var(--text-3);line-height:1.5;">
-            Al enviar este formulario, tus datos serán procesados por el equipo administrativo.
-            Recibirás respuesta a través del contacto proporcionado.
-          </p>
-
-          <button type="submit" class="btn btn-primary btn-full btn-lg">
-            Enviar solicitud
-          </button>
-        </div>
-      </form>
-
-      <!-- Success state -->
-      <div id="form-success" class="form-success" style="display:none;">
-        <div class="form-success-icon">
-          <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="color:var(--secondary);">
-            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
-            <polyline points="22 4 12 14.01 9 11.01"/>
-          </svg>
-        </div>
-        <h3>¡Solicitud enviada!</h3>
-        <p style="margin-top:6px;">Hemos recibido tu solicitud. El equipo la revisará y se pondrá en contacto contigo pronto.</p>
-        <button class="btn btn-outlined" style="margin-top:20px;" onclick="location.reload()">Enviar otra solicitud</button>
-      </div>
     </div>
-  </section>
 
-  <!-- Footer -->
-  <footer class="public-footer">
-    <p>Proyecto OMEGA &copy; 2026 · Sistema de Gestión de Adopciones</p>
-  </footer>
+  </form>
+
+  <!-- Success state -->
+  <div id="form-success" style="display:none;" class="form-card">
+    <div class="form-success">
+      <div class="form-success-icon">
+        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="color:var(--secondary);">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <h3>¡Solicitud enviada correctamente!</h3>
+      <p style="margin-top:8px;">Hemos recibido su solicitud de adopción. El equipo técnico la revisará y se comunicará con usted a través del correo o teléfono proporcionado en un plazo de 5 a 10 días hábiles.</p>
+      <p style="margin-top:12px;font-size:.8125rem;color:var(--text-3);">Conserve este número para referencia: <strong id="ref-number" style="color:var(--primary);font-family:var(--font-h);"></strong></p>
+      <button class="btn btn-outlined" style="margin-top:24px;" onclick="location.reload()">Enviar otra solicitud</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- Footer -->
+<footer class="pub-footer">
+  <p>Proyecto OMEGA &copy; 2026 · Sistema de Gestión de Adopciones ·
+    <a href="/login.html">Acceso administrativo</a>
+  </p>
+</footer>
 
 <script type="module" src="/src/js/solicitud.js"></script>
 <script type="module" src="/src/js/sw-register.js"></script>

@@ -1,138 +1,118 @@
 import { supabase } from './supabase.js';
 import { toast } from './ui.js';
 
-// ── Load available children ──────────────────────────────────
-async function loadMenores() {
-  const { data, error } = await supabase
-    .from('menores')
-    .select('id, nombre, edad, foto_url, descripcion')
-    .eq('estado', 'disponible')
-    .order('nombre');
+const form    = document.getElementById('solicitud-form');
+const errBox  = document.getElementById('form-error');
 
-  const grid    = document.getElementById('menores-grid');
-  const emptyEl = document.getElementById('menores-empty');
-
-  if (error || !data?.length) {
-    grid.style.display = 'none';
-    emptyEl.style.display = 'block';
-    return;
-  }
-
-  grid.innerHTML = data.map(m => `
-    <div class="public-menor-card" data-id="${m.id}" data-nombre="${m.nombre}" data-edad="${m.edad ?? ''}">
-      <div class="pmc-photo">
-        ${m.foto_url
-          ? `<img src="${m.foto_url}" alt="${m.nombre}">`
-          : `<svg width="40" height="40" fill="none" stroke="#94A3B8" stroke-width="1.5" viewBox="0 0 24 24">
-               <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/>
-             </svg>`}
-        <div class="pmc-check">
-          <svg width="13" height="13" fill="none" stroke="#fff" stroke-width="3" viewBox="0 0 24 24">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </div>
-      </div>
-      <div class="pmc-info">
-        <div class="pmc-name">${m.nombre}</div>
-        <div class="pmc-age">${m.edad != null ? m.edad + ' años' : 'Edad no indicada'}</div>
-        ${m.descripcion ? `<div class="pmc-desc">${m.descripcion}</div>` : ''}
-      </div>
-    </div>
-  `).join('');
-
-  // Selection logic
-  grid.querySelectorAll('.public-menor-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const wasSelected = card.classList.contains('selected');
-      grid.querySelectorAll('.public-menor-card').forEach(c => c.classList.remove('selected'));
-      if (!wasSelected) {
-        card.classList.add('selected');
-        setSelectedMenor(card.dataset.id, card.dataset.nombre, card.dataset.edad);
-      } else {
-        clearSelectedMenor();
-      }
-    });
-  });
+// ── Validation ───────────────────────────────────────────────
+function showError(msg) {
+  errBox.textContent = msg;
+  errBox.style.display = 'block';
+  errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-// ── Selected minor tag ───────────────────────────────────────
-let selectedMenorId = null;
-
-function setSelectedMenor(id, nombre, edad) {
-  selectedMenorId = id;
-  const tag = document.getElementById('selected-tag');
-  tag.style.display = 'flex';
-  tag.querySelector('p').textContent = nombre;
-  tag.querySelector('span').textContent = edad ? `${edad} años` : '';
-  document.getElementById('form-subtitle').textContent =
-    'Llena tus datos de contacto para solicitar la adopción de este menor.';
+function clearError() {
+  errBox.style.display = 'none';
+  errBox.textContent   = '';
 }
 
-function clearSelectedMenor() {
-  selectedMenorId = null;
-  const tag = document.getElementById('selected-tag');
-  tag.style.display = 'none';
-  document.getElementById('form-subtitle').textContent =
-    'Llena tus datos de contacto. Un administrador se comunicará contigo.';
+function val(id) { return document.getElementById(id)?.value.trim() ?? ''; }
+function checked(id) { return document.getElementById(id)?.checked ?? false; }
+
+function validate() {
+  // Section 1
+  if (!val('nombre_completo'))  return 'El nombre completo es obligatorio.';
+  if (!val('cedula'))           return 'La cédula o documento de identidad es obligatoria.';
+  if (!val('fecha_nacimiento')) return 'La fecha de nacimiento es obligatoria.';
+  if (!val('email'))            return 'El correo electrónico es obligatorio.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('email'))) return 'Ingrese un correo electrónico válido.';
+  if (!val('telefono'))         return 'El teléfono de contacto es obligatorio.';
+  if (!val('direccion'))        return 'La dirección de residencia es obligatoria.';
+
+  // Section 2
+  if (!val('estado_civil'))         return 'Seleccione su estado civil.';
+  if (!val('ocupacion'))            return 'La ocupación o profesión es obligatoria.';
+  const nHijos  = document.getElementById('num_hijos')?.value;
+  const nPers   = document.getElementById('num_personas_hogar')?.value;
+  if (nHijos  === '' || nHijos  === null) return 'Indique el número de hijos actuales.';
+  if (nPers   === '' || nPers   === null) return 'Indique el número de personas en el hogar.';
+
+  // Section 3
+  if (!val('motivacion')) return 'Por favor, describa su motivación para adoptar.';
+
+  // Section 4
+  if (!checked('acepta_seguimiento')) return 'Debe aceptar el proceso de seguimiento post-adopción.';
+  if (!checked('acepta_evaluacion'))  return 'Debe aceptar la evaluación de idoneidad.';
+  if (!checked('acepta_terminos'))    return 'Debe declarar que la información es veraz y aceptar los términos.';
+
+  return null;
 }
 
-document.getElementById('tag-remove')?.addEventListener('click', () => {
-  document.querySelectorAll('.public-menor-card').forEach(c => c.classList.remove('selected'));
-  clearSelectedMenor();
-});
-
-// ── Scroll to form ───────────────────────────────────────────
-document.getElementById('btn-solicitar-general')?.addEventListener('click', () => {
-  document.getElementById('solicitud-section').scrollIntoView({ behavior: 'smooth' });
-});
-
-document.getElementById('btn-ver-menores')?.addEventListener('click', () => {
-  document.getElementById('galeria-section').scrollIntoView({ behavior: 'smooth' });
-});
-
-// ── Submit form ──────────────────────────────────────────────
-const form = document.getElementById('solicitud-form');
-
+// ── Submit ───────────────────────────────────────────────────
 form.addEventListener('submit', async e => {
   e.preventDefault();
-  const saveBtn = form.querySelector('[type=submit]');
-  saveBtn.disabled = true;
-  saveBtn.textContent = 'Enviando...';
+  clearError();
+
+  const errorMsg = validate();
+  if (errorMsg) { showError(errorMsg); return; }
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled    = true;
+  btn.textContent = 'Enviando…';
+
+  // Derive apellido from nombre_completo for admin display
+  const nombreCompleto = val('nombre_completo');
+  const words = nombreCompleto.split(/\s+/).filter(Boolean);
+  const apellido = words.length >= 3
+    ? words.slice(-2).join(' ')
+    : (words[words.length - 1] || nombreCompleto);
 
   const payload = {
-    apellido:        form.apellido.value.trim(),
-    contacto:        form.contacto.value.trim(),
-    estado_eval:     'pendiente',
-    fecha_solicitud: new Date().toISOString().slice(0, 10),
-    notas:           buildNotas(),
+    apellido,
+    contacto:            val('email') || val('telefono'),
+    estado_eval:         'pendiente',
+    fecha_solicitud:     new Date().toISOString().slice(0, 10),
+    // Sección 1
+    nombre_completo:     nombreCompleto,
+    cedula:              val('cedula'),
+    fecha_nacimiento:    val('fecha_nacimiento') || null,
+    email:               val('email'),
+    telefono:            val('telefono'),
+    direccion:           val('direccion'),
+    // Sección 2
+    estado_civil:        val('estado_civil') || null,
+    num_hijos:           parseInt(document.getElementById('num_hijos').value, 10),
+    num_personas_hogar:  parseInt(document.getElementById('num_personas_hogar').value, 10),
+    ocupacion:           val('ocupacion'),
+    ingresos_aprox:      val('ingresos_aprox') || null,
+    // Sección 3
+    motivacion:          val('motivacion'),
+    experiencia_ninos:   val('experiencia_ninos') || null,
+    preferencia_edad:    val('preferencia_edad') || 'sin_preferencia',
+    // Sección 4
+    acepta_seguimiento:  checked('acepta_seguimiento'),
+    acepta_evaluacion:   checked('acepta_evaluacion'),
+    acepta_terminos:     checked('acepta_terminos'),
   };
+
+  // Client-side reference code (no SELECT policy needed)
+  const refCode = Date.now().toString(36).toUpperCase().slice(-6);
 
   const { error } = await supabase.from('familias').insert(payload);
 
-  saveBtn.disabled = false;
-  saveBtn.textContent = 'Enviar solicitud';
+  btn.disabled    = false;
+  btn.textContent = 'Enviar solicitud de adopción';
 
   if (error) {
-    toast('Error al enviar solicitud. Intenta de nuevo.', 'error');
+    toast('Error al enviar la solicitud. Por favor, intente nuevamente.', 'error');
+    showError('No fue posible enviar la solicitud: ' + error.message);
     return;
   }
 
-  // Show success state
+  // Show success
   form.style.display = 'none';
-  document.getElementById('form-success').style.display = 'block';
+  const successEl = document.getElementById('form-success');
+  successEl.style.display = 'block';
+  document.getElementById('ref-number').textContent = 'REF-' + refCode;
+  successEl.scrollIntoView({ behavior: 'smooth' });
 });
-
-function buildNotas() {
-  const parts = [];
-  if (selectedMenorId) {
-    const card = document.querySelector(`.public-menor-card[data-id="${selectedMenorId}"]`);
-    parts.push(`Interesado en menor: ${card?.dataset.nombre ?? selectedMenorId} (ID: ${selectedMenorId})`);
-  }
-  if (form.mensaje.value.trim()) {
-    parts.push(`Mensaje: ${form.mensaje.value.trim()}`);
-  }
-  return parts.join('\n') || null;
-}
-
-// ── Init ─────────────────────────────────────────────────────
-await loadMenores();

@@ -81,35 +81,6 @@
     .step h4 { font-size: .9375rem; margin-bottom: 4px; }
     .step p  { font-size: .8125rem; color: var(--text-3); }
 
-    /* Children gallery */
-    .children-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 18px;
-    }
-    .child-card {
-      background: #fff; border: 1px solid var(--border);
-      border-radius: var(--r-xl); overflow: hidden;
-      transition: all var(--t-base); cursor: pointer;
-      text-decoration: none; color: inherit;
-    }
-    .child-card:hover {
-      border-color: var(--primary-dim);
-      box-shadow: var(--shadow-md); transform: translateY(-3px);
-    }
-    .child-photo {
-      height: 150px; background: var(--bg);
-      display: flex; align-items: center; justify-content: center; overflow: hidden;
-    }
-    .child-photo img { width: 100%; height: 100%; object-fit: cover; }
-    .child-info { padding: 14px 16px 16px; }
-    .child-name { font-family: var(--font-h); font-size: .9375rem; font-weight: 600; margin-bottom: 2px; }
-    .child-age  { font-size: .8rem; color: var(--text-3); margin-bottom: 8px; }
-    .child-desc {
-      font-size: .8125rem; color: var(--text-2); line-height: 1.4;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-    }
-
     /* CTA band */
     .cta-band {
       background: linear-gradient(135deg, var(--secondary) 0%, #2e6b0a 100%);
@@ -192,20 +163,20 @@
   </div>
 </section>
 
-<!-- Stats -->
+<!-- Info strip -->
 <div class="section" style="padding-bottom:0;">
   <div class="stats-strip">
     <div class="stat">
-      <div class="stat-val" id="stat-menores">—</div>
-      <div class="stat-lbl">Menores disponibles</div>
+      <div class="stat-val" style="font-size:1.5rem;">🔒</div>
+      <div class="stat-lbl">Proceso confidencial y seguro</div>
     </div>
     <div class="stat">
-      <div class="stat-val" id="stat-familias">—</div>
-      <div class="stat-lbl">Familias registradas</div>
+      <div class="stat-val" style="font-size:1.5rem;">👥</div>
+      <div class="stat-lbl">Equipo técnico especializado</div>
     </div>
     <div class="stat">
-      <div class="stat-val" id="stat-adopciones">—</div>
-      <div class="stat-lbl">Adopciones completadas</div>
+      <div class="stat-val" style="font-size:1.5rem;">📋</div>
+      <div class="stat-lbl">Acompañamiento en cada etapa</div>
     </div>
   </div>
 </div>
@@ -220,23 +191,23 @@
     <div class="steps-grid">
       <div class="step">
         <div class="step-num">1</div>
-        <h4>Explora</h4>
-        <p>Conoce a los menores disponibles para adopción en nuestra galería</p>
+        <h4>Solicita</h4>
+        <p>Inicia el proceso completando tu solicitud de adopción</p>
       </div>
       <div class="step">
         <div class="step-num">2</div>
-        <h4>Solicita</h4>
-        <p>Completa el formulario con tus datos y manifiesta tu intención</p>
+        <h4>Evaluación</h4>
+        <p>Nuestro equipo revisa tu solicitud y evalúa la idoneidad</p>
       </div>
       <div class="step">
         <div class="step-num">3</div>
-        <h4>Evaluación</h4>
-        <p>Nuestro equipo revisará tu solicitud y se pondrá en contacto</p>
+        <h4>Aprobación</h4>
+        <p>Se aprueba la idoneidad y se abre el expediente formal</p>
       </div>
       <div class="step">
         <div class="step-num">4</div>
-        <h4>Aprobación</h4>
-        <p>Una vez aprobada, se abre el expediente formal de adopción</p>
+        <h4>Asignación</h4>
+        <p>El equipo gestiona la asignación con arreglo a la ley</p>
       </div>
       <div class="step">
         <div class="step-num">5</div>
@@ -244,35 +215,6 @@
         <p>Acompañamiento continuo durante todo el proceso hasta el cierre</p>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- Children gallery -->
-<section class="section" style="padding-top:0;">
-  <div class="section-hd">
-    <h2>Menores en espera</h2>
-    <p>Cada uno tiene una historia y sueños. Conócelos.</p>
-  </div>
-
-  <div class="children-grid" id="children-grid">
-    <!-- skeleton -->
-    <div class="child-card" style="height:280px;background:var(--bg);border:none;"></div>
-    <div class="child-card" style="height:280px;background:var(--bg);border:none;"></div>
-    <div class="child-card" style="height:280px;background:var(--bg);border:none;"></div>
-    <div class="child-card" style="height:280px;background:var(--bg);border:none;"></div>
-  </div>
-
-  <div id="children-empty" style="display:none;" class="empty">
-    <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-      <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/>
-    </svg>
-    <p>No hay menores disponibles en este momento.<br>Vuelve pronto.</p>
-  </div>
-
-  <div style="text-align:center;margin-top:28px;">
-    <a class="btn btn-outlined btn-lg" href="/solicitud.html">
-      Ver todos y solicitar adopción →
-    </a>
   </div>
 </section>
 
@@ -292,53 +234,7 @@
   </p>
 </footer>
 
-<script type="module">
-  import { supabase } from '/src/js/supabase.js';
-  import '/src/js/sw-register.js';
-
-  // Stats
-  const [{ count: cM }, { count: cF }, { count: cC }] = await Promise.all([
-    supabase.from('menores').select('*', { count:'exact', head:true }).eq('estado','disponible'),
-    supabase.from('familias').select('*', { count:'exact', head:true }),
-    supabase.from('casos').select('*', { count:'exact', head:true }).eq('etapa','cierre'),
-  ]);
-  document.getElementById('stat-menores').textContent    = cM ?? 0;
-  document.getElementById('stat-familias').textContent   = cF ?? 0;
-  document.getElementById('stat-adopciones').textContent = cC ?? 0;
-
-  // Gallery
-  const { data } = await supabase
-    .from('menores')
-    .select('id,nombre,edad,foto_url,descripcion')
-    .eq('estado','disponible')
-    .order('created_at', { ascending: false })
-    .limit(8);
-
-  const grid  = document.getElementById('children-grid');
-  const empty = document.getElementById('children-empty');
-
-  if (!data?.length) {
-    grid.style.display  = 'none';
-    empty.style.display = 'block';
-  } else {
-    grid.innerHTML = data.map(m => `
-      <a class="child-card" href="/solicitud.html">
-        <div class="child-photo">
-          ${m.foto_url
-            ? `<img src="${m.foto_url}" alt="${m.nombre}" loading="lazy">`
-            : `<svg width="44" height="44" fill="none" stroke="var(--text-4)" stroke-width="1.5" viewBox="0 0 24 24">
-                 <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/>
-               </svg>`}
-        </div>
-        <div class="child-info">
-          <div class="child-name">${m.nombre}</div>
-          <div class="child-age">${m.edad != null ? m.edad + ' años' : 'Edad no indicada'}</div>
-          ${m.descripcion ? `<div class="child-desc">${m.descripcion}</div>` : ''}
-        </div>
-      </a>
-    `).join('');
-  }
-</script>
+<script type="module" src="/src/js/sw-register.js"></script>
 
 </body>
 </html>

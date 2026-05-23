@@ -14,6 +14,17 @@ const user = await getUser();
 const displayName = user?.user_metadata?.nombre ?? user?.email?.split('@')[0] ?? 'Admin';
 const initials    = getInitials(displayName);
 
+// ── Audit trail ───────────────────────────────────────────────
+async function logAudit(accion, entidad) {
+  if (!user?.id) return;
+  await supabase.from('bitacora').insert({
+    usuario_id: user.id,
+    accion,
+    entidad,
+    fecha: new Date().toISOString(),
+  });
+}
+
 document.getElementById('header-user-name').textContent = displayName;
 document.getElementById('header-avatar').textContent    = initials;
 
@@ -157,6 +168,7 @@ async function saveMenor(ev) {
 
   btn.disabled = false;
   if (error) { toast('Error: ' + error.message, 'error'); return; }
+  await logAudit(_menorEdit ? 'Actualizar menor' : 'Crear menor', 'menores');
   toast(_menorEdit ? 'Menor actualizado' : 'Menor registrado', 'success');
   closeModal('modal-menor');
   await loadMenores();
@@ -180,6 +192,7 @@ window._deleteMenor = async id => {
   if (!ok) return;
   const { error } = await supabase.from('menores').delete().eq('id', id);
   if (error) { toast('Error al eliminar', 'error'); return; }
+  await logAudit('Eliminar menor', 'menores');
   toast('Menor eliminado', 'warning');
   await loadMenores();
 };
@@ -285,6 +298,7 @@ async function saveFamilia(ev) {
 
   btn.disabled = false;
   if (error) { toast('Error: ' + error.message, 'error'); return; }
+  await logAudit(_familiaEdit ? 'Actualizar familia' : 'Crear familia', 'familias');
   toast(_familiaEdit ? 'Familia actualizada' : 'Familia registrada', 'success');
   closeModal('modal-familia');
   await loadFamilias();
@@ -308,6 +322,7 @@ window._deleteFamilia = async id => {
   if (!ok) return;
   const { error } = await supabase.from('familias').delete().eq('id', id);
   if (error) { toast('Error al eliminar', 'error'); return; }
+  await logAudit('Eliminar familia', 'familias');
   toast('Familia eliminada', 'warning');
   await loadFamilias();
 };
@@ -440,6 +455,7 @@ async function saveCaso(ev) {
 
   btn.disabled = false;
   if (error) { toast('Error: ' + error.message, 'error'); return; }
+  await logAudit(_casoEdit ? 'Actualizar caso' : 'Crear caso', 'casos');
   toast(_casoEdit ? 'Caso actualizado' : 'Caso creado', 'success');
   closeModal('modal-caso');
   await loadCasos();
@@ -491,6 +507,7 @@ async function saveNota(ev) {
     caso_id: casoId, descripcion: desc, fecha: new Date().toISOString(), usuario_id: user.id,
   });
   if (error) { toast('Error al guardar nota', 'error'); return; }
+  await logAudit('Agregar nota de seguimiento', 'seguimiento');
   toast('Nota guardada', 'success');
   window._openNotas(casoId);
 }
@@ -500,6 +517,7 @@ window._deleteCaso = async id => {
   if (!ok) return;
   const { error } = await supabase.from('casos').delete().eq('id', id);
   if (error) { toast('Error al eliminar', 'error'); return; }
+  await logAudit('Eliminar caso', 'casos');
   toast('Caso eliminado', 'warning');
   await loadCasos();
 };
