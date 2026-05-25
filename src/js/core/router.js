@@ -1,5 +1,5 @@
 const TABS      = ['overview', 'menores', 'familias', 'casos'];
-const TAB_NAMES = { overview: 'Dashboard', menores: 'Menores', familias: 'Familias', casos: 'Casos' };
+const TAB_NAMES = { overview: 'Dashboard', menores: 'Niños', familias: 'Familias', casos: 'Casos' };
 const loaded    = new Set();
 let _onInit     = null;
 let _onActivate = null;

@@ -2,7 +2,7 @@ import { menoresService } from '../services/menoresService.js';
 import { logAudit } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
-import { getInitials, formatDate, badgeHtml } from '../core/ui.js';
+import { getInitials, formatDate, badgeHtml, calcAge } from '../core/ui.js';
 
 let _list   = [];
 let _editId = null;
@@ -17,7 +17,7 @@ export async function setupMenores() {
   document.getElementById('btn-nuevo-menor')?.addEventListener('click', () => {
     _editId = null;
     document.getElementById('form-menor').reset();
-    document.getElementById('menor-modal-title').textContent = 'Registrar menor';
+    document.getElementById('menor-modal-title').textContent = 'Registrar niño';
     openModal('modal-menor');
   });
 
@@ -38,7 +38,7 @@ async function load() {
   const tbody = document.getElementById('menores-tbody');
   tbody.innerHTML = `<tr class="loading-row"><td colspan="6"><div class="spinner"></div></td></tr>`;
   const { data, error } = await menoresService.getAll();
-  if (error) { toast('Error al cargar menores', 'error'); return; }
+  if (error) { toast('Error al cargar niños', 'error'); return; }
   _list = data ?? [];
   render(_list);
 }
@@ -52,7 +52,9 @@ function render(list) {
     return;
   }
 
-  tbody.innerHTML = list.map(m => `
+  tbody.innerHTML = list.map(m => {
+    const age = calcAge(m.fecha_nacimiento) ?? m.edad;
+    return `
     <tr>
       <td>
         <div class="table-name">
@@ -62,7 +64,7 @@ function render(list) {
           ${m.nombre}
         </div>
       </td>
-      <td>${m.edad != null ? m.edad + ' años' : '—'}</td>
+      <td>${age != null ? age + ' años' : '—'}</td>
       <td>${badgeHtml(m.estado)}</td>
       <td style="max-width:200px;" class="truncate">${m.descripcion ?? '—'}</td>
       <td>${formatDate(m.created_at)}</td>
@@ -85,7 +87,8 @@ function render(list) {
         </div>
       </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function filter() {
@@ -100,12 +103,13 @@ function edit(id) {
   const m = _list.find(x => x.id === id);
   if (!m) return;
   _editId = id;
-  document.getElementById('m-nombre').value = m.nombre      ?? '';
-  document.getElementById('m-edad').value   = m.edad        ?? '';
-  document.getElementById('m-estado').value = m.estado      ?? 'disponible';
-  document.getElementById('m-foto').value   = m.foto_url    ?? '';
-  document.getElementById('m-desc').value   = m.descripcion ?? '';
-  document.getElementById('menor-modal-title').textContent = 'Editar menor';
+  document.getElementById('m-nombre').value    = m.nombre           ?? '';
+  document.getElementById('m-fecha-nac').value = m.fecha_nacimiento ?? '';
+  document.getElementById('m-genero').value    = m.genero           ?? '';
+  document.getElementById('m-estado').value    = m.estado           ?? 'disponible';
+  document.getElementById('m-foto').value      = m.foto_url         ?? '';
+  document.getElementById('m-desc').value      = m.descripcion      ?? '';
+  document.getElementById('menor-modal-title').textContent = 'Editar niño';
   openModal('modal-menor');
 }
 
@@ -115,11 +119,12 @@ async function save(ev) {
   btn.disabled = true;
 
   const payload = {
-    nombre:      document.getElementById('m-nombre').value.trim(),
-    edad:        parseInt(document.getElementById('m-edad').value, 10) || null,
-    estado:      document.getElementById('m-estado').value,
-    foto_url:    document.getElementById('m-foto').value.trim() || null,
-    descripcion: document.getElementById('m-desc').value.trim() || null,
+    nombre:           document.getElementById('m-nombre').value.trim(),
+    fecha_nacimiento: document.getElementById('m-fecha-nac').value || null,
+    genero:           document.getElementById('m-genero').value    || null,
+    estado:           document.getElementById('m-estado').value,
+    foto_url:         document.getElementById('m-foto').value.trim() || null,
+    descripcion:      document.getElementById('m-desc').value.trim() || null,
   };
 
   const { error } = _editId
@@ -128,18 +133,18 @@ async function save(ev) {
 
   btn.disabled = false;
   if (error) { toast('Error: ' + error.message, 'error'); return; }
-  await logAudit(_editId ? 'Actualizar menor' : 'Crear menor', 'menores');
-  toast(_editId ? 'Menor actualizado' : 'Menor registrado', 'success');
+  await logAudit(_editId ? 'Actualizar niño' : 'Crear niño', 'menores');
+  toast(_editId ? 'Niño actualizado' : 'Niño registrado', 'success');
   closeModal('modal-menor');
   await load();
 }
 
 async function remove(id) {
-  const ok = await confirm('¿Eliminar este menor del sistema?', { danger: true });
+  const ok = await confirm('¿Eliminar este niño del sistema?', { danger: true });
   if (!ok) return;
   const { error } = await menoresService.remove(id);
   if (error) { toast('Error al eliminar', 'error'); return; }
-  await logAudit('Eliminar menor', 'menores');
-  toast('Menor eliminado', 'warning');
+  await logAudit('Eliminar niño', 'menores');
+  toast('Niño eliminado', 'warning');
   await load();
 }

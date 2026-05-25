@@ -53,6 +53,17 @@ form.addEventListener('submit', async e => {
   e.preventDefault();
   clearError();
 
+  // Honeypot: if filled, it's a bot — fake success without inserting
+  if (document.getElementById('s-website')?.value) {
+    form.style.display = 'none';
+    const successEl = document.getElementById('form-success');
+    successEl.style.display = 'block';
+    document.getElementById('ref-number').textContent =
+      'REF-' + Date.now().toString(36).toUpperCase().slice(-6);
+    successEl.scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
+
   const errorMsg = validate();
   if (errorMsg) { showError(errorMsg); return; }
 

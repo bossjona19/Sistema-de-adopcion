@@ -24,3 +24,13 @@ export function setEl(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;
 }
+
+export function calcAge(fechaNacimiento) {
+  if (!fechaNacimiento) return null;
+  const today = new Date();
+  const dob   = new Date(fechaNacimiento);
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+  return age >= 0 ? age : null;
+}

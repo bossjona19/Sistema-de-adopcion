@@ -113,7 +113,7 @@ async function populateSelects(selFamId = '', selMenId = '') {
     ).join('');
 
   document.getElementById('c-menor').innerHTML =
-    `<option value="">-- Seleccionar menor disponible --</option>` +
+    `<option value="">-- Seleccionar niño disponible --</option>` +
     (mens ?? []).map(m =>
       `<option value="${m.id}" ${m.id === selMenId ? 'selected' : ''}>${m.nombre}</option>`
     ).join('');
@@ -143,7 +143,7 @@ async function saveCaso(ev) {
   const etapa     = document.getElementById('c-etapa').value;
 
   if (!familiaId || !menorId) {
-    toast('Selecciona familia y menor', 'warning');
+    toast('Selecciona familia y niño', 'warning');
     btn.disabled = false;
     return;
   }

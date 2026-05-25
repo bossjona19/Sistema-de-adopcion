@@ -221,6 +221,12 @@
 
   <form id="solicitud-form" novalidate>
 
+    <!-- Honeypot: invisible para humanos, bots lo completan -->
+    <div style="position:absolute;left:-9999px;top:-9999px;pointer-events:none;" aria-hidden="true">
+      <label for="s-website">Website</label>
+      <input type="text" id="s-website" name="website" tabindex="-1" autocomplete="off">
+    </div>
+
     <!-- Sección 1: Información personal -->
     <div class="form-card">
       <div class="form-section-hd">
@@ -337,17 +343,17 @@
         <div class="form-group">
           <label class="form-label" for="motivacion">¿Por qué desea adoptar? *</label>
           <textarea class="form-textarea" id="motivacion" name="motivacion"
-            placeholder="Describa sus razones y motivaciones para adoptar un menor. Sea específico/a y sincero/a."
+            placeholder="Describa sus razones y motivaciones para adoptar un niño. Sea específico/a y sincero/a."
             style="min-height:110px;" required></textarea>
         </div>
         <div class="form-group">
           <label class="form-label" for="experiencia_ninos">Experiencia previa con niños o adolescentes</label>
           <textarea class="form-textarea" id="experiencia_ninos" name="experiencia_ninos"
-            placeholder="Voluntariado, cuidado de sobrinos/primos, trabajo con menores, tutorías, etc. (opcional)"
+            placeholder="Voluntariado, cuidado de sobrinos/primos, trabajo con niños, tutorías, etc. (opcional)"
             style="min-height:80px;"></textarea>
         </div>
         <div class="form-group">
-          <label class="form-label" for="preferencia_edad">Preferencia de edad del menor</label>
+          <label class="form-label" for="preferencia_edad">Preferencia de edad del niño</label>
           <select class="form-select" id="preferencia_edad" name="preferencia_edad">
             <option value="sin_preferencia">Sin preferencia</option>
             <option value="0_3">0 – 3 años (primera infancia)</option>
@@ -386,7 +392,7 @@
         </div>
 
         <div class="notice-box">
-          <strong>Confidencialidad de datos:</strong> La información personal proporcionada en este formulario será tratada con estricta confidencialidad conforme a la Ley 81 de 2019 de Protección de Datos Personales de la República de Panamá. Solo será accedida por el personal técnico autorizado del sistema de adopciones. Los datos de los menores en proceso no serán divulgados públicamente.
+          <strong>Confidencialidad de datos:</strong> La información personal proporcionada en este formulario será tratada con estricta confidencialidad conforme a la Ley 81 de 2019 de Protección de Datos Personales de la República de Panamá. Solo será accedida por el personal técnico autorizado del sistema de adopciones. Los datos de los niños en proceso no serán divulgados públicamente.
         </div>
 
         <div id="form-error" style="display:none; padding:12px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--r-md); font-size:.875rem; color:#DC2626;"></div>

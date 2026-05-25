@@ -78,7 +78,7 @@
               </svg>
             </div>
             <div class="kpi-value" id="kpi-menores">—</div>
-            <div class="kpi-label">Menores registrados</div>
+            <div class="kpi-label">Niños registrados</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-icon green">
@@ -141,15 +141,15 @@
 
         <div class="page-hd">
           <div>
-            <h3>Menores</h3>
-            <p>Gestión de menores en el sistema — <strong id="menores-count">0</strong> registros</p>
+            <h3>Niños</h3>
+            <p>Gestión de niños en el sistema — <strong id="menores-count">0</strong> registros</p>
           </div>
           <div class="page-hd-actions">
             <button class="btn btn-primary btn-sm" id="btn-nuevo-menor">
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              Registrar menor
+              Registrar niño
             </button>
           </div>
         </div>
@@ -289,7 +289,7 @@
           <div class="table-wrap">
             <table class="table">
               <thead><tr>
-                <th>ID</th><th>Familia</th><th>Menor</th><th>Etapa</th><th>Acciones</th>
+                <th>ID</th><th>Familia</th><th>Niño</th><th>Etapa</th><th>Acciones</th>
               </tr></thead>
               <tbody id="casos-tbody">
                 <tr class="loading-row"><td colspan="5"><div class="spinner"></div></td></tr>
@@ -312,7 +312,7 @@
 <div class="modal-overlay" id="modal-menor">
   <div class="modal">
     <div class="modal-header">
-      <h4 class="modal-title" id="menor-modal-title">Registrar menor</h4>
+      <h4 class="modal-title" id="menor-modal-title">Registrar niño</h4>
       <button class="modal-close" data-close aria-label="Cerrar">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -321,14 +321,23 @@
     </div>
     <form id="form-menor" novalidate>
       <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="m-nombre">Nombre completo *</label>
+          <input class="form-input" id="m-nombre" type="text" placeholder="Ej. María García" required>
+        </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label" for="m-nombre">Nombre completo *</label>
-            <input class="form-input" id="m-nombre" type="text" placeholder="Ej. María García" required>
+            <label class="form-label" for="m-fecha-nac">Fecha de nacimiento</label>
+            <input class="form-input" id="m-fecha-nac" type="date">
           </div>
           <div class="form-group">
-            <label class="form-label" for="m-edad">Edad *</label>
-            <input class="form-input" id="m-edad" type="number" min="0" max="17" placeholder="0–17">
+            <label class="form-label" for="m-genero">Género</label>
+            <select class="form-select" id="m-genero">
+              <option value="">Sin especificar</option>
+              <option value="masculino">Masculino</option>
+              <option value="femenino">Femenino</option>
+              <option value="otro">Otro</option>
+            </select>
           </div>
         </div>
         <div class="form-group">
@@ -424,9 +433,9 @@
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label" for="c-menor">Menor *</label>
+          <label class="form-label" for="c-menor">Niño *</label>
           <select class="form-select" id="c-menor">
-            <option value="">-- Seleccionar menor disponible --</option>
+            <option value="">-- Seleccionar niño disponible --</option>
           </select>
         </div>
         <div class="form-group">

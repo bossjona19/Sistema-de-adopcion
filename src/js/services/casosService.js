@@ -8,7 +8,10 @@ export const casosService = {
       .order('created_at', { ascending: false });
   },
   getMenoresDisponibles() {
-    return supabase.from('menores').select('id,nombre').eq('estado', 'disponible').order('nombre');
+    return supabase.from('menores').select('id,nombre')
+      .eq('estado', 'disponible')
+      .is('deleted_at', null)
+      .order('nombre');
   },
   create(payload) {
     return supabase.from('casos').insert(payload);
