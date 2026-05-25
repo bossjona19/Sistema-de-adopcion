@@ -103,7 +103,7 @@ function filter() {
 async function populateSelects(selFamId = '', selMenId = '') {
   const [{ data: fams }, { data: mens }] = await Promise.all([
     familiasService.getAprobadas(),
-    casosService.getMenoresDisponibles(),
+    casosService.getMenoresDisponibles(selMenId || null),
   ]);
 
   document.getElementById('c-familia').innerHTML =
@@ -215,8 +215,12 @@ async function saveNota(ev) {
 async function removeCaso(id) {
   const ok = await confirm('¿Eliminar este caso? Esta acción no se puede deshacer.', { danger: true });
   if (!ok) return;
+  const caso = _list.find(x => x.id === id);
   const { error } = await casosService.remove(id);
   if (error) { toast('Error al eliminar', 'error'); return; }
+  if (caso?.menor_id && caso.etapa !== 'cierre') {
+    await menoresService.setEstado(caso.menor_id, 'disponible');
+  }
   await logAudit('Eliminar caso', 'casos');
   toast('Caso eliminado', 'warning');
   await load();

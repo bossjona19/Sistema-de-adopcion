@@ -7,11 +7,13 @@ export const casosService = {
       .select('*, familia:familias(apellido), menor:menores(nombre)')
       .order('created_at', { ascending: false });
   },
-  getMenoresDisponibles() {
-    return supabase.from('menores').select('id,nombre')
-      .eq('estado', 'disponible')
+  getMenoresDisponibles(includeId = null) {
+    const q = supabase.from('menores').select('id,nombre')
       .is('deleted_at', null)
       .order('nombre');
+    return includeId
+      ? q.or(`estado.eq.disponible,id.eq.${includeId}`)
+      : q.eq('estado', 'disponible');
   },
   create(payload) {
     return supabase.from('casos').insert(payload);
