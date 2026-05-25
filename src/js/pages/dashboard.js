@@ -1,5 +1,5 @@
-import { dashboardService } from './services/dashboardService.js';
-import { formatDate } from './ui.js';
+import { dashboardService } from '../services/dashboardService.js';
+import { formatDate } from '../core/ui.js';
 
 export async function initOverview() {
   await Promise.all([loadKPIs(), loadStages(), loadActivity()]);

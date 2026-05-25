@@ -4,7 +4,7 @@ import { menoresService }  from '../services/menoresService.js';
 import { logAudit, getUserId } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
-import { badgeHtml, formatDate } from '../ui.js';
+import { badgeHtml, formatDate } from '../core/ui.js';
 
 let _list   = [];
 let _editId = null;

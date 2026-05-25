@@ -2,7 +2,7 @@ import { familiasService } from '../services/familiasService.js';
 import { logAudit } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
-import { getInitials, formatDate, badgeHtml } from '../ui.js';
+import { getInitials, formatDate, badgeHtml } from '../core/ui.js';
 
 let _list   = [];
 let _editId = null;
