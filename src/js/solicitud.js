@@ -1,5 +1,5 @@
 import { supabase } from './supabase.js';
-import { toast } from './ui.js';
+import { toast } from '../components/toast.js';
 
 const form    = document.getElementById('solicitud-form');
 const errBox  = document.getElementById('form-error');

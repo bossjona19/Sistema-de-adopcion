@@ -1,4 +1,4 @@
-const CACHE = 'omega-v3';
+const CACHE = 'omega-v4';
 
 const STATIC = [
   '/',
@@ -10,16 +10,31 @@ const STATIC = [
   '/src/css/styles.css',
   '/src/css/dashboard.css',
   '/src/css/auth.css',
+  // Core
   '/src/js/supabase.js',
   '/src/js/auth.js',
   '/src/js/ui.js',
+  '/src/js/router.js',
   '/src/js/main.js',
   '/src/js/dashboard.js',
+  '/src/js/solicitud.js',
   '/src/js/sw-register.js',
+  // Services
+  '/src/js/services/auditService.js',
+  '/src/js/services/menoresService.js',
+  '/src/js/services/familiasService.js',
+  '/src/js/services/casosService.js',
+  '/src/js/services/dashboardService.js',
+  // Features
+  '/src/js/features/menores.js',
+  '/src/js/features/familias.js',
+  '/src/js/features/casos.js',
+  // Components
   '/src/components/toast.js',
   '/src/components/modal.js',
   '/src/components/sidebar.js',
   '/src/components/cards.js',
+  // Assets
   '/src/assets/icons/favicon.svg',
   '/src/assets/icons/icon-192.svg',
   '/src/assets/icons/icon-512.svg',

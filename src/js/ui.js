@@ -1,7 +1,3 @@
-// Re-exports from components for convenience
-export { toast }   from '../components/toast.js';
-export { openModal, closeModal, initModals, confirm } from '../components/modal.js';
-
 // ── Helpers ───────────────────────────────────────────────────
 export function getInitials(name = '') {
   return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
