@@ -19,3 +19,21 @@ on conflict (id) do update
 select id, nombre, email, rol, created_at
 from public.usuarios
 where email = 'quinterojonathan108@gmail.com';
+
+
+insert into public.usuarios (id, nombre, email, rol)
+select
+  id,
+  'Estudiante de Omega',
+  'admin1234@ejemplo.com',
+  'admin'
+from auth.users
+where email = 'admin1234@ejemplo.com'
+on conflict (id) do update
+  set nombre = excluded.nombre,
+      rol    = excluded.rol;
+
+-- Verificar resultado:
+select id, nombre, email, rol, created_at
+from public.usuarios
+where email = 'admin1234@ejemplo.com';

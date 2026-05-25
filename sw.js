@@ -1,4 +1,4 @@
-const CACHE = 'omega-v6';
+const CACHE = 'omega-v7';
 
 const STATIC = [
   '/',
