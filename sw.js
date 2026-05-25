@@ -1,4 +1,4 @@
-const CACHE = 'omega-v5';
+const CACHE = 'omega-v6';
 
 const STATIC = [
   '/',
@@ -35,6 +35,7 @@ const STATIC = [
   '/src/components/toast.js',
   '/src/components/modal.js',
   '/src/components/sidebar.js',
+  '/src/components/combobox.js',
   // Assets
   '/src/assets/icons/favicon.svg',
   '/src/assets/icons/icon-192.svg',

@@ -5,30 +5,41 @@ import { logAudit, getUserId } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
 import { badgeHtml, formatDate } from '../core/ui.js';
+import { createCombobox } from '../../components/combobox.js';
 
 let _list   = [];
 let _editId = null;
+let _cbFam  = null;
+let _cbMen  = null;
 
 // ── Public ───────────────────────────────────────────────────
 export async function setupCasos() {
   await load();
 
+  _cbFam = createCombobox(document.getElementById('cb-familia'), [], { placeholder: 'Buscar familia…' });
+  _cbMen = createCombobox(document.getElementById('cb-menor'),   [], { placeholder: 'Buscar niño…'   });
+
   document.getElementById('casos-filter')?.addEventListener('change', filter);
 
-  document.getElementById('btn-nuevo-caso')?.addEventListener('click', async () => {
+  document.getElementById('btn-nuevo-caso')?.addEventListener('click', async e => {
+    const btn = e.currentTarget;
+    if (btn.disabled) return;
+    btn.disabled = true;
     _editId = null;
-    document.getElementById('form-caso').reset();
+    document.getElementById('c-etapa').value = 'solicitud';
     document.getElementById('caso-modal-title').textContent = 'Nuevo caso de adopción';
-    document.getElementById('c-familia').disabled = false;
-    document.getElementById('c-menor').disabled   = false;
+    _cbFam.clear();
+    _cbMen.clear();
+    _cbFam.setDisabled(false);
+    _cbMen.setDisabled(false);
     await populateSelects();
+    btn.disabled = false;
     openModal('modal-caso');
   });
 
   document.getElementById('form-caso')?.addEventListener('submit',  saveCaso);
   document.getElementById('form-notas')?.addEventListener('submit', saveNota);
 
-  // Event delegation — replaces window._editCaso / window._openNotas / window._deleteCaso
   document.getElementById('casos-tbody')?.addEventListener('click', async e => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
@@ -101,22 +112,33 @@ function filter() {
 }
 
 async function populateSelects(selFamId = '', selMenId = '') {
-  const [{ data: fams }, { data: mens }] = await Promise.all([
+  const promises = [
     familiasService.getAprobadas(),
     casosService.getMenoresDisponibles(selMenId || null),
-  ]);
+  ];
+  if (!selFamId) promises.push(casosService.getCasosActivos());
 
-  document.getElementById('c-familia').innerHTML =
-    `<option value="">-- Seleccionar familia aprobada --</option>` +
-    (fams ?? []).map(f =>
-      `<option value="${f.id}" ${f.id === selFamId ? 'selected' : ''}>Familia ${f.apellido}</option>`
-    ).join('');
+  const [famRes, menRes, activosRes] = await Promise.all(promises);
+  if (famRes.error || menRes.error) {
+    toast('Error al cargar las opciones del caso. Intente nuevamente.', 'error');
+    return;
+  }
+  const fams = famRes.data;
+  const mens = menRes.data;
 
-  document.getElementById('c-menor').innerHTML =
-    `<option value="">-- Seleccionar niño disponible --</option>` +
-    (mens ?? []).map(m =>
-      `<option value="${m.id}" ${m.id === selMenId ? 'selected' : ''}>${m.nombre}</option>`
-    ).join('');
+  const ocupadasIds = new Set((activosRes?.data ?? []).map(c => c.familia_id));
+
+  _cbFam.setItems(
+    (fams ?? [])
+      .filter(f => !ocupadasIds.has(f.id))
+      .map(f => ({ id: f.id, label: `Familia ${f.apellido}` }))
+  );
+  _cbMen.setItems(
+    (mens ?? []).map(m => ({ id: m.id, label: m.nombre, status: m.estado }))
+  );
+
+  if (selFamId) _cbFam.setValue(selFamId);
+  if (selMenId) _cbMen.setValue(selMenId);
 }
 
 async function editCaso(id) {
@@ -124,11 +146,9 @@ async function editCaso(id) {
   if (!c) return;
   _editId = id;
   await populateSelects(c.familia_id, c.menor_id);
-  document.getElementById('c-familia').value    = c.familia_id;
-  document.getElementById('c-menor').value      = c.menor_id;
-  document.getElementById('c-etapa').value      = c.etapa;
-  document.getElementById('c-familia').disabled = true;
-  document.getElementById('c-menor').disabled   = true;
+  document.getElementById('c-etapa').value = c.etapa;
+  _cbFam.setDisabled(true);
+  _cbMen.setDisabled(true);
   document.getElementById('caso-modal-title').textContent = `Caso #${id.slice(-6).toUpperCase()} — Actualizar`;
   openModal('modal-caso');
 }
@@ -138,8 +158,8 @@ async function saveCaso(ev) {
   const btn = ev.target.querySelector('[type=submit]');
   btn.disabled = true;
 
-  const familiaId = document.getElementById('c-familia').value;
-  const menorId   = document.getElementById('c-menor').value;
+  const familiaId = _cbFam.getValue();
+  const menorId   = _cbMen.getValue();
   const etapa     = document.getElementById('c-etapa').value;
 
   if (!familiaId || !menorId) {
@@ -162,7 +182,10 @@ async function saveCaso(ev) {
       etapa,
       usuario_id: getUserId(),
     }));
-    if (!error) await menoresService.setEstado(menorId, 'en_proceso');
+    if (!error) {
+      const { error: estadoErr } = await menoresService.setEstado(menorId, 'en_proceso');
+      if (estadoErr) toast('Caso creado, pero no se pudo actualizar el estado del niño. Revise el módulo de Niños.', 'warning');
+    }
   }
 
   btn.disabled = false;
@@ -219,7 +242,8 @@ async function removeCaso(id) {
   const { error } = await casosService.remove(id);
   if (error) { toast('Error al eliminar', 'error'); return; }
   if (caso?.menor_id && caso.etapa !== 'cierre') {
-    await menoresService.setEstado(caso.menor_id, 'disponible');
+    const { error: estadoErr } = await menoresService.setEstado(caso.menor_id, 'disponible');
+    if (estadoErr) toast('Caso eliminado, pero no se pudo restaurar la disponibilidad del niño. Revise el módulo de Niños.', 'warning');
   }
   await logAudit('Eliminar caso', 'casos');
   toast('Caso eliminado', 'warning');

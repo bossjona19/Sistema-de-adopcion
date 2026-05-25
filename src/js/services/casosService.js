@@ -8,12 +8,17 @@ export const casosService = {
       .order('created_at', { ascending: false });
   },
   getMenoresDisponibles(includeId = null) {
-    const q = supabase.from('menores').select('id,nombre')
+    const q = supabase.from('menores').select('id,nombre,estado')
       .is('deleted_at', null)
       .order('nombre');
     return includeId
       ? q.or(`estado.eq.disponible,id.eq.${includeId}`)
       : q.eq('estado', 'disponible');
+  },
+  getCasosActivos() {
+    return supabase.from('casos')
+      .select('familia_id')
+      .neq('etapa', 'cierre');
   },
   create(payload) {
     return supabase.from('casos').insert(payload);
