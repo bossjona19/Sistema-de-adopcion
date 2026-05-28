@@ -1,5 +1,12 @@
 import { supabase } from './supabase.js';
 
+export async function handleOAuthCallback() {
+  const code = new URLSearchParams(window.location.search).get('code');
+  if (!code) return;
+  await supabase.auth.exchangeCodeForSession(code);
+  window.history.replaceState({}, '', window.location.pathname);
+}
+
 export async function signIn(email, password) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;

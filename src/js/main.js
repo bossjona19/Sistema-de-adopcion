@@ -1,4 +1,4 @@
-import { requireAuth, signOut, getUser } from './core/auth.js';
+import { requireAuth, signOut, getUser, handleOAuthCallback } from './core/auth.js';
 import { mountSidebar, initMobileMenu, setActiveNav } from '../components/sidebar.js';
 import { initModals } from '../components/modal.js';
 import { getInitials } from './core/ui.js';
@@ -10,6 +10,7 @@ import { setupFamilias } from './features/familias.js';
 import { setupCasos } from './features/casos.js';
 
 // ── Auth ──────────────────────────────────────────────────────
+await handleOAuthCallback(); // exchange PKCE code before session check
 const session = await requireAuth();
 if (!session) throw new Error('redirect');
 
