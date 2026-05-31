@@ -1,9 +1,27 @@
 import { supabase } from './supabase.js';
 
+// Canjea el código OAuth (PKCE) por una sesión. Se llama UNA sola vez al cargar
+// una página protegida, antes de requireAuth(). Como el cliente tiene
+// detectSessionInUrl:false, este es el único canje y no hay race condition.
 export async function handleOAuthCallback() {
-  const code = new URLSearchParams(window.location.search).get('code');
-  if (!code) return;
-  await supabase.auth.exchangeCodeForSession(code);
+  const params = new URLSearchParams(window.location.search);
+
+  // Google/Supabase pueden volver con un error en vez de un código.
+  const oauthError = params.get('error_description') || params.get('error');
+  if (oauthError) {
+    cleanAuthParamsFromUrl();
+    throw new Error(oauthError);
+  }
+
+  const code = params.get('code');
+  if (!code) return; // carga normal, no es un retorno de OAuth
+
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  cleanAuthParamsFromUrl(); // quita ?code= de la URL aunque falle
+  if (error) throw error;
+}
+
+function cleanAuthParamsFromUrl() {
   window.history.replaceState({}, '', window.location.pathname);
 }
 

@@ -81,11 +81,15 @@
   import { signIn, signInWithGoogle, redirectIfAuthenticated } from '/src/js/core/auth.js';
   import '/src/js/sw-register.js';
 
-  // Show "no access" error if redirected from requireAuth
+  // Show error if redirected from requireAuth / OAuth callback
   const params = new URLSearchParams(location.search);
-  if (params.get('error') === 'no-access') {
+  const authErrors = {
+    'no-access':    'Tu cuenta no tiene acceso al sistema. Contacta al administrador.',
+    'oauth-failed': 'No se pudo completar el inicio de sesión con Google. Intenta de nuevo.',
+  };
+  if (authErrors[params.get('error')]) {
     const errorEl = document.getElementById('auth-error');
-    errorEl.textContent = 'Tu cuenta no tiene acceso al sistema. Contacta al administrador.';
+    errorEl.textContent = authErrors[params.get('error')];
     errorEl.classList.add('show');
   }
 

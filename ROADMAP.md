@@ -72,14 +72,18 @@ rendimiento, monitoreo, QA y documentación técnica.**
 
 # VÍA A — Funcional
 
-### A0 — Estabilizar 🔧 (BLOQUEANTE)
+### A0 — Estabilizar 🔧 (BLOQUEANTE) — 🟡 EN PROGRESO
 Un login roto mata la credibilidad de cualquier demo.
-- [ ] Reproducir el error OAuth con DevTools (texto + URL exactos)
-- [ ] Verificar wildcard `/**` en Redirect URLs de Supabase
-- [ ] Decidir PKCE (`handleOAuthCallback`) vs `flowType: 'implicit'`
-- [ ] Verificar el fix en producción
+**Causa raíz hallada:** doble canje del código OAuth. El cliente Supabase con
+`detectSessionInUrl:true` (default) auto-canjeaba el código a la vez que
+`handleOAuthCallback()` lo canjeaba a mano → el código PKCE es de un solo uso →
+uno fallaba → sin sesión → loop. (El "Intento 2" del HANDOFF chocaba con el auto-canje.)
+- [x] **Decisión:** mantener PKCE (más seguro) + `detectSessionInUrl:false` → un solo canje determinista
+- [x] Fix de código: `supabase.js` (opciones auth), `auth.js` (callback robusto que surfacea el error), `main.js` (redirige a login con mensaje), `login.html` (muestra `oauth-failed`)
+- [ ] Verificar wildcard `/**` en Redirect URLs de Supabase *(config dashboard — pendiente usuario)*
+- [ ] Verificar el fix en producción Vercel *(pendiente test del usuario en navegador)*
 
-**Archivos:** `core/auth.js`, `main.js`, `core/supabase.js` · **DB:** — · **Esfuerzo:** S
+**Archivos:** `core/auth.js`, `main.js`, `core/supabase.js`, `login.html` · **DB:** — · **Esfuerzo:** S
 
 ---
 

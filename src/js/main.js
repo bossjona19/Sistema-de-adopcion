@@ -10,7 +10,13 @@ import { setupFamilias } from './features/familias.js';
 import { setupCasos } from './features/casos.js';
 
 // ── Auth ──────────────────────────────────────────────────────
-await handleOAuthCallback(); // exchange PKCE code before session check
+try {
+  await handleOAuthCallback(); // exchange PKCE code before session check
+} catch (err) {
+  console.error('OAuth callback failed:', err);
+  window.location.href = '/login.html?error=oauth-failed';
+  throw new Error('redirect');
+}
 const session = await requireAuth();
 if (!session) throw new Error('redirect');
 
