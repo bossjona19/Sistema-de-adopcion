@@ -80,8 +80,10 @@ Un login roto mata la credibilidad de cualquier demo.
 uno fallaba → sin sesión → loop. (El "Intento 2" del HANDOFF chocaba con el auto-canje.)
 - [x] **Decisión:** mantener PKCE (más seguro) + `detectSessionInUrl:false` → un solo canje determinista
 - [x] Fix de código: `supabase.js` (opciones auth), `auth.js` (callback robusto que surfacea el error), `main.js` (redirige a login con mensaje), `login.html` (muestra `oauth-failed`)
-- [ ] Verificar wildcard `/**` en Redirect URLs de Supabase *(config dashboard — pendiente usuario)*
-- [ ] Verificar el fix en producción Vercel *(pendiente test del usuario en navegador)*
+- [x] Fix bug Service Worker: `sw.js` clonaba la Response después de consumir el body → "Response body is already used" (clonar síncrono)
+- [x] **ERROR REAL CAPTURADO en prod** (con DevTools "Preserve log"): `server_error / unexpected_failure / "Unable to exchange external code: 4/0A..."` → el fallo es **servidor Supabase↔Google**, NO el cliente. El loop ya no ocurre; ahora redirige limpio a login con mensaje.
+- [ ] **CAUSA RAÍZ:** Client Secret de Google mal/vencido en Supabase → re-pegar Secret correcto en Supabase Auth → Providers → Google; verificar redirect URI `…supabase.co/auth/v1/callback` en Google Cloud *(pendiente usuario — config dashboard)*
+- [ ] Re-probar login Google en incógnito tras corregir el Secret
 
 **Archivos:** `core/auth.js`, `main.js`, `core/supabase.js`, `login.html` · **DB:** — · **Esfuerzo:** S
 

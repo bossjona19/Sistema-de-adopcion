@@ -68,7 +68,13 @@ self.addEventListener('fetch', ev => {
   ev.respondWith(
     caches.match(ev.request).then(cached => {
       const fresh = fetch(ev.request).then(res => {
-        if (res.ok) caches.open(CACHE).then(c => c.put(ev.request, res.clone()));
+        // Clonar SÍNCRONAMENTE antes de devolver res: si clonamos dentro del
+        // .then() de caches.open (async), el body ya fue consumido por la página
+        // → "Response body is already used".
+        if (res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put(ev.request, copy));
+        }
         return res;
       }).catch(() => cached); // offline fallback
       return cached ?? fresh;
