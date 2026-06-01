@@ -254,13 +254,15 @@ Documentos por expediente con validación de estados.
 
 ---
 
-### B6 — QA y pruebas ✅ ("no solo lo construí, validé que funciona")
-- [ ] Casos de prueba documentados (`/docs/qa/test-cases.md`)
-- [ ] Checklist de regresión por release
-- [ ] Validación de flujos críticos (solicitud→cierre, asignación, soft delete)
-- [ ] Pruebas de **permisos por rol** (cada rol ve/hace solo lo suyo)
-- [ ] Pruebas de auditoría (cada cambio queda registrado)
-- [ ] Pruebas de documentos (subida, estados, permisos)
+### B6 — QA y pruebas ✅ ("no solo lo construí, validé que funciona") — ✅ COMPLETADO
+- [x] Casos de prueba documentados (`docs/qa/test-cases.md`) — 8 áreas, ~40 casos
+- [x] Checklist de regresión por release (`docs/qa/regression-checklist.md`) — humo + por área
+- [x] Validación de flujos críticos (solicitud→cierre, soft delete, papelera) → TC-CASO-*
+- [x] Pruebas de **permisos por rol** (cada rol ve/hace solo lo suyo) → TC-ROLE-* (incl. RLS real, no solo UI)
+- [x] Pruebas de auditoría (cada cambio queda registrado) → TC-AUD-*
+- [x] Pruebas de documentos (subida, estados, vencido, permisos, ver/descargar) → TC-DOC-*
+
+> Son pruebas **manuales** (Vanilla JS, sin runner). Ejecutar el checklist por release.
 
 **Archivos:** `/docs/qa/*` (+ scripts de prueba ligeros opcionales) · **DB:** — · **Esfuerzo:** M · **Depende de:** A1, A2, A4
 
@@ -376,3 +378,4 @@ Documentos por expediente con validación de estados.
 | 2026-06-01 | **B2 Documentación (CIERRE)** | 🟢 **B2 COMPLETO.** 5 documentos en `/docs`: ARCHITECTURE, DATABASE, SECURITY, DEPLOYMENT, USER_MANUAL — reflejan el estado real tras A0–A4/B1. Sin código (solo escritura). | Revisar/ajustar textos. **Siguiente: 🟡 B3 (Backups y recuperación)** |
 | 2026-06-01 | **A3 ajuste ético** | 🧭 "Casos por trabajador" → **"Carga de trabajo"** (orden alfabético + nota "no es un ranking"). Decisión: una adopción no es una venta; el dashboard mide gestión y equilibrio de carga, nunca competencia entre trabajadores. SW→v22 | — |
 | 2026-06-01 | **B3 Backups (CIERRE)** | 🟢 **B3 COMPLETO** (código). `docs/backup/` con README (estrategia, backups automáticos, pg_dump, rutina mensual), `backup.ps1`/`backup.sh`, `inventory.sql`; `docs/RECOVERY.md` (9 escenarios). Pendiente acción del usuario: **probar una restauración** en proyecto de prueba. | **Siguiente: 🟡 B6 (QA y pruebas)** |
+| 2026-06-01 | **B6 QA (CIERRE)** | 🟢 **B6 COMPLETO.** `docs/qa/test-cases.md` (8 áreas, ~40 casos manuales: auth/roles/CRUD/casos/expediente/auditoría/dashboard/PWA) + `docs/qa/regression-checklist.md` (humo + por área + regla de release). Sin código. | **🟡 Fase Institucional CERRADA (B2+B3+B6). Siguiente: 🟢 Escalabilidad → B4 (paginación/rendimiento)** |
