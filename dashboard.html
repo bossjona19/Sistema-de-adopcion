@@ -299,6 +299,56 @@
         </div>
       </div><!-- /panel-casos -->
 
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- PANEL: USUARIOS (solo admin)        -->
+      <!-- ═══════════════════════════════════ -->
+      <div id="panel-usuarios" class="panel">
+
+        <div class="page-hd">
+          <div>
+            <h3>Usuarios</h3>
+            <p>Gestión de roles del equipo — <strong id="usuarios-count">0</strong> usuarios</p>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </span>
+            <input class="form-input search-input" id="usuarios-search" type="search" placeholder="Buscar por nombre o email…">
+          </div>
+          <select class="form-select" id="usuarios-filter" style="width:auto;">
+            <option value="">Todos los roles</option>
+            <option value="admin">Administrador</option>
+            <option value="coordinador">Coordinador</option>
+            <option value="trabajador_social">Trabajador Social</option>
+            <option value="director">Director</option>
+          </select>
+        </div>
+
+        <div class="card" style="overflow:hidden;padding:0;">
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr>
+                <th>Usuario</th><th>Email</th><th>Rol</th><th>Registrado</th><th>Acciones</th>
+              </tr></thead>
+              <tbody id="usuarios-tbody">
+                <tr class="loading-row"><td colspan="5"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <p style="margin-top:14px;font-size:.8125rem;color:var(--text-3);">
+          Para <strong>añadir</strong> un usuario nuevo, créalo en Supabase → Authentication → Users
+          y luego asígnale un rol aquí.
+        </p>
+      </div><!-- /panel-usuarios -->
+
     </main><!-- /page-content -->
   </div><!-- /main-area -->
 </div><!-- /app-shell -->
@@ -479,6 +529,42 @@
         </div>
       </form>
     </div>
+  </div>
+</div>
+
+<!-- Modal: Cambiar rol de usuario -->
+<div class="modal-overlay" id="modal-usuario">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h4 class="modal-title">Cambiar rol</h4>
+      <button class="modal-close" data-close aria-label="Cerrar">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <form id="form-usuario" novalidate>
+      <div class="modal-body">
+        <div class="form-group">
+          <span class="form-label">Usuario</span>
+          <div id="u-nombre" style="font-weight:600;">—</div>
+          <div id="u-email" style="font-size:.8125rem;color:var(--text-3);">—</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="u-rol">Rol *</label>
+          <select class="form-select" id="u-rol">
+            <option value="admin">Administrador — acceso total</option>
+            <option value="coordinador">Coordinador — crear, editar, eliminar</option>
+            <option value="trabajador_social">Trabajador Social — crear, editar</option>
+            <option value="director">Director — solo lectura (dashboard y reportes)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost btn-sm" data-close>Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+      </div>
+    </form>
   </div>
 </div>
 

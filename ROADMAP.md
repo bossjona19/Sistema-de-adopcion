@@ -72,7 +72,7 @@ rendimiento, monitoreo, QA y documentación técnica.**
 
 # VÍA A — Funcional
 
-### A0 — Estabilizar 🔧 (BLOQUEANTE) — 🟡 EN PROGRESO
+### A0 — Estabilizar 🔧 (BLOQUEANTE) — ✅ COMPLETADO (2026-05-31)
 Un login roto mata la credibilidad de cualquier demo.
 **Causa raíz hallada:** doble canje del código OAuth. El cliente Supabase con
 `detectSessionInUrl:true` (default) auto-canjeaba el código a la vez que
@@ -82,33 +82,42 @@ uno fallaba → sin sesión → loop. (El "Intento 2" del HANDOFF chocaba con el
 - [x] Fix de código: `supabase.js` (opciones auth), `auth.js` (callback robusto que surfacea el error), `main.js` (redirige a login con mensaje), `login.html` (muestra `oauth-failed`)
 - [x] Fix bug Service Worker: `sw.js` clonaba la Response después de consumir el body → "Response body is already used" (clonar síncrono)
 - [x] **ERROR REAL CAPTURADO en prod** (con DevTools "Preserve log"): `server_error / unexpected_failure / "Unable to exchange external code: 4/0A..."` → el fallo es **servidor Supabase↔Google**, NO el cliente. El loop ya no ocurre; ahora redirige limpio a login con mensaje.
-- [ ] **CAUSA RAÍZ:** Client Secret de Google mal/vencido en Supabase → re-pegar Secret correcto en Supabase Auth → Providers → Google; verificar redirect URI `…supabase.co/auth/v1/callback` en Google Cloud *(pendiente usuario — config dashboard)*
-- [ ] Re-probar login Google en incógnito tras corregir el Secret
+- [x] **CAUSA RAÍZ:** credenciales Google desincronizadas en Supabase. Solución: cliente OAuth nuevo (`...oao25l3...`) con redirect URI `…supabase.co/auth/v1/callback` + Client ID y Secret nuevos pegados en Supabase Auth → Providers → Google
+- [x] Verificado en producción: login Google entra al dashboard sin loop ✅
 
 **Archivos:** `core/auth.js`, `main.js`, `core/supabase.js`, `login.html` · **DB:** — · **Esfuerzo:** S
 
 ---
 
 ### A1 — Roles reales (RBAC) 🥇
-**Roles:** `admin` · `trabajador_social` · `coordinador` · `consultor` (solo lectura)
+**Roles:** `admin` · `coordinador` · `trabajador_social` · `director` (solo lectura)
 
-| Acción | Admin | Trab. Social | Coordinador | Consultor |
+| Acción | Admin | Coordinador | Trab. Social | Director |
 |---|---|---|---|---|
 | Ver expedientes | ✅ | ✅ | ✅ | ✅ |
 | Crear/editar | ✅ | ✅ | ✅ | ❌ |
-| Eliminar | ✅ | ❌ | ✅ | ❌ |
+| Eliminar | ✅ | ✅ | ❌ | ❌ |
 | Avanzar etapa | ✅ | ✅ | ✅ | ❌ |
 | Subir/validar documentos | ✅ | ✅ | ✅ | ❌ |
 | Gestionar usuarios | ✅ | ❌ | ❌ | ❌ |
 
-> **Consultor = estrictamente solo lectura.** No edita, no elimina, no cambia etapas,
-> no sube documentos. Solo visualiza (útil para auditorías y supervisión externa).
+> **Director = estrictamente solo lectura** (supervisión de indicadores/reportes).
+> No edita, no elimina, no cambia etapas, no sube documentos.
+>
+> **Decisión de diseño (2026-06-01):** un rol modela un *conjunto de permisos*, no un cargo.
+> `psicologo` y `abogado` **no** son roles: en la práctica no entran al sistema. Su trabajo se
+> representa como **documento tipado** (A4) + **nota de seguimiento** (A2) con un campo
+> `autor_externo` (texto libre, ej. *"Lic. María, psicóloga"*) → conserva la autoría real
+> sin crear cuentas ni RLS extra. Si algún día entran al sistema, se reevalúa.
 
-- [ ] Migración SQL: `CHECK` en `usuarios.rol` con los 4 valores
-- [ ] `requireAuth()` devuelve el `rol`; helper `can(accion)` en `core/auth.js`
-- [ ] Ocultar/deshabilitar acciones según rol en features
-- [ ] **RLS por rol en Supabase** (la seguridad real vive aquí)
-- [ ] UI para que admin asigne roles
+- [x] Migración SQL: `CHECK` en `usuarios.rol` con los 4 valores → `docs/fase_a1_rbac.sql`
+- [x] `requireAuth()` devuelve el `rol`; helper `can(accion)` + `roleLabel()` en `core/auth.js`
+- [x] Ocultar/deshabilitar acciones según rol en features (menores, familias, casos + notas) y rol real en sidebar
+- [x] **RLS por rol en Supabase** → `docs/fase_a1_rbac.sql` (función `user_role()` + políticas granulares por tabla/comando) *(ejecutado por el usuario en Supabase, 2026-06-01)*
+- [x] **A1-parte 2:** UI para que admin asigne roles → panel "Usuarios" (solo admin): lista, búsqueda, filtro por rol y modal de cambio de rol. No permite cambiar el rol propio (anti-lockout)
+- [x] Renombrar `consultor → director` en código, UI y SQL canónico
+- [ ] **Correr `docs/fase_a1_director_rename.sql`** en Supabase (migra el `CHECK` y filas existentes)
+- [ ] Verificar en prod: admin = todo · director = solo lectura
 
 **Archivos:** `core/auth.js`, `features/*`, `sidebar.js`, migración SQL · **DB:** `rol` CHECK + RLS · **Esfuerzo:** M · **Depende de:** A0
 
@@ -149,10 +158,14 @@ Métricas de **gestión**, no solo conteos.
 ### A4 — Sistema documental 🥉
 Documentos por expediente con validación de estados.
 **Estados:** `recibido → en_revision → (rechazado | aprobado)` · `vencido` por fecha.
+**Tipos:** `evaluacion_psicologica` · `certificado_medico` · `informe_social` · `documento_legal` · `acta_nacimiento` · `otro`.
+> Aquí se modela el trabajo de psicólogo/abogado **sin darles cuenta**: su informe entra como
+> documento tipado + nota de seguimiento, con `autor_externo` para conservar la autoría real.
 - [ ] Bucket privado en Supabase Storage + políticas por rol
-- [ ] Migración: tabla `documentos` (caso_id, tipo, nombre, storage_path, estado, fecha_revision, revisado_por, fecha_vencimiento, subido_por, fecha)
+- [ ] Migración: tabla `documentos` (caso_id, tipo, nombre, storage_path, estado, fecha_revision, revisado_por, fecha_vencimiento, subido_por, **autor_externo**, fecha)
 - [ ] `documentosService` (subir, listar, signed URL, cambiar estado, borrar)
 - [ ] UI de subida (validación tipo/tamaño) + lista con estado y acciones por rol
+- [ ] Vista de expediente con pestañas: **Información · Documentos · Seguimiento · Historial**
 - [ ] Checklist visual del expediente + feed al timeline (A2)
 
 **Archivos:** nuevos `services/documentosService.js`, `features/documentos.js`, migración SQL · **DB:** tabla `documentos` + bucket · **Esfuerzo:** L · **Depende de:** A1
@@ -261,6 +274,25 @@ Documentos por expediente con validación de estados.
 
 ---
 
+### B8 — Privacidad por asignación de casos 🔒 (futuro — alto valor)
+> *Idea de diseño (2026-06-01).* El salto real de profesionalismo no es tener más roles,
+> sino **ROL + ASIGNACIÓN**: que un trabajador social vea **solo los casos asignados a él**,
+> no todos. Con datos de niños/familias es lo correcto en privacidad.
+>
+> **Decisión:** se documenta como mejora futura (no prioritaria todavía).
+> **Alcance pragmático elegido** (80% del valor, 20% del esfuerzo): aislar la visibilidad
+> de **casos**; niños y familias siguen siendo catálogo compartido del staff. El aislamiento
+> total por registro en todas las tablas es un proyecto mayor (RLS con joins, niños sin caso).
+
+- [ ] Columna `casos.asignado_a → usuarios(id)` + UI para asignar responsable (admin/coordinador)
+- [ ] RLS `casos`: `admin`/`coordinador` ven todos; `trabajador_social` solo `asignado_a = auth.uid()`
+- [ ] Filtro "Mis casos" en el listado
+- [ ] (Decidir) si las notas/documentos heredan el mismo aislamiento que su caso
+
+**Archivos:** migración SQL, `casosService.js`, `features/casos.js`, RLS · **DB:** `casos.asignado_a` + RLS · **Esfuerzo:** M-L · **Depende de:** A1
+
+---
+
 ## Orden recomendado (4 fases)
 
 > Principio: construir y estabilizar el núcleo (seguridad incluida) ANTES de documentarlo —
@@ -296,6 +328,7 @@ Documentos por expediente con validación de estados.
 | 12 | **A6 · Notificaciones** | Menor ROI, opcional |
 | 13 | **B5 · Monitoreo** | Cuando ya hay flujo real que monitorear |
 | 14 | **B7 · Config institucional** | Pulido de adaptabilidad |
+| 15 | **B8 · Privacidad por asignación** | Salto de privacidad real; futuro, requiere A4/A2 estables |
 
 **Top 5 que más acercan a "software institucional":**
 🔐 B1 Seguridad · 📁 A4 Documentos · 📋 A2 Auditoría/timeline · 💾 B3 Backups · ⚡ B4 Rendimiento.
@@ -326,3 +359,7 @@ Documentos por expediente con validación de estados.
 | 2026-05-30 | — | Roadmap v1 creado y alcance aprobado | Analizar plan, elegir arranque |
 | 2026-05-30 | — | Roadmap v2: añadida **Vía B** (seguridad, backups, rendimiento, monitoreo, QA, docs, config) + orden combinado | Analizar v2, decidir fase de arranque |
 | 2026-05-30 | — | Roadmap v3: reordenado en **4 fases** (Crítica/Profesional/Institucional/Escalabilidad) — B2 Docs movida tras estabilizar núcleo. Consultor = solo lectura estricta. Soft delete completo + papelera. KPI casos por trabajador social | Decidir fase de arranque (A0) |
+| 2026-05-31 | **A0 OAuth** | ✅ **COMPLETADO.** Fix de código (PKCE + detectSessionInUrl:false, callback robusto, mensajes de error) + fix bug SW clone. Causa raíz real: credenciales Google desincronizadas → cliente OAuth nuevo + Secret correcto en Supabase. Login Google verificado en prod | Arrancar A1 (Roles) |
+| 2026-05-31 | **A1 Roles** | 🟡 Código listo (parte 1): migración RBAC+RLS (`docs/fase_a1_rbac.sql`), `can()`/`roleLabel()` en auth, gating de UI en menores/familias/casos/notas, rol real en sidebar, SW→v10 | Usuario corre el SQL + prueba; luego A1-parte 2 (UI asignar roles) |
+| 2026-06-01 | **A1 Roles** | 🟢 SQL RLS ejecutado por el usuario en Supabase. **A1-parte 2 lista:** `usuariosService` + `features/usuarios.js` + panel/modal "Usuarios" (solo admin, vía `can('manage_users')` y nav condicional), búsqueda/filtro por rol, badges de rol, anti-lockout (no editas tu propio rol), SW→v11 | Verificar en prod: admin gestiona roles · director solo lectura. Luego B1 (soft delete casos, fix KPI soft-deleted) |
+| 2026-06-01 | **A1 · diseño de roles** | 🧭 Decisión de diseño: rol = conjunto de permisos, no cargo. **`consultor → director`** (código, UI, SQL canónico + `docs/fase_a1_director_rename.sql`). `psicologo`/`abogado` NO son roles → su trabajo se modela en A4 (documento tipado + `autor_externo`) + nota A2. Añadido **B8 · Privacidad por asignación de casos** como mejora futura (ROL+ASIGNACIÓN) | Usuario corre `fase_a1_director_rename.sql`; seguir con B1 |

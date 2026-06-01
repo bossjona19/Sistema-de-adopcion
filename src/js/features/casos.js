@@ -5,6 +5,7 @@ import { logAudit, getUserId } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
 import { badgeHtml, formatDate } from '../core/ui.js';
+import { can } from '../core/auth.js';
 import { createCombobox } from '../../components/combobox.js';
 
 let _list   = [];
@@ -21,9 +22,11 @@ export async function setupCasos() {
 
   document.getElementById('casos-filter')?.addEventListener('change', filter);
 
-  document.getElementById('btn-nuevo-caso')?.addEventListener('click', async e => {
+  const btnNuevo = document.getElementById('btn-nuevo-caso');
+  if (btnNuevo && !can('create')) btnNuevo.style.display = 'none';
+  btnNuevo?.addEventListener('click', async e => {
     const btn = e.currentTarget;
-    if (btn.disabled) return;
+    if (!can('create') || btn.disabled) return;
     btn.disabled = true;
     _editId = null;
     document.getElementById('c-etapa').value = 'solicitud';
@@ -69,6 +72,9 @@ function render(list) {
     return;
   }
 
+  const editable  = can('edit');
+  const deletable = can('delete');
+
   tbody.innerHTML = list.map(c => `
     <tr>
       <td style="font-family:var(--font-h);font-weight:600;color:var(--text-3);font-size:.8rem;">
@@ -79,13 +85,13 @@ function render(list) {
       <td>${badgeHtml(c.etapa)}</td>
       <td>
         <div class="table-actions">
-          <button class="btn btn-ghost btn-icon btn-xs"
+          ${editable ? `<button class="btn btn-ghost btn-icon btn-xs"
             data-action="edit-caso" data-id="${c.id}" title="Cambiar etapa">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z"/>
             </svg>
-          </button>
+          </button>` : ''}
           <button class="btn btn-ghost btn-icon btn-xs"
             data-action="open-notas" data-id="${c.id}" title="Notas de seguimiento">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -93,13 +99,13 @@ function render(list) {
               <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
             </svg>
           </button>
-          <button class="btn btn-ghost btn-icon btn-xs"
+          ${deletable ? `<button class="btn btn-ghost btn-icon btn-xs"
             data-action="delete-caso" data-id="${c.id}" title="Eliminar" style="color:var(--danger);">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <polyline points="3 6 5 6 21 6"/>
               <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m5 5v6m4-6v6"/>
             </svg>
-          </button>
+          </button>` : ''}
         </div>
       </td>
     </tr>
@@ -197,6 +203,8 @@ async function saveCaso(ev) {
 }
 
 async function openNotas(id) {
+  const notasForm = document.getElementById('form-notas');
+  if (notasForm) notasForm.style.display = can('edit') ? '' : 'none'; // director: solo lectura
   document.getElementById('notas-caso-id').value = id;
   document.getElementById('notas-desc').value    = '';
   document.getElementById('notas-list').innerHTML =

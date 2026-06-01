@@ -31,7 +31,18 @@ const NAV = [
   },
 ];
 
-export function mountSidebar({ name, initials, onNavigate, onLogout }) {
+const ADMIN_NAV = [
+  {
+    id: 'usuarios',
+    label: 'Usuarios',
+    icon: `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+             <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+             <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+           </svg>`,
+  },
+];
+
+export function mountSidebar({ name, initials, role = 'Usuario', canManageUsers = false, onNavigate, onLogout }) {
   const root = document.getElementById('sidebar-root');
   if (!root) return;
 
@@ -58,6 +69,15 @@ export function mountSidebar({ name, initials, onNavigate, onLogout }) {
             ${item.label}
           </button>
         `).join('')}
+        ${canManageUsers ? `
+          <span class="nav-label">Administración</span>
+          ${ADMIN_NAV.map(item => `
+            <button class="nav-link" data-tab="${item.id}" type="button">
+              ${item.icon}
+              ${item.label}
+            </button>
+          `).join('')}
+        ` : ''}
       </nav>
 
       <div class="sidebar-footer">
@@ -65,7 +85,7 @@ export function mountSidebar({ name, initials, onNavigate, onLogout }) {
           <div class="avatar avatar-sm" style="background:rgba(255,255,255,.15);color:#fff;">${initials}</div>
           <div style="flex:1;min-width:0;">
             <div class="sidebar-user-name truncate">${name}</div>
-            <div class="sidebar-user-role">Administrador</div>
+            <div class="sidebar-user-role">${role}</div>
           </div>
           <button class="btn-logout" id="btn-logout" title="Cerrar sesión">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
