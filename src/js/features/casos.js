@@ -1,6 +1,7 @@
 import { casosService }    from '../services/casosService.js';
 import { familiasService } from '../services/familiasService.js';
 import { menoresService }  from '../services/menoresService.js';
+import { documentosService } from '../services/documentosService.js';
 import { logAudit, getUserId, getEntidadHistorial } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
@@ -13,6 +14,18 @@ let _editId = null;
 let _cbFam  = null;
 let _cbMen  = null;
 let _wired  = false;
+let _docsCasoId = null;
+
+const TIPO_DOC_LABELS = {
+  evaluacion_psicologica: 'Evaluación psicológica',
+  certificado_medico:     'Certificado médico',
+  informe_social:         'Informe social',
+  documento_legal:        'Documento legal',
+  acta_nacimiento:        'Acta de nacimiento',
+  otro:                   'Otro',
+};
+const ESTADO_DOC_LABELS = { recibido: 'Recibido', en_revision: 'En revisión', aprobado: 'Aprobado', rechazado: 'Rechazado' };
+const MAX_DOC_MB = 10;
 
 // ── Public ───────────────────────────────────────────────────
 export async function setupCasos() {
@@ -49,8 +62,22 @@ export async function setupCasos() {
       const { action, id } = btn.dataset;
       if (action === 'edit-caso')      await editCaso(id);
       if (action === 'open-notas')     await openNotas(id);
+      if (action === 'open-docs')      await openDocumentos(id);
       if (action === 'open-historial') await openHistorial(id);
       if (action === 'delete-caso')    await removeCaso(id);
+    });
+
+    // Documentos: subida + acciones de la lista (ver / cambiar estado / eliminar)
+    document.getElementById('form-documento')?.addEventListener('submit', uploadDoc);
+    document.getElementById('documentos-list')?.addEventListener('click', async e => {
+      const btn = e.target.closest('[data-doc-action]');
+      if (!btn) return;
+      if (btn.dataset.docAction === 'ver')      await verDoc(btn.dataset.path);
+      if (btn.dataset.docAction === 'eliminar') await eliminarDoc(btn.dataset.id, btn.dataset.path);
+    });
+    document.getElementById('documentos-list')?.addEventListener('change', async e => {
+      const sel = e.target.closest('[data-doc-action="estado"]');
+      if (sel) await cambiarEstadoDoc(sel.dataset.id, sel.value);
     });
     _wired = true;
   }
@@ -102,6 +129,13 @@ function render(list) {
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
               <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </button>
+          <button class="btn btn-ghost btn-icon btn-xs"
+            data-action="open-docs" data-id="${c.id}" title="Documentos del expediente">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
             </svg>
           </button>
           <button class="btn btn-ghost btn-icon btn-xs"
@@ -257,6 +291,109 @@ async function saveNota(ev) {
   await openNotas(casoId);
 }
 
+// ── Documentos ───────────────────────────────────────────────
+async function openDocumentos(id) {
+  _docsCasoId = id;
+  const code = id.slice(-6).toUpperCase();
+  document.getElementById('documentos-title').textContent = `Documentos · Caso #${code}`;
+  document.getElementById('documentos-upload').style.display = can('edit') ? '' : 'none'; // director: solo lectura
+  document.getElementById('form-documento').reset();
+  openModal('modal-documentos');
+  await loadDocs();
+}
+
+// Calcula 'vencido' a partir de la fecha (no se guarda; solo se muestra).
+function docEstado(d) {
+  if (d.estado !== 'aprobado' && d.fecha_vencimiento && new Date(d.fecha_vencimiento) < new Date()) return 'vencido';
+  return d.estado;
+}
+
+async function loadDocs() {
+  const list = document.getElementById('documentos-list');
+  list.innerHTML = `<div style="padding:16px;text-align:center;"><div class="spinner"></div></div>`;
+  const { data, error } = await documentosService.list(_docsCasoId);
+  if (error) { list.innerHTML = `<p style="color:var(--danger);padding:8px;">Error al cargar documentos.</p>`; return; }
+  renderDocs(data ?? []);
+}
+
+function renderDocs(docs) {
+  const list = document.getElementById('documentos-list');
+  if (!docs.length) {
+    list.innerHTML = `<p style="color:var(--text-3);padding:8px 0;">Sin documentos todavía.</p>`;
+    return;
+  }
+  const editable  = can('edit');
+  const deletable = can('delete');
+
+  list.innerHTML = docs.map(d => `
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border-2);">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:.875rem;">${TIPO_DOC_LABELS[d.tipo] ?? d.tipo}</div>
+        <div style="font-size:.8125rem;color:var(--text-2);" class="truncate">${d.nombre}${d.autor_externo ? ` · <em>${d.autor_externo}</em>` : ''}</div>
+        <div style="font-size:.75rem;color:var(--text-3);margin-top:3px;">
+          ${badgeHtml(docEstado(d))} · ${formatDate(d.fecha)}${d.fecha_vencimiento ? ` · vence ${formatDate(d.fecha_vencimiento)}` : ''}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
+        <button class="btn btn-ghost btn-xs" data-doc-action="ver" data-path="${d.storage_path}">Ver</button>
+        ${editable ? `<select class="form-select" data-doc-action="estado" data-id="${d.id}" style="width:auto;font-size:.75rem;padding:2px 6px;">
+          ${Object.entries(ESTADO_DOC_LABELS).map(([v, l]) => `<option value="${v}" ${d.estado === v ? 'selected' : ''}>${l}</option>`).join('')}
+        </select>` : ''}
+        ${deletable ? `<button class="btn btn-ghost btn-xs" data-doc-action="eliminar" data-id="${d.id}" data-path="${d.storage_path}" style="color:var(--danger);">Eliminar</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function uploadDoc(ev) {
+  ev.preventDefault();
+  const file = document.getElementById('d-file').files[0];
+  if (!file) { toast('Selecciona un archivo', 'warning'); return; }
+  if (file.size > MAX_DOC_MB * 1024 * 1024) { toast(`El archivo supera ${MAX_DOC_MB} MB`, 'warning'); return; }
+
+  const tipo = document.getElementById('d-tipo').value;
+  const btn  = document.getElementById('d-submit');
+  btn.disabled = true;
+  const { error } = await documentosService.upload({
+    casoId:           _docsCasoId,
+    file,
+    tipo,
+    autorExterno:     document.getElementById('d-autor').value.trim(),
+    fechaVencimiento: document.getElementById('d-vence').value || null,
+    subidoPor:        getUserId(),
+  });
+  btn.disabled = false;
+  if (error) { toast('Error al subir: ' + error.message, 'error'); return; }
+  await logAudit('Subir documento', 'documentos', { entidadId: _docsCasoId, despues: `${TIPO_DOC_LABELS[tipo]}: ${file.name}` });
+  toast('Documento subido', 'success');
+  document.getElementById('form-documento').reset();
+  await loadDocs();
+}
+
+async function verDoc(path) {
+  const { url, error } = await documentosService.signedUrl(path, 120);
+  if (error || !url) { toast('No se pudo abrir el documento', 'error'); return; }
+  window.open(url, '_blank', 'noopener');
+}
+
+async function cambiarEstadoDoc(id, estado) {
+  const { error } = await documentosService.setEstado(id, estado, getUserId());
+  if (error) { toast('Error al cambiar el estado', 'error'); return; }
+  await logAudit('Cambiar estado de documento', 'documentos', { entidadId: _docsCasoId, despues: ESTADO_DOC_LABELS[estado] });
+  toast('Estado actualizado', 'success');
+  await loadDocs();
+}
+
+async function eliminarDoc(id, path) {
+  const ok = await confirm('¿Eliminar este documento? Esta acción no se puede deshacer.', { danger: true });
+  if (!ok) return;
+  const { error } = await documentosService.remove(id, path);
+  if (error) { toast('Error al eliminar', 'error'); return; }
+  await logAudit('Eliminar documento', 'documentos', { entidadId: _docsCasoId });
+  toast('Documento eliminado', 'warning');
+  await loadDocs();
+}
+
 const ETAPA_LABELS = {
   solicitud: 'Solicitud', evaluacion: 'Evaluación', asignacion: 'Asignación',
   seguimiento: 'Seguimiento', cierre: 'Cierre',
@@ -275,9 +412,10 @@ async function openHistorial(id) {
   body.innerHTML = `<div style="padding:24px;text-align:center;"><div class="spinner"></div></div>`;
   openModal('modal-historial');
 
-  const [hist, notas] = await Promise.all([
+  const [hist, notas, docs] = await Promise.all([
     getEntidadHistorial('casos', id),
     casosService.getSeguimiento(id),
+    documentosService.list(id),
   ]);
 
   if (hist.error || notas.error) {
@@ -296,6 +434,9 @@ async function openHistorial(id) {
   });
   (notas.data ?? []).forEach(n => {
     events.push({ fecha: n.fecha, texto: `Nota: ${n.descripcion}`, autor: n.usuario?.nombre ?? n.usuario?.email });
+  });
+  (docs.data ?? []).forEach(d => {
+    events.push({ fecha: d.fecha, texto: `Documento agregado: ${TIPO_DOC_LABELS[d.tipo] ?? d.tipo} (${d.nombre})`, autor: d.autor_externo || null });
   });
 
   events.sort((a, b) => new Date(a.fecha) - new Date(b.fecha)); // cronológico ascendente

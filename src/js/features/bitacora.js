@@ -6,7 +6,7 @@ import { can } from '../core/auth.js';
 
 const ENTIDAD_LABELS = {
   menores: 'Niños', familias: 'Familias', casos: 'Casos',
-  seguimiento: 'Seguimiento', usuarios: 'Usuarios',
+  seguimiento: 'Seguimiento', documentos: 'Documentos', usuarios: 'Usuarios',
 };
 
 let _wired = false;

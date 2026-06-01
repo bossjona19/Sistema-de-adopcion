@@ -390,6 +390,7 @@
             <option value="familias">Familias</option>
             <option value="casos">Casos</option>
             <option value="seguimiento">Seguimiento</option>
+            <option value="documentos">Documentos</option>
             <option value="usuarios">Usuarios</option>
           </select>
           <input class="form-input" id="bitacora-desde" type="date" style="width:auto;" title="Desde">
@@ -589,6 +590,57 @@
           <button type="submit" class="btn btn-primary btn-sm">Guardar nota</button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Documentos del expediente -->
+<div class="modal-overlay" id="modal-documentos">
+  <div class="modal">
+    <div class="modal-header">
+      <h4 class="modal-title" id="documentos-title">Documentos del expediente</h4>
+      <button class="modal-close" data-close aria-label="Cerrar">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding-bottom:8px;">
+      <div id="documentos-list" style="max-height:40vh;overflow-y:auto;"></div>
+
+      <div id="documentos-upload" style="margin-top:4px;">
+        <hr style="margin:12px 0;">
+        <form id="form-documento" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="d-tipo">Tipo de documento *</label>
+              <select class="form-select" id="d-tipo">
+                <option value="evaluacion_psicologica">Evaluación psicológica</option>
+                <option value="certificado_medico">Certificado médico</option>
+                <option value="informe_social">Informe social</option>
+                <option value="documento_legal">Documento legal</option>
+                <option value="acta_nacimiento">Acta de nacimiento</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="d-vence">Vence (opcional)</label>
+              <input class="form-input" id="d-vence" type="date">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="d-autor">Autor externo (opcional)</label>
+            <input class="form-input" id="d-autor" type="text" placeholder="Ej. Lic. María Pérez, psicóloga">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="d-file">Archivo * <span style="color:var(--text-3);font-weight:400;">(PDF/imagen, máx. 10 MB)</span></label>
+            <input class="form-input" id="d-file" type="file" accept=".pdf,image/*,.doc,.docx">
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px;">
+            <button type="submit" class="btn btn-primary btn-sm" id="d-submit">Subir documento</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </div>

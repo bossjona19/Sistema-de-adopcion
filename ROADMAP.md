@@ -161,14 +161,14 @@ Documentos por expediente con validación de estados.
 **Tipos:** `evaluacion_psicologica` · `certificado_medico` · `informe_social` · `documento_legal` · `acta_nacimiento` · `otro`.
 > Aquí se modela el trabajo de psicólogo/abogado **sin darles cuenta**: su informe entra como
 > documento tipado + nota de seguimiento, con `autor_externo` para conservar la autoría real.
-- [ ] Bucket privado en Supabase Storage + políticas por rol
-- [ ] Migración: tabla `documentos` (caso_id, tipo, nombre, storage_path, estado, fecha_revision, revisado_por, fecha_vencimiento, subido_por, **autor_externo**, fecha)
-- [ ] `documentosService` (subir, listar, signed URL, cambiar estado, borrar)
-- [ ] UI de subida (validación tipo/tamaño) + lista con estado y acciones por rol
-- [ ] Vista de expediente con pestañas: **Información · Documentos · Seguimiento · Historial**
-- [ ] Checklist visual del expediente + feed al timeline (A2)
+- [x] Bucket privado en Supabase Storage + políticas por rol → `docs/fase_a4_documentos.sql`
+- [x] Migración: tabla `documentos` (caso_id, tipo, nombre, storage_path, estado, fecha_revision, revisado_por, fecha_vencimiento, subido_por, **autor_externo**, fecha)
+- [x] `documentosService` (subir, listar, signed URL, cambiar estado, borrar)
+- [x] UI de subida (validación tipo/tamaño/10 MB) + lista con estado y acciones por rol → modal "Documentos" por caso; `vencido` calculado por fecha
+- [ ] Vista de expediente con pestañas: **Información · Documentos · Seguimiento · Historial** — *slice 2 (pendiente)*
+- [x] Feed al timeline (A2) → los documentos aparecen en el Historial del caso · [ ] Checklist visual del expediente — *slice 2*
 
-**Archivos:** nuevos `services/documentosService.js`, `features/documentos.js`, migración SQL · **DB:** tabla `documentos` + bucket · **Esfuerzo:** L · **Depende de:** A1
+**Archivos:** `services/documentosService.js`, `features/casos.js`, `core/ui.js`, `dashboard.html`, `docs/fase_a4_documentos.sql` · **DB:** tabla `documentos` + bucket Storage · **Esfuerzo:** L · **Depende de:** A1
 
 ---
 
@@ -368,3 +368,4 @@ Documentos por expediente con validación de estados.
 | 2026-06-01 | **A2 Auditoría (slice 1)** | 🟢 Bitácora enriquecida (`docs/fase_a2_auditoria.sql`: `entidad_id`/`valor_antes`/`valor_despues` + índice). `logAudit` ya no falla en silencio (avisa + devuelve error) y acepta `{entidadId,antes,despues}`. `create()` devuelve id. Features emiten diff (`diffSummary`). **Panel Bitácora** (solo admin) con filtros usuario/entidad/fecha y columna de cambios. SW→v14 | Usuario corre `fase_a2_auditoria.sql` + prueba. **A2 slice 2: timeline unificado por expediente (en la vista de Caso)** |
 | 2026-06-01 | **Fix RLS roles** | 🐛 Cambiar rol "parecía" guardar pero no persistía (UPDATE afectaba 0 filas por RLS, sin error). `updateRole` ahora usa `.select().maybeSingle()` y el front detecta el 0-filas. SQL de reparación `docs/fix_usuarios_rls.sql` (re-crea políticas de `usuarios`). SW→v16. **Router fix:** datos se recargan en cada navegación (flag `_wired` por feature) → ya no hace falta F5. SW→v15 | — |
 | 2026-06-01 | **A2 Auditoría (slice 2 — CIERRE)** | 🟢 **A2 COMPLETO.** Timeline unificado por expediente: botón "Historial" en cada caso → modal con bitácora del caso + notas de seguimiento en orden cronológico y con autor (`getEntidadHistorial` + `getSeguimiento` con autor). SW→v17 | Probar el historial. **Siguiente: 🟠 A4 (Sistema documental) — el gran institucionalizador** |
+| 2026-06-01 | **A4 Documental (slice 1)** | 🟢 Tabla `documentos` + bucket privado de Storage + políticas por rol (`docs/fase_a4_documentos.sql`). `documentosService` (subir/listar/signed URL/estado/borrar). Modal **Documentos** por caso: subir (tipo, `autor_externo`, vencimiento, validación 10 MB), ver (URL firmada), cambiar estado (recibido/en_revisión/aprobado/rechazado, `vencido` calculado), eliminar — todo por rol. Documentos alimentan el **timeline**. Badges de estado. SW→v18 | Usuario corre `fase_a4_documentos.sql` (incluye bucket). **A4 slice 2: pestañas del expediente + checklist visual** |

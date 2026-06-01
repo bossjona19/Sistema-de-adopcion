@@ -167,6 +167,13 @@ p  { color: var(--text-2); line-height: 1.65; }
 .badge-trabajador_social { background: var(--tertiary-bg);  color: var(--tertiary); }
 .badge-director          { background: #EEF1F6;            color: #5B6472;         }
 
+/* Estados de documento (A4) */
+.badge-recibido    { background: var(--primary-bg);  color: var(--primary); }
+.badge-en_revision { background: var(--warning-bg);  color: var(--warning); }
+.badge-aprobado    { background: var(--success-bg);  color: var(--success); }
+.badge-rechazado   { background: var(--danger-bg);   color: var(--danger);  }
+.badge-vencido     { background: #F3F4F6;            color: #6B7280;        }
+
 /* ── Card ────────────────────────────────────────────────────── */
 .card {
   background: var(--surface);

@@ -23,6 +23,7 @@ export function badgeHtml(value) {
     pendiente:'Pendiente', aprobada:'Aprobada', rechazada:'Rechazada',
     solicitud:'Solicitud', evaluacion:'Evaluación', asignacion:'Asignación',
     seguimiento:'Seguimiento', cierre:'Cierre',
+    recibido:'Recibido', en_revision:'En revisión', aprobado:'Aprobado', rechazado:'Rechazado', vencido:'Vencido',
   };
   return `<span class="badge badge-${value}">${LABELS[value] ?? value}</span>`;
 }
