@@ -1,10 +1,10 @@
 import { casosService }    from '../services/casosService.js';
 import { familiasService } from '../services/familiasService.js';
 import { menoresService }  from '../services/menoresService.js';
-import { logAudit, getUserId } from '../services/auditService.js';
+import { logAudit, getUserId, getEntidadHistorial } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
-import { badgeHtml, formatDate } from '../core/ui.js';
+import { badgeHtml, formatDate, formatDateTime } from '../core/ui.js';
 import { can } from '../core/auth.js';
 import { createCombobox } from '../../components/combobox.js';
 
@@ -47,9 +47,10 @@ export async function setupCasos() {
       const btn = e.target.closest('[data-action]');
       if (!btn) return;
       const { action, id } = btn.dataset;
-      if (action === 'edit-caso')   await editCaso(id);
-      if (action === 'open-notas')  await openNotas(id);
-      if (action === 'delete-caso') await removeCaso(id);
+      if (action === 'edit-caso')      await editCaso(id);
+      if (action === 'open-notas')     await openNotas(id);
+      if (action === 'open-historial') await openHistorial(id);
+      if (action === 'delete-caso')    await removeCaso(id);
     });
     _wired = true;
   }
@@ -101,6 +102,12 @@ function render(list) {
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
               <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </button>
+          <button class="btn btn-ghost btn-icon btn-xs"
+            data-action="open-historial" data-id="${c.id}" title="Historial del expediente">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 106 5.3L3 8"/><path d="M12 7v5l4 2"/>
             </svg>
           </button>
           ${deletable ? `<button class="btn btn-ghost btn-icon btn-xs"
@@ -248,6 +255,61 @@ async function saveNota(ev) {
   await logAudit('Agregar nota de seguimiento', 'seguimiento', { entidadId: casoId, despues: desc.slice(0, 80) });
   toast('Nota guardada', 'success');
   await openNotas(casoId);
+}
+
+const ETAPA_LABELS = {
+  solicitud: 'Solicitud', evaluacion: 'Evaluación', asignacion: 'Asignación',
+  seguimiento: 'Seguimiento', cierre: 'Cierre',
+};
+const prettyEtapa = v => ETAPA_LABELS[v] ?? v;
+
+// Timeline unificado del expediente: combina la bitácora del caso (creación,
+// cambios de etapa, restauración…) con las notas de seguimiento, en orden cronológico.
+async function openHistorial(id) {
+  const caso = _list.find(x => x.id === id);
+  const code = id.slice(-6).toUpperCase();
+  document.getElementById('historial-title').textContent =
+    `Historial · Caso #${code}` + (caso ? ` · ${caso.menor?.nombre ?? '—'} / Familia ${caso.familia?.apellido ?? '—'}` : '');
+
+  const body = document.getElementById('historial-body');
+  body.innerHTML = `<div style="padding:24px;text-align:center;"><div class="spinner"></div></div>`;
+  openModal('modal-historial');
+
+  const [hist, notas] = await Promise.all([
+    getEntidadHistorial('casos', id),
+    casosService.getSeguimiento(id),
+  ]);
+
+  if (hist.error || notas.error) {
+    body.innerHTML = `<p style="color:var(--danger);padding:8px;">No se pudo cargar el historial.</p>`;
+    return;
+  }
+
+  const events = [];
+  (hist.data ?? []).forEach(b => {
+    let texto = b.accion;
+    const antes = prettyEtapa(b.valor_antes), despues = prettyEtapa(b.valor_despues);
+    if (b.valor_antes && b.valor_despues) texto += `: ${antes} → ${despues}`;
+    else if (b.valor_despues)             texto += `: ${despues}`;
+    else if (b.valor_antes)               texto += `: ${antes}`;
+    events.push({ fecha: b.fecha, texto, autor: b.usuario?.nombre ?? b.usuario?.email });
+  });
+  (notas.data ?? []).forEach(n => {
+    events.push({ fecha: n.fecha, texto: `Nota: ${n.descripcion}`, autor: n.usuario?.nombre ?? n.usuario?.email });
+  });
+
+  events.sort((a, b) => new Date(a.fecha) - new Date(b.fecha)); // cronológico ascendente
+
+  body.innerHTML = events.length
+    ? `<div class="activity-list" style="padding:0;">${events.map(e => `
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div>
+            <div class="activity-text">${e.texto}</div>
+            <div class="activity-time">${formatDateTime(e.fecha)}${e.autor ? ' · ' + e.autor : ''}</div>
+          </div>
+        </div>`).join('')}</div>`
+    : `<p style="color:var(--text-3);padding:8px;">Sin historial registrado todavía.</p>`;
 }
 
 async function removeCaso(id) {

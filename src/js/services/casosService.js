@@ -48,7 +48,7 @@ export const casosService = {
   getSeguimiento(casoId) {
     return supabase
       .from('seguimiento')
-      .select('descripcion,fecha')
+      .select('descripcion, fecha, usuario:usuarios(nombre, email)')
       .eq('caso_id', casoId)
       .order('fecha', { ascending: false });
   },

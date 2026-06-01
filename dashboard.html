@@ -593,6 +593,28 @@
   </div>
 </div>
 
+<!-- Modal: Historial del expediente (timeline) -->
+<div class="modal-overlay" id="modal-historial">
+  <div class="modal">
+    <div class="modal-header">
+      <h4 class="modal-title" id="historial-title">Historial del expediente</h4>
+      <button class="modal-close" data-close aria-label="Cerrar">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="historial-body" style="max-height:60vh;overflow-y:auto;">
+        <div style="padding:24px;text-align:center;"><div class="spinner"></div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-ghost btn-sm" data-close>Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: Cambiar rol de usuario -->
 <div class="modal-overlay" id="modal-usuario">
   <div class="modal" style="max-width:420px;">
