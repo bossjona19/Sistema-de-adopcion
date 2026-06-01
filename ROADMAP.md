@@ -210,12 +210,12 @@ Documentos por expediente con validación de estados.
 
 ---
 
-### B2 — Documentación técnica 📚 (MÁXIMO ROI — casi todo es escritura)
-- [ ] `ARCHITECTURE.md` — capas, regla de dependencia, decisiones
-- [ ] `DATABASE.md` — tablas, relaciones, RLS, migraciones
-- [ ] `SECURITY.md` — modelo de amenazas, RLS, roles, datos sensibles (LOPD)
-- [ ] `DEPLOYMENT.md` — Vercel, variables, Supabase, PWA
-- [ ] `USER_MANUAL.md` — guía por rol con capturas
+### B2 — Documentación técnica 📚 (MÁXIMO ROI — casi todo es escritura) — ✅ COMPLETADO
+- [x] `docs/ARCHITECTURE.md` — capas, regla de dependencia, arranque, decisiones
+- [x] `docs/DATABASE.md` — tablas, relaciones, RLS, Storage, orden de migraciones
+- [x] `docs/SECURITY.md` — RBAC, RLS, auth, datos sensibles (LOPD), riesgos/futuro
+- [x] `docs/DEPLOYMENT.md` — Vercel, Supabase, PWA, checklist post-deploy
+- [x] `docs/USER_MANUAL.md` — guía por rol *(capturas: pendientes, opcional)*
 
 **Archivos:** nuevos `.md` en `/docs` · **DB:** — · **Esfuerzo:** S-M · **Depende de:** nada (se puede empezar YA)
 
@@ -373,3 +373,4 @@ Documentos por expediente con validación de estados.
 | 2026-06-01 | **A4 Documental (slice 2 — CIERRE)** | 🟢 **A4 COMPLETO.** Vista de expediente unificada: un botón "Expediente" por caso abre un modal con pestañas **Información · Documentos · Seguimiento · Historial** (se fusionaron los 3 modales antiguos en uno; mismos IDs → sin reescribir la lógica). Pestaña Información con **checklist visual** de documentos requeridos (✓/◐/○). CSS de pestañas. SW→v19 | Probar el expediente. **🟠 Fase Profesional COMPLETA (A2+A4+A3). Siguiente: A3 Dashboard ejecutivo** |
 | 2026-06-01 | **Docs: Ver + Descargar** | 🟢 Cada documento tiene **Ver** (abre en pestaña) y **Descargar** (URL firmada con `download`). SW→v20 | — |
 | 2026-06-01 | **A3 Dashboard (CIERRE)** | 🟢 **A3 COMPLETO.** KPI días promedio de adopción. Métodos de gestión en `dashboardService` (tiempo promedio, familias por estado, casos por trabajador, cerrados por mes, distribución niños). **Chart.js** vía CDN con carga diferida + destrucción/recreación segura: 4 gráficas (adopciones/mes, casos por trabajador, niños por estado, niños por género). SW→v21 | Probar el dashboard. **🟢 Fase Profesional cerrada. Siguiente fase: 🟡 Institucional → B2 (Documentación técnica)** |
+| 2026-06-01 | **B2 Documentación (CIERRE)** | 🟢 **B2 COMPLETO.** 5 documentos en `/docs`: ARCHITECTURE, DATABASE, SECURITY, DEPLOYMENT, USER_MANUAL — reflejan el estado real tras A0–A4/B1. Sin código (solo escritura). | Revisar/ajustar textos. **Siguiente: 🟡 B3 (Backups y recuperación)** |
