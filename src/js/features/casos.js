@@ -77,8 +77,9 @@ export async function setupCasos() {
     document.getElementById('documentos-list')?.addEventListener('click', async e => {
       const btn = e.target.closest('[data-doc-action]');
       if (!btn) return;
-      if (btn.dataset.docAction === 'ver')      await verDoc(btn.dataset.path);
-      if (btn.dataset.docAction === 'eliminar') await eliminarDoc(btn.dataset.id, btn.dataset.path);
+      if (btn.dataset.docAction === 'ver')       await verDoc(btn.dataset.path);
+      if (btn.dataset.docAction === 'descargar') await descargarDoc(btn.dataset.path, btn.dataset.nombre);
+      if (btn.dataset.docAction === 'eliminar')  await eliminarDoc(btn.dataset.id, btn.dataset.path);
     });
     document.getElementById('documentos-list')?.addEventListener('change', async e => {
       const sel = e.target.closest('[data-doc-action="estado"]');
@@ -380,7 +381,10 @@ function renderDocs(docs) {
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
-        <button class="btn btn-ghost btn-xs" data-doc-action="ver" data-path="${d.storage_path}">Ver</button>
+        <div style="display:flex;gap:4px;">
+          <button class="btn btn-ghost btn-xs" data-doc-action="ver" data-path="${d.storage_path}" title="Ver">Ver</button>
+          <button class="btn btn-ghost btn-xs" data-doc-action="descargar" data-path="${d.storage_path}" data-nombre="${d.nombre}" title="Descargar">Descargar</button>
+        </div>
         ${editable ? `<select class="form-select" data-doc-action="estado" data-id="${d.id}" style="width:auto;font-size:.75rem;padding:2px 6px;">
           ${Object.entries(ESTADO_DOC_LABELS).map(([v, l]) => `<option value="${v}" ${d.estado === v ? 'selected' : ''}>${l}</option>`).join('')}
         </select>` : ''}
@@ -419,6 +423,17 @@ async function verDoc(path) {
   const { url, error } = await documentosService.signedUrl(path, 120);
   if (error || !url) { toast('No se pudo abrir el documento', 'error'); return; }
   window.open(url, '_blank', 'noopener');
+}
+
+async function descargarDoc(path, nombre) {
+  const { url, error } = await documentosService.signedUrl(path, 120, nombre || true);
+  if (error || !url) { toast('No se pudo descargar el documento', 'error'); return; }
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nombre || '';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }
 
 async function cambiarEstadoDoc(id, estado) {

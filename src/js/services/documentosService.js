@@ -34,8 +34,10 @@ export const documentosService = {
   },
 
   // URL temporal (firmada) para ver/descargar un archivo del bucket privado.
-  async signedUrl(path, expiresIn = 60) {
-    const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, expiresIn);
+  // download: false → ver en el navegador · "nombre.pdf" → fuerza descarga con ese nombre.
+  async signedUrl(path, expiresIn = 60, download = false) {
+    const opts = download ? { download } : undefined;
+    const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, expiresIn, opts);
     return { url: data?.signedUrl ?? null, error };
   },
 
