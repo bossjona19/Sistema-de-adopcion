@@ -132,13 +132,13 @@ Caso #125
 15/01  Documento agregado: Evaluación Psicológica.pdf
 22/01  Etapa: Evaluación → Asignación
 ```
-- [ ] Migración: `bitacora` + `entidad_id`, `campo`, `valor_antes`, `valor_despues`
-- [ ] `logAudit()` acepta diff; servicios emiten diff al actualizar
-- [ ] **Timeline unificado** por expediente (cambios + etapas + documentos)
-- [ ] Filtro de bitácora por usuario / entidad / fecha
-- [ ] Arreglar `logAudit` que falla silencioso con error RLS (riesgo heredado)
+- [x] Migración: `bitacora` + `entidad_id`, `valor_antes`, `valor_despues` → `docs/fase_a2_auditoria.sql` (+ índice por entidad)
+- [x] `logAudit()` acepta `{ entidadId, antes, despues }`; servicios/features emiten diff (helper `diffSummary`) al crear/editar/borrar/cambiar etapa/cambiar rol. `create()` ahora devuelve el `id` nuevo
+- [ ] **Timeline unificado** por expediente (cambios + etapas + notas + documentos) — *slice 2 (pendiente)*
+- [x] Filtro de bitácora por usuario / entidad / fecha → panel "Bitácora" (solo admin) con filtros + columna Cambio (antes→después)
+- [x] Arreglar `logAudit` que falla silencioso con error RLS → ahora avisa en consola y devuelve el error (riesgo heredado cerrado)
 
-**Archivos:** `services/auditService.js`, `services/*`, `features/*`, migración SQL · **DB:** columnas en `bitacora` · **Esfuerzo:** M · **Depende de:** A1
+**Archivos:** `services/auditService.js`, `services/*`, `features/*`, `core/ui.js` (`diffSummary`/`formatDateTime`), `features/bitacora.js`, migración SQL · **DB:** columnas en `bitacora` · **Esfuerzo:** M · **Depende de:** A1
 
 ---
 
@@ -346,7 +346,7 @@ Documentos por expediente con validación de estados.
 ## Riesgos heredados (del HANDOFF) y dónde se cierran
 
 - [x] KPIs cuentan soft-deleted → **resuelto en B1** (`dashboardService` filtra `deleted_at is null` en KPIs y etapas)
-- [ ] `logAudit` falla silencioso con RLS → **A2**
+- [x] `logAudit` falla silencioso con RLS → **resuelto en A2** (avisa en consola + devuelve error)
 - [ ] Sin paginación (>200 registros) → **B4**
 - [ ] PWA icons solo SVG (iOS) → pendiente menor (puede ir en B2/A pulido)
 
@@ -365,3 +365,4 @@ Documentos por expediente con validación de estados.
 | 2026-06-01 | **A1 · diseño de roles** | 🧭 Decisión de diseño: rol = conjunto de permisos, no cargo. **`consultor → director`** (código, UI, SQL canónico + `docs/fase_a1_director_rename.sql`). `psicologo`/`abogado` NO son roles → su trabajo se modela en A4 (documento tipado + `autor_externo`) + nota A2. Añadido **B8 · Privacidad por asignación de casos** como mejora futura (ROL+ASIGNACIÓN) | Usuario corre `fase_a1_director_rename.sql`; seguir con B1 |
 | 2026-06-01 | **B1 Seguridad (slice 1)** | 🟢 **Soft delete completo** (casos → soft delete + filtro; migración `docs/fase_b1_soft_delete.sql` con `deleted_at` + índice parcial). **Papelera** (panel solo admin: lista y restaura niños/familias/casos; `getDeleted()`/`restore()` en los 3 servicios). **Fix KPI soft-deleted** en `dashboardService`. SW→v12 | Usuario corre `fase_b1_soft_delete.sql` + prueba. Siguientes slices B1: doble confirmación (escribir nombre), expiración de sesión, tabla `accesos` |
 | 2026-06-01 | **B1 Seguridad (slice 2 — CIERRE)** | 🟢 **B1 COMPLETO.** Doble confirmación destructiva (`confirm()` con `requireText`, cableado en los 3 borrados). Auto-logout por inactividad (`core/session.js`, 15 min). Registro de accesos (`docs/fase_b1_accesos.sql` + `accesoService`, logs en email y Google). Intentos fallidos = logs de Supabase Auth (documentado). SW→v13 | Usuario corre `fase_b1_accesos.sql` + prueba. **Siguiente fase: 🟠 Profesional → A2 (Auditoría + timeline)** |
+| 2026-06-01 | **A2 Auditoría (slice 1)** | 🟢 Bitácora enriquecida (`docs/fase_a2_auditoria.sql`: `entidad_id`/`valor_antes`/`valor_despues` + índice). `logAudit` ya no falla en silencio (avisa + devuelve error) y acepta `{entidadId,antes,despues}`. `create()` devuelve id. Features emiten diff (`diffSummary`). **Panel Bitácora** (solo admin) con filtros usuario/entidad/fecha y columna de cambios. SW→v14 | Usuario corre `fase_a2_auditoria.sql` + prueba. **A2 slice 2: timeline unificado por expediente (en la vista de Caso)** |

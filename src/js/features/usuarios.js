@@ -112,7 +112,7 @@ async function save(ev) {
 
   btn.disabled = false;
   if (error) { toast('Error: ' + error.message, 'error'); return; }
-  await logAudit(`Cambiar rol a ${ROLE_LABELS[rol] ?? rol}`, 'usuarios');
+  await logAudit(`Cambiar rol a ${ROLE_LABELS[rol] ?? rol}`, 'usuarios', { entidadId: _editId, despues: ROLE_LABELS[rol] ?? rol });
   toast('Rol actualizado', 'success');
   closeModal('modal-usuario');
   await load();

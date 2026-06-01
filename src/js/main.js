@@ -13,6 +13,7 @@ import { setupFamilias } from './features/familias.js';
 import { setupCasos } from './features/casos.js';
 import { setupUsuarios } from './features/usuarios.js';
 import { setupPapelera } from './features/papelera.js';
+import { setupBitacora } from './features/bitacora.js';
 
 // ── Auth ──────────────────────────────────────────────────────
 let didOAuthLogin = false;
@@ -62,6 +63,10 @@ async function initTab(tab) {
   if (tab === 'papelera') {
     if (!can('manage_users')) return navigateTo('overview'); // papelera: solo admin
     return setupPapelera();
+  }
+  if (tab === 'bitacora') {
+    if (!can('manage_users')) return navigateTo('overview'); // bitácora: solo admin
+    return setupBitacora();
   }
 }
 

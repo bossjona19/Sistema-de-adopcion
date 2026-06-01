@@ -2,7 +2,7 @@ import { menoresService } from '../services/menoresService.js';
 import { logAudit } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
-import { getInitials, formatDate, badgeHtml, calcAge } from '../core/ui.js';
+import { getInitials, formatDate, badgeHtml, calcAge, diffSummary } from '../core/ui.js';
 import { can } from '../core/auth.js';
 
 let _list   = [];
@@ -134,13 +134,22 @@ async function save(ev) {
     descripcion:      document.getElementById('m-desc').value.trim() || null,
   };
 
-  const { error } = _editId
-    ? await menoresService.update(_editId, payload)
-    : await menoresService.create(payload);
+  let error, entidadId = _editId, antes = null, despues = null;
+  if (_editId) {
+    ({ error } = await menoresService.update(_editId, payload));
+    const diff = diffSummary(_list.find(x => x.id === _editId), payload, {
+      nombre: 'Nombre', estado: 'Estado', genero: 'Género',
+      fecha_nacimiento: 'Nacimiento', foto_url: 'Foto', descripcion: 'Descripción',
+    });
+    antes = diff?.antes; despues = diff?.despues;
+  } else {
+    const res = await menoresService.create(payload);
+    error = res.error; entidadId = res.data?.id; despues = payload.nombre;
+  }
 
   btn.disabled = false;
   if (error) { toast('Error: ' + error.message, 'error'); return; }
-  await logAudit(_editId ? 'Actualizar niño' : 'Crear niño', 'menores');
+  await logAudit(_editId ? 'Actualizar niño' : 'Crear niño', 'menores', { entidadId, antes, despues });
   toast(_editId ? 'Niño actualizado' : 'Niño registrado', 'success');
   closeModal('modal-menor');
   await load();
@@ -155,7 +164,7 @@ async function remove(id) {
   if (!ok) return;
   const { error } = await menoresService.remove(id);
   if (error) { toast('Error al eliminar', 'error'); return; }
-  await logAudit('Eliminar niño', 'menores');
+  await logAudit('Eliminar niño', 'menores', { entidadId: id, antes: m?.nombre });
   toast('Niño eliminado', 'warning');
   await load();
 }

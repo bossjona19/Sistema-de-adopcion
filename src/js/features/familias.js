@@ -2,7 +2,7 @@ import { familiasService } from '../services/familiasService.js';
 import { logAudit } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
-import { getInitials, formatDate, badgeHtml } from '../core/ui.js';
+import { getInitials, formatDate, badgeHtml, diffSummary } from '../core/ui.js';
 import { can } from '../core/auth.js';
 
 let _list   = [];
@@ -127,13 +127,22 @@ async function save(ev) {
     notas:           document.getElementById('f-notas').value.trim() || null,
   };
 
-  const { error } = _editId
-    ? await familiasService.update(_editId, payload)
-    : await familiasService.create(payload);
+  let error, entidadId = _editId, antes = null, despues = null;
+  if (_editId) {
+    ({ error } = await familiasService.update(_editId, payload));
+    const diff = diffSummary(_list.find(x => x.id === _editId), payload, {
+      apellido: 'Apellido', estado_eval: 'Evaluación', contacto: 'Contacto',
+      fecha_solicitud: 'Solicitud', notas: 'Notas',
+    });
+    antes = diff?.antes; despues = diff?.despues;
+  } else {
+    const res = await familiasService.create(payload);
+    error = res.error; entidadId = res.data?.id; despues = `Familia ${payload.apellido}`;
+  }
 
   btn.disabled = false;
   if (error) { toast('Error: ' + error.message, 'error'); return; }
-  await logAudit(_editId ? 'Actualizar familia' : 'Crear familia', 'familias');
+  await logAudit(_editId ? 'Actualizar familia' : 'Crear familia', 'familias', { entidadId, antes, despues });
   toast(_editId ? 'Familia actualizada' : 'Familia registrada', 'success');
   closeModal('modal-familia');
   await load();
@@ -148,7 +157,7 @@ async function remove(id) {
   if (!ok) return;
   const { error } = await familiasService.remove(id);
   if (error) { toast('Error al eliminar', 'error'); return; }
-  await logAudit('Eliminar familia', 'familias');
+  await logAudit('Eliminar familia', 'familias', { entidadId: id, antes: `Familia ${f?.apellido ?? ''}`.trim() });
   toast('Familia eliminada', 'warning');
   await load();
 }

@@ -7,7 +7,7 @@ export const menoresService = {
       .order('created_at', { ascending: false });
   },
   create(payload) {
-    return supabase.from('menores').insert(payload);
+    return supabase.from('menores').insert(payload).select('id').single();
   },
   update(id, payload) {
     return supabase.from('menores').update(payload).eq('id', id);

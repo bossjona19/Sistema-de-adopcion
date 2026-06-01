@@ -13,7 +13,7 @@ export const familiasService = {
       .order('apellido');
   },
   create(payload) {
-    return supabase.from('familias').insert(payload);
+    return supabase.from('familias').insert(payload).select('id').single();
   },
   update(id, payload) {
     return supabase.from('familias').update(payload).eq('id', id);

@@ -10,6 +10,13 @@ export function formatDate(iso) {
   });
 }
 
+export function formatDateTime(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('es-ES', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+}
+
 export function badgeHtml(value) {
   const LABELS = {
     disponible:'Disponible', en_proceso:'En proceso', adoptado:'Adoptado',
@@ -23,6 +30,22 @@ export function badgeHtml(value) {
 export function setEl(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;
+}
+
+// Compara dos objetos en los campos de `labels` y devuelve un resumen legible
+// de lo que cambió, o null si nada cambió. Útil para la auditoría (antes/después).
+export function diffSummary(before, after, labels) {
+  const cambios = [];
+  for (const [key, label] of Object.entries(labels)) {
+    const a = before?.[key] ?? '';
+    const b = after?.[key]  ?? '';
+    if (String(a) !== String(b)) cambios.push({ label, antes: a, despues: b });
+  }
+  if (!cambios.length) return null;
+  return {
+    antes:   cambios.map(c => `${c.label}: ${c.antes || '—'}`).join(' · '),
+    despues: cambios.map(c => `${c.label}: ${c.despues || '—'}`).join(' · '),
+  };
 }
 
 export function calcAge(fechaNacimiento) {

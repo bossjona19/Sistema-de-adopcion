@@ -367,6 +367,49 @@
         </div>
       </div><!-- /panel-papelera -->
 
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- PANEL: BITÁCORA (solo admin)        -->
+      <!-- ═══════════════════════════════════ -->
+      <div id="panel-bitacora" class="panel">
+
+        <div class="page-hd">
+          <div>
+            <h3>Bitácora de auditoría</h3>
+            <p>Registro de acciones del sistema — <strong id="bitacora-count">0</strong> registros</p>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <select class="form-select" id="bitacora-usuario" style="width:auto;">
+            <option value="">Todos los usuarios</option>
+          </select>
+          <select class="form-select" id="bitacora-entidad" style="width:auto;">
+            <option value="">Todas las entidades</option>
+            <option value="menores">Niños</option>
+            <option value="familias">Familias</option>
+            <option value="casos">Casos</option>
+            <option value="seguimiento">Seguimiento</option>
+            <option value="usuarios">Usuarios</option>
+          </select>
+          <input class="form-input" id="bitacora-desde" type="date" style="width:auto;" title="Desde">
+          <input class="form-input" id="bitacora-hasta" type="date" style="width:auto;" title="Hasta">
+        </div>
+
+        <div class="card" style="overflow:hidden;padding:0;">
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr>
+                <th>Fecha</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>Cambio</th>
+              </tr></thead>
+              <tbody id="bitacora-tbody">
+                <tr class="loading-row"><td colspan="5"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /panel-bitacora -->
+
     </main><!-- /page-content -->
   </div><!-- /main-area -->
 </div><!-- /app-shell -->

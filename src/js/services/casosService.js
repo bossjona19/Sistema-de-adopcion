@@ -23,7 +23,7 @@ export const casosService = {
       .neq('etapa', 'cierre');
   },
   create(payload) {
-    return supabase.from('casos').insert(payload);
+    return supabase.from('casos').insert(payload).select('id').single();
   },
   update(id, payload) {
     return supabase.from('casos').update(payload).eq('id', id);

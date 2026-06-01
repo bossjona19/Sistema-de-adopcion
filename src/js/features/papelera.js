@@ -97,7 +97,7 @@ async function restore(type, id) {
   if (!ok) return;
   const { error } = await service.restore(id);
   if (error) { toast('Error al restaurar: ' + error.message, 'error'); return; }
-  await logAudit(`Restaurar ${label.toLowerCase()}`, type);
+  await logAudit(`Restaurar ${label.toLowerCase()}`, type, { entidadId: id });
   toast(`${label} restaurado`, 'success');
   await load();
 }

@@ -174,21 +174,24 @@ async function saveCaso(ev) {
     return;
   }
 
-  let error;
+  let error, entidadId = _editId, antes = null, despues = null;
   if (_editId) {
+    const before = _list.find(x => x.id === _editId);
     ({ error } = await casosService.update(_editId, { etapa }));
-    if (!error && etapa === 'cierre') {
-      const c = _list.find(x => x.id === _editId);
-      if (c?.menor_id) await menoresService.setEstado(c.menor_id, 'adoptado');
+    if (!error && before && before.etapa !== etapa) { antes = before.etapa; despues = etapa; }
+    if (!error && etapa === 'cierre' && before?.menor_id) {
+      await menoresService.setEstado(before.menor_id, 'adoptado');
     }
   } else {
-    ({ error } = await casosService.create({
+    const res = await casosService.create({
       familia_id: familiaId,
       menor_id:   menorId,
       etapa,
       usuario_id: getUserId(),
-    }));
+    });
+    error = res.error; entidadId = res.data?.id;
     if (!error) {
+      despues = `Etapa inicial: ${etapa}`;
       const { error: estadoErr } = await menoresService.setEstado(menorId, 'en_proceso');
       if (estadoErr) toast('Caso creado, pero no se pudo actualizar el estado del niño. Revise el módulo de Niños.', 'warning');
     }
@@ -196,7 +199,7 @@ async function saveCaso(ev) {
 
   btn.disabled = false;
   if (error) { toast('Error: ' + error.message, 'error'); return; }
-  await logAudit(_editId ? 'Actualizar caso' : 'Crear caso', 'casos');
+  await logAudit(_editId ? 'Actualizar caso' : 'Crear caso', 'casos', { entidadId, antes, despues });
   toast(_editId ? 'Caso actualizado' : 'Caso creado', 'success');
   closeModal('modal-caso');
   await load();
@@ -238,7 +241,7 @@ async function saveNota(ev) {
   });
 
   if (error) { toast('Error al guardar nota', 'error'); return; }
-  await logAudit('Agregar nota de seguimiento', 'seguimiento');
+  await logAudit('Agregar nota de seguimiento', 'seguimiento', { entidadId: casoId, despues: desc.slice(0, 80) });
   toast('Nota guardada', 'success');
   await openNotas(casoId);
 }
@@ -257,7 +260,7 @@ async function removeCaso(id) {
     const { error: estadoErr } = await menoresService.setEstado(caso.menor_id, 'disponible');
     if (estadoErr) toast('Caso eliminado, pero no se pudo restaurar la disponibilidad del niño. Revise el módulo de Niños.', 'warning');
   }
-  await logAudit('Eliminar caso', 'casos');
+  await logAudit('Eliminar caso', 'casos', { entidadId: id, antes: `#${code} · etapa ${caso?.etapa ?? '—'}` });
   toast('Caso eliminado', 'warning');
   await load();
 }
