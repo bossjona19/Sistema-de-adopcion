@@ -144,12 +144,12 @@ Caso #125
 
 ### A3 — Dashboard ejecutivo 📊
 Métricas de **gestión**, no solo conteos.
-- [ ] KPI **tiempo promedio de adopción** (usa `fecha_inicio`/`fecha_cierre` existentes)
-- [ ] KPI **casos abiertos por trabajador social** (carga de trabajo por usuario)
-- [ ] KPI familias evaluadas (aprobadas/pendientes/rechazadas)
-- [ ] KPI casos cerrados por mes
-- [ ] Gráficas: adopciones/mes · distribución por edad/estado/género · embudo por etapa
-- [ ] Corregir KPIs que cuentan soft-deleted (`deleted_at IS NULL`)
+- [x] KPI **tiempo promedio de adopción** (días, usa `fecha_inicio`/`fecha_cierre`)
+- [x] KPI/gráfica **casos abiertos por trabajador social** (barras horizontales)
+- [x] KPI familias evaluadas (aprobadas/pendientes/rechazadas) → `getFamiliasPorEstado`
+- [x] Gráfica casos cerrados por mes (barras, últimos 6 meses)
+- [x] Gráficas (Chart.js CDN, carga diferida): adopciones/mes · niños por estado · niños por género · embudo por etapa (barras existentes)
+- [x] KPIs que cuentan soft-deleted → corregido en B1
 
 **Archivos:** `services/dashboardService.js`, `pages/dashboard.js`, + Chart.js · **DB:** — · **Esfuerzo:** M
 
@@ -371,3 +371,5 @@ Documentos por expediente con validación de estados.
 | 2026-06-01 | **A2 Auditoría (slice 2 — CIERRE)** | 🟢 **A2 COMPLETO.** Timeline unificado por expediente: botón "Historial" en cada caso → modal con bitácora del caso + notas de seguimiento en orden cronológico y con autor (`getEntidadHistorial` + `getSeguimiento` con autor). SW→v17 | Probar el historial. **Siguiente: 🟠 A4 (Sistema documental) — el gran institucionalizador** |
 | 2026-06-01 | **A4 Documental (slice 1)** | 🟢 Tabla `documentos` + bucket privado de Storage + políticas por rol (`docs/fase_a4_documentos.sql`). `documentosService` (subir/listar/signed URL/estado/borrar). Modal **Documentos** por caso: subir (tipo, `autor_externo`, vencimiento, validación 10 MB), ver (URL firmada), cambiar estado (recibido/en_revisión/aprobado/rechazado, `vencido` calculado), eliminar — todo por rol. Documentos alimentan el **timeline**. Badges de estado. SW→v18 | Usuario corre `fase_a4_documentos.sql` (incluye bucket). **A4 slice 2: pestañas del expediente + checklist visual** |
 | 2026-06-01 | **A4 Documental (slice 2 — CIERRE)** | 🟢 **A4 COMPLETO.** Vista de expediente unificada: un botón "Expediente" por caso abre un modal con pestañas **Información · Documentos · Seguimiento · Historial** (se fusionaron los 3 modales antiguos en uno; mismos IDs → sin reescribir la lógica). Pestaña Información con **checklist visual** de documentos requeridos (✓/◐/○). CSS de pestañas. SW→v19 | Probar el expediente. **🟠 Fase Profesional COMPLETA (A2+A4+A3). Siguiente: A3 Dashboard ejecutivo** |
+| 2026-06-01 | **Docs: Ver + Descargar** | 🟢 Cada documento tiene **Ver** (abre en pestaña) y **Descargar** (URL firmada con `download`). SW→v20 | — |
+| 2026-06-01 | **A3 Dashboard (CIERRE)** | 🟢 **A3 COMPLETO.** KPI días promedio de adopción. Métodos de gestión en `dashboardService` (tiempo promedio, familias por estado, casos por trabajador, cerrados por mes, distribución niños). **Chart.js** vía CDN con carga diferida + destrucción/recreación segura: 4 gráficas (adopciones/mes, casos por trabajador, niños por estado, niños por género). SW→v21 | Probar el dashboard. **🟢 Fase Profesional cerrada. Siguiente fase: 🟡 Institucional → B2 (Documentación técnica)** |

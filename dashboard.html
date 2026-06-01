@@ -108,6 +108,15 @@
             <div class="kpi-value" id="kpi-cerrados">—</div>
             <div class="kpi-label">Casos cerrados</div>
           </div>
+          <div class="kpi-card">
+            <div class="kpi-icon blue">
+              <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="kpi-value" id="kpi-tiempo">—</div>
+            <div class="kpi-label">Días prom. de adopción</div>
+          </div>
         </div>
 
         <!-- Two-col -->
@@ -129,6 +138,29 @@
             <div id="stage-list" style="padding:16px 0 8px;">
               <div style="padding:20px;text-align:center;"><div class="spinner"></div></div>
             </div>
+          </div>
+        </div>
+
+        <!-- Gráficas (Chart.js, carga diferida) -->
+        <div class="dash-grid" style="margin-top:18px;">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Adopciones cerradas por mes</span></div>
+            <div style="padding:16px;"><canvas id="chart-mes" height="170"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">Casos por trabajador social</span></div>
+            <div style="padding:16px;"><canvas id="chart-trabajador" height="170"></canvas></div>
+          </div>
+        </div>
+
+        <div class="dash-grid" style="margin-top:18px;">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Niños por estado</span></div>
+            <div style="padding:16px;max-width:300px;margin:0 auto;"><canvas id="chart-estado" height="220"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">Niños por género</span></div>
+            <div style="padding:16px;max-width:300px;margin:0 auto;"><canvas id="chart-genero" height="220"></canvas></div>
           </div>
         </div>
       </div><!-- /panel-overview -->

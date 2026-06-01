@@ -31,4 +31,76 @@ export const dashboardService = {
       .order('fecha', { ascending: false })
       .limit(limit);
   },
+
+  // Días promedio entre fecha_inicio y fecha_cierre de los casos cerrados.
+  async getTiempoPromedio() {
+    const { data, error } = await supabase.from('casos')
+      .select('fecha_inicio, fecha_cierre')
+      .is('deleted_at', null)
+      .not('fecha_cierre', 'is', null);
+    if (error || !data?.length) return null;
+    const dias = data
+      .map(c => (new Date(c.fecha_cierre) - new Date(c.fecha_inicio)) / 86400000)
+      .filter(d => d >= 0);
+    if (!dias.length) return null;
+    return Math.round(dias.reduce((a, b) => a + b, 0) / dias.length);
+  },
+
+  async getFamiliasPorEstado() {
+    const { data } = await supabase.from('familias').select('estado_eval').is('deleted_at', null);
+    const r = { aprobada: 0, pendiente: 0, rechazada: 0 };
+    (data ?? []).forEach(f => { if (r[f.estado_eval] != null) r[f.estado_eval]++; });
+    return r;
+  },
+
+  // Casos abiertos (no cerrados) agrupados por trabajador social asignado.
+  async getCasosPorTrabajador() {
+    const { data } = await supabase.from('casos')
+      .select('usuario:usuarios(nombre, email)')
+      .is('deleted_at', null)
+      .neq('etapa', 'cierre');
+    const map = new Map();
+    (data ?? []).forEach(c => {
+      const nombre = c.usuario?.nombre ?? c.usuario?.email ?? 'Sin asignar';
+      map.set(nombre, (map.get(nombre) ?? 0) + 1);
+    });
+    return [...map.entries()].map(([nombre, count]) => ({ nombre, count }));
+  },
+
+  // Casos cerrados por mes en los últimos N meses (buckets continuos).
+  async getCerradosPorMes(meses = 6) {
+    const { data } = await supabase.from('casos')
+      .select('fecha_cierre')
+      .is('deleted_at', null)
+      .not('fecha_cierre', 'is', null);
+    const buckets = [];
+    const now = new Date();
+    for (let i = meses - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      buckets.push({
+        key:   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+        label: d.toLocaleDateString('es-ES', { month: 'short' }),
+        count: 0,
+      });
+    }
+    const idx = Object.fromEntries(buckets.map((b, i) => [b.key, i]));
+    (data ?? []).forEach(c => {
+      const d = new Date(c.fecha_cierre);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (idx[key] != null) buckets[idx[key]].count++;
+    });
+    return buckets;
+  },
+
+  // Distribución de niños por estado y por género.
+  async getMenoresDist() {
+    const { data } = await supabase.from('menores').select('estado, genero').is('deleted_at', null);
+    const estado = { disponible: 0, en_proceso: 0, adoptado: 0 };
+    const genero = { masculino: 0, femenino: 0, otro: 0, sin: 0 };
+    (data ?? []).forEach(m => {
+      if (estado[m.estado] != null) estado[m.estado]++;
+      if (m.genero && genero[m.genero] != null) genero[m.genero]++; else genero.sin++;
+    });
+    return { estado, genero };
+  },
 };
