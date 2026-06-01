@@ -14,6 +14,8 @@ const TYPES = {
   casos:    { service: casosService,    label: 'Caso',     name: r => `#${r.id.slice(-6).toUpperCase()} · ${r.menor?.nombre ?? '—'} / Familia ${r.familia?.apellido ?? '—'}` },
 };
 
+let _wired = false;
+
 // ── Public ───────────────────────────────────────────────────
 export async function setupPapelera() {
   // Defensa en profundidad: solo admin (RLS sigue siendo la capa real).
@@ -23,10 +25,13 @@ export async function setupPapelera() {
     return;
   }
 
-  document.getElementById('papelera-body')?.addEventListener('click', e => {
-    const btn = e.target.closest('[data-action="restore"]');
-    if (btn) restore(btn.dataset.type, btn.dataset.id);
-  });
+  if (!_wired) {
+    document.getElementById('papelera-body')?.addEventListener('click', e => {
+      const btn = e.target.closest('[data-action="restore"]');
+      if (btn) restore(btn.dataset.type, btn.dataset.id);
+    });
+    _wired = true;
+  }
 
   await load();
 }

@@ -9,7 +9,7 @@ const ENTIDAD_LABELS = {
   seguimiento: 'Seguimiento', usuarios: 'Usuarios',
 };
 
-let _usuariosCargados = false;
+let _wired = false;
 
 // ── Public ───────────────────────────────────────────────────
 export async function setupBitacora() {
@@ -19,10 +19,12 @@ export async function setupBitacora() {
     return;
   }
 
-  if (!_usuariosCargados) await fillUsuariosFilter();
-
-  ['bitacora-usuario', 'bitacora-entidad', 'bitacora-desde', 'bitacora-hasta']
-    .forEach(id => document.getElementById(id)?.addEventListener('change', load));
+  if (!_wired) {
+    await fillUsuariosFilter();
+    ['bitacora-usuario', 'bitacora-entidad', 'bitacora-desde', 'bitacora-hasta']
+      .forEach(id => document.getElementById(id)?.addEventListener('change', load));
+    _wired = true;
+  }
 
   await load();
 }
@@ -37,7 +39,6 @@ async function fillUsuariosFilter() {
     opt.textContent = u.nombre || u.email;
     sel.appendChild(opt);
   });
-  _usuariosCargados = true;
 }
 
 async function load() {

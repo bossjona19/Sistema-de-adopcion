@@ -7,6 +7,7 @@ import { can, ROLE_LABELS } from '../core/auth.js';
 
 let _list   = [];
 let _editId = null;
+let _wired  = false;
 
 // ── Public ───────────────────────────────────────────────────
 export async function setupUsuarios() {
@@ -17,17 +18,20 @@ export async function setupUsuarios() {
     return;
   }
 
+  if (!_wired) {
+    document.getElementById('usuarios-search')?.addEventListener('input', filter);
+    document.getElementById('usuarios-filter')?.addEventListener('change', filter);
+    document.getElementById('form-usuario')?.addEventListener('submit', save);
+
+    document.getElementById('usuarios-tbody')?.addEventListener('click', e => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      if (btn.dataset.action === 'edit-rol') editRole(btn.dataset.id);
+    });
+    _wired = true;
+  }
+
   await load();
-
-  document.getElementById('usuarios-search')?.addEventListener('input', filter);
-  document.getElementById('usuarios-filter')?.addEventListener('change', filter);
-  document.getElementById('form-usuario')?.addEventListener('submit', save);
-
-  document.getElementById('usuarios-tbody')?.addEventListener('click', e => {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    if (btn.dataset.action === 'edit-rol') editRole(btn.dataset.id);
-  });
 }
 
 // ── Internal ─────────────────────────────────────────────────
@@ -108,10 +112,14 @@ async function save(ev) {
   btn.disabled = true;
 
   const rol = document.getElementById('u-rol').value;
-  const { error } = await usuariosService.updateRole(_editId, rol);
+  const { data, error } = await usuariosService.updateRole(_editId, rol);
 
   btn.disabled = false;
   if (error) { toast('Error: ' + error.message, 'error'); return; }
+  if (!data) { // 0 filas actualizadas → RLS bloqueó el cambio en la base de datos
+    toast('No se pudo cambiar el rol: la base de datos rechazó el cambio. Corre docs/fix_usuarios_rls.sql en Supabase.', 'error', 7000);
+    return;
+  }
   await logAudit(`Cambiar rol a ${ROLE_LABELS[rol] ?? rol}`, 'usuarios', { entidadId: _editId, despues: ROLE_LABELS[rol] ?? rol });
   toast('Rol actualizado', 'success');
   closeModal('modal-usuario');

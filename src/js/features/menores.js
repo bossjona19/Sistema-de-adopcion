@@ -7,34 +7,38 @@ import { can } from '../core/auth.js';
 
 let _list   = [];
 let _editId = null;
+let _wired  = false;
 
 // ── Public ───────────────────────────────────────────────────
 export async function setupMenores() {
+  if (!_wired) {
+    document.getElementById('menores-search')?.addEventListener('input', filter);
+    document.getElementById('menores-filter')?.addEventListener('change', filter);
+
+    const btnNuevo = document.getElementById('btn-nuevo-menor');
+    if (btnNuevo && !can('create')) btnNuevo.style.display = 'none';
+    btnNuevo?.addEventListener('click', () => {
+      if (!can('create')) return;
+      _editId = null;
+      document.getElementById('form-menor').reset();
+      document.getElementById('menor-modal-title').textContent = 'Registrar niño';
+      openModal('modal-menor');
+    });
+
+    document.getElementById('form-menor')?.addEventListener('submit', save);
+
+    // Event delegation — replaces window._editMenor / window._deleteMenor
+    document.getElementById('menores-tbody')?.addEventListener('click', e => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const { action, id } = btn.dataset;
+      if (action === 'edit-menor')   edit(id);
+      if (action === 'delete-menor') remove(id);
+    });
+    _wired = true;
+  }
+
   await load();
-
-  document.getElementById('menores-search')?.addEventListener('input', filter);
-  document.getElementById('menores-filter')?.addEventListener('change', filter);
-
-  const btnNuevo = document.getElementById('btn-nuevo-menor');
-  if (btnNuevo && !can('create')) btnNuevo.style.display = 'none';
-  btnNuevo?.addEventListener('click', () => {
-    if (!can('create')) return;
-    _editId = null;
-    document.getElementById('form-menor').reset();
-    document.getElementById('menor-modal-title').textContent = 'Registrar niño';
-    openModal('modal-menor');
-  });
-
-  document.getElementById('form-menor')?.addEventListener('submit', save);
-
-  // Event delegation — replaces window._editMenor / window._deleteMenor
-  document.getElementById('menores-tbody')?.addEventListener('click', e => {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    const { action, id } = btn.dataset;
-    if (action === 'edit-menor')   edit(id);
-    if (action === 'delete-menor') remove(id);
-  });
 }
 
 // ── Internal ─────────────────────────────────────────────────

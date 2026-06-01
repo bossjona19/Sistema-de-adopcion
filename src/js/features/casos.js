@@ -12,45 +12,49 @@ let _list   = [];
 let _editId = null;
 let _cbFam  = null;
 let _cbMen  = null;
+let _wired  = false;
 
 // ── Public ───────────────────────────────────────────────────
 export async function setupCasos() {
+  if (!_wired) {
+    _cbFam = createCombobox(document.getElementById('cb-familia'), [], { placeholder: 'Buscar familia…' });
+    _cbMen = createCombobox(document.getElementById('cb-menor'),   [], { placeholder: 'Buscar niño…'   });
+
+    document.getElementById('casos-filter')?.addEventListener('change', filter);
+
+    const btnNuevo = document.getElementById('btn-nuevo-caso');
+    if (btnNuevo && !can('create')) btnNuevo.style.display = 'none';
+    btnNuevo?.addEventListener('click', async e => {
+      const btn = e.currentTarget;
+      if (!can('create') || btn.disabled) return;
+      btn.disabled = true;
+      _editId = null;
+      document.getElementById('c-etapa').value = 'solicitud';
+      document.getElementById('caso-modal-title').textContent = 'Nuevo caso de adopción';
+      _cbFam.clear();
+      _cbMen.clear();
+      _cbFam.setDisabled(false);
+      _cbMen.setDisabled(false);
+      await populateSelects();
+      btn.disabled = false;
+      openModal('modal-caso');
+    });
+
+    document.getElementById('form-caso')?.addEventListener('submit',  saveCaso);
+    document.getElementById('form-notas')?.addEventListener('submit', saveNota);
+
+    document.getElementById('casos-tbody')?.addEventListener('click', async e => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const { action, id } = btn.dataset;
+      if (action === 'edit-caso')   await editCaso(id);
+      if (action === 'open-notas')  await openNotas(id);
+      if (action === 'delete-caso') await removeCaso(id);
+    });
+    _wired = true;
+  }
+
   await load();
-
-  _cbFam = createCombobox(document.getElementById('cb-familia'), [], { placeholder: 'Buscar familia…' });
-  _cbMen = createCombobox(document.getElementById('cb-menor'),   [], { placeholder: 'Buscar niño…'   });
-
-  document.getElementById('casos-filter')?.addEventListener('change', filter);
-
-  const btnNuevo = document.getElementById('btn-nuevo-caso');
-  if (btnNuevo && !can('create')) btnNuevo.style.display = 'none';
-  btnNuevo?.addEventListener('click', async e => {
-    const btn = e.currentTarget;
-    if (!can('create') || btn.disabled) return;
-    btn.disabled = true;
-    _editId = null;
-    document.getElementById('c-etapa').value = 'solicitud';
-    document.getElementById('caso-modal-title').textContent = 'Nuevo caso de adopción';
-    _cbFam.clear();
-    _cbMen.clear();
-    _cbFam.setDisabled(false);
-    _cbMen.setDisabled(false);
-    await populateSelects();
-    btn.disabled = false;
-    openModal('modal-caso');
-  });
-
-  document.getElementById('form-caso')?.addEventListener('submit',  saveCaso);
-  document.getElementById('form-notas')?.addEventListener('submit', saveNota);
-
-  document.getElementById('casos-tbody')?.addEventListener('click', async e => {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    const { action, id } = btn.dataset;
-    if (action === 'edit-caso')   await editCaso(id);
-    if (action === 'open-notas')  await openNotas(id);
-    if (action === 'delete-caso') await removeCaso(id);
-  });
 }
 
 // ── Internal ─────────────────────────────────────────────────

@@ -7,34 +7,38 @@ import { can } from '../core/auth.js';
 
 let _list   = [];
 let _editId = null;
+let _wired  = false;
 
 // ── Public ───────────────────────────────────────────────────
 export async function setupFamilias() {
+  if (!_wired) {
+    document.getElementById('familias-search')?.addEventListener('input', filter);
+    document.getElementById('familias-filter')?.addEventListener('change', filter);
+
+    const btnNueva = document.getElementById('btn-nueva-familia');
+    if (btnNueva && !can('create')) btnNueva.style.display = 'none';
+    btnNueva?.addEventListener('click', () => {
+      if (!can('create')) return;
+      _editId = null;
+      document.getElementById('form-familia').reset();
+      document.getElementById('familia-modal-title').textContent = 'Registrar familia';
+      openModal('modal-familia');
+    });
+
+    document.getElementById('form-familia')?.addEventListener('submit', save);
+
+    // Event delegation — replaces window._editFamilia / window._deleteFamilia
+    document.getElementById('familias-tbody')?.addEventListener('click', e => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const { action, id } = btn.dataset;
+      if (action === 'edit-familia')   edit(id);
+      if (action === 'delete-familia') remove(id);
+    });
+    _wired = true;
+  }
+
   await load();
-
-  document.getElementById('familias-search')?.addEventListener('input', filter);
-  document.getElementById('familias-filter')?.addEventListener('change', filter);
-
-  const btnNueva = document.getElementById('btn-nueva-familia');
-  if (btnNueva && !can('create')) btnNueva.style.display = 'none';
-  btnNueva?.addEventListener('click', () => {
-    if (!can('create')) return;
-    _editId = null;
-    document.getElementById('form-familia').reset();
-    document.getElementById('familia-modal-title').textContent = 'Registrar familia';
-    openModal('modal-familia');
-  });
-
-  document.getElementById('form-familia')?.addEventListener('submit', save);
-
-  // Event delegation — replaces window._editFamilia / window._deleteFamilia
-  document.getElementById('familias-tbody')?.addEventListener('click', e => {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    const { action, id } = btn.dataset;
-    if (action === 'edit-familia')   edit(id);
-    if (action === 'delete-familia') remove(id);
-  });
 }
 
 // ── Internal ─────────────────────────────────────────────────
