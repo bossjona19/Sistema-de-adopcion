@@ -15,6 +15,7 @@ let _cbFam  = null;
 let _cbMen  = null;
 let _wired  = false;
 let _docsCasoId = null;
+let _expCasoId  = null;
 
 const TIPO_DOC_LABELS = {
   evaluacion_psicologica: 'Evaluación psicológica',
@@ -60,11 +61,15 @@ export async function setupCasos() {
       const btn = e.target.closest('[data-action]');
       if (!btn) return;
       const { action, id } = btn.dataset;
-      if (action === 'edit-caso')      await editCaso(id);
-      if (action === 'open-notas')     await openNotas(id);
-      if (action === 'open-docs')      await openDocumentos(id);
-      if (action === 'open-historial') await openHistorial(id);
-      if (action === 'delete-caso')    await removeCaso(id);
+      if (action === 'edit-caso')       await editCaso(id);
+      if (action === 'open-expediente') await openExpediente(id);
+      if (action === 'delete-caso')     await removeCaso(id);
+    });
+
+    // Pestañas del expediente
+    document.getElementById('expediente-tabs')?.addEventListener('click', e => {
+      const b = e.target.closest('[data-exptab]');
+      if (b) showExpTab(b.dataset.exptab);
     });
 
     // Documentos: subida + acciones de la lista (ver / cambiar estado / eliminar)
@@ -124,25 +129,12 @@ function render(list) {
               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z"/>
             </svg>
           </button>` : ''}
-          <button class="btn btn-ghost btn-icon btn-xs"
-            data-action="open-notas" data-id="${c.id}" title="Notas de seguimiento">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-              <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          <button class="btn btn-ghost btn-xs"
+            data-action="open-expediente" data-id="${c.id}" title="Abrir expediente">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:3px;">
+              <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
             </svg>
-          </button>
-          <button class="btn btn-ghost btn-icon btn-xs"
-            data-action="open-docs" data-id="${c.id}" title="Documentos del expediente">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-            </svg>
-          </button>
-          <button class="btn btn-ghost btn-icon btn-xs"
-            data-action="open-historial" data-id="${c.id}" title="Historial del expediente">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 106 5.3L3 8"/><path d="M12 7v5l4 2"/>
-            </svg>
+            Expediente
           </button>
           ${deletable ? `<button class="btn btn-ghost btn-icon btn-xs"
             data-action="delete-caso" data-id="${c.id}" title="Eliminar" style="color:var(--danger);">
@@ -250,14 +242,13 @@ async function saveCaso(ev) {
   await load();
 }
 
-async function openNotas(id) {
+async function renderNotas(id) {
   const notasForm = document.getElementById('form-notas');
   if (notasForm) notasForm.style.display = can('edit') ? '' : 'none'; // director: solo lectura
   document.getElementById('notas-caso-id').value = id;
   document.getElementById('notas-desc').value    = '';
   document.getElementById('notas-list').innerHTML =
     `<div style="padding:16px;text-align:center;"><div class="spinner"></div></div>`;
-  openModal('modal-notas');
 
   const { data } = await casosService.getSeguimiento(id);
   const el = document.getElementById('notas-list');
@@ -288,18 +279,72 @@ async function saveNota(ev) {
   if (error) { toast('Error al guardar nota', 'error'); return; }
   await logAudit('Agregar nota de seguimiento', 'seguimiento', { entidadId: casoId, despues: desc.slice(0, 80) });
   toast('Nota guardada', 'success');
-  await openNotas(casoId);
+  await renderNotas(casoId);
 }
 
-// ── Documentos ───────────────────────────────────────────────
-async function openDocumentos(id) {
-  _docsCasoId = id;
+// ── Expediente (pestañas) ────────────────────────────────────
+const CHECKLIST = [
+  { tipo: 'evaluacion_psicologica', label: 'Evaluación psicológica' },
+  { tipo: 'certificado_medico',     label: 'Certificado médico' },
+  { tipo: 'informe_social',         label: 'Informe social' },
+  { tipo: 'documento_legal',        label: 'Documento legal' },
+  { tipo: 'acta_nacimiento',        label: 'Acta de nacimiento' },
+];
+
+async function openExpediente(id) {
+  _expCasoId  = id;
+  _docsCasoId = id; // las funciones de documentos usan _docsCasoId
+  const caso = _list.find(x => x.id === id);
   const code = id.slice(-6).toUpperCase();
-  document.getElementById('documentos-title').textContent = `Documentos · Caso #${code}`;
-  document.getElementById('documentos-upload').style.display = can('edit') ? '' : 'none'; // director: solo lectura
-  document.getElementById('form-documento').reset();
-  openModal('modal-documentos');
-  await loadDocs();
+  document.getElementById('expediente-title').textContent =
+    `Expediente · #${code}` + (caso ? ` · ${caso.menor?.nombre ?? '—'} / Familia ${caso.familia?.apellido ?? '—'}` : '');
+  document.getElementById('documentos-upload').style.display = can('edit') ? '' : 'none';
+  document.getElementById('form-documento')?.reset();
+  openModal('modal-expediente');
+  await showExpTab('info');
+}
+
+async function showExpTab(tab) {
+  document.querySelectorAll('#expediente-tabs .exp-tab')
+    .forEach(b => b.classList.toggle('active', b.dataset.exptab === tab));
+  document.querySelectorAll('#modal-expediente .exp-panel')
+    .forEach(p => p.classList.toggle('active', p.dataset.exppanel === tab));
+
+  if (tab === 'info')      await renderInfo(_expCasoId);
+  if (tab === 'docs')      await loadDocs();
+  if (tab === 'notas')     await renderNotas(_expCasoId);
+  if (tab === 'historial') await renderHistorial(_expCasoId);
+}
+
+async function renderInfo(id) {
+  const caso = _list.find(x => x.id === id);
+  const cont = document.getElementById('exp-info');
+  cont.innerHTML = `<div style="padding:12px;text-align:center;"><div class="spinner"></div></div>`;
+
+  const { data: docs } = await documentosService.list(id);
+  const present  = new Set((docs ?? []).map(d => d.tipo));
+  const approved = new Set((docs ?? []).filter(d => d.estado === 'aprobado').map(d => d.tipo));
+
+  const checklist = CHECKLIST.map(item => {
+    let icon, color, estado;
+    if (approved.has(item.tipo))     { icon = '✓'; color = 'var(--success)'; estado = badgeHtml('aprobado'); }
+    else if (present.has(item.tipo)) { icon = '◐'; color = 'var(--warning)'; estado = badgeHtml('en_revision'); }
+    else                             { icon = '○'; color = 'var(--text-3)'; estado = `<span style="font-size:.75rem;color:var(--text-3);">Falta</span>`; }
+    return `<div style="display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid var(--border-2);">
+      <span style="color:${color};font-weight:700;width:14px;text-align:center;">${icon}</span>
+      <span style="font-size:.875rem;color:var(--text-2);">${item.label}</span>
+      <span style="margin-left:auto;">${estado}</span>
+    </div>`;
+  }).join('');
+
+  cont.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:18px;">
+      <div><span style="color:var(--text-3);font-size:.8125rem;">Niño:</span> <strong>${caso?.menor?.nombre ?? '—'}</strong></div>
+      <div><span style="color:var(--text-3);font-size:.8125rem;">Familia:</span> <strong>${caso?.familia?.apellido ?? '—'}</strong></div>
+      <div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--text-3);font-size:.8125rem;">Etapa:</span> ${badgeHtml(caso?.etapa ?? '—')}</div>
+    </div>
+    <div class="card-title" style="font-size:.8125rem;margin-bottom:4px;">Checklist de documentos</div>
+    ${checklist}`;
 }
 
 // Calcula 'vencido' a partir de la fecha (no se guarda; solo se muestra).
@@ -402,15 +447,9 @@ const prettyEtapa = v => ETAPA_LABELS[v] ?? v;
 
 // Timeline unificado del expediente: combina la bitácora del caso (creación,
 // cambios de etapa, restauración…) con las notas de seguimiento, en orden cronológico.
-async function openHistorial(id) {
-  const caso = _list.find(x => x.id === id);
-  const code = id.slice(-6).toUpperCase();
-  document.getElementById('historial-title').textContent =
-    `Historial · Caso #${code}` + (caso ? ` · ${caso.menor?.nombre ?? '—'} / Familia ${caso.familia?.apellido ?? '—'}` : '');
-
+async function renderHistorial(id) {
   const body = document.getElementById('historial-body');
   body.innerHTML = `<div style="padding:24px;text-align:center;"><div class="spinner"></div></div>`;
-  openModal('modal-historial');
 
   const [hist, notas, docs] = await Promise.all([
     getEntidadHistorial('casos', id),

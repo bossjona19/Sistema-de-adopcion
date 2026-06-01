@@ -165,8 +165,9 @@ Documentos por expediente con validación de estados.
 - [x] Migración: tabla `documentos` (caso_id, tipo, nombre, storage_path, estado, fecha_revision, revisado_por, fecha_vencimiento, subido_por, **autor_externo**, fecha)
 - [x] `documentosService` (subir, listar, signed URL, cambiar estado, borrar)
 - [x] UI de subida (validación tipo/tamaño/10 MB) + lista con estado y acciones por rol → modal "Documentos" por caso; `vencido` calculado por fecha
-- [ ] Vista de expediente con pestañas: **Información · Documentos · Seguimiento · Historial** — *slice 2 (pendiente)*
-- [x] Feed al timeline (A2) → los documentos aparecen en el Historial del caso · [ ] Checklist visual del expediente — *slice 2*
+- [x] Vista de expediente con pestañas: **Información · Documentos · Seguimiento · Historial** → un solo botón "Expediente" por caso abre el modal con pestañas
+- [x] Feed al timeline (A2) → los documentos aparecen en el Historial del caso
+- [x] Checklist visual del expediente → pestaña Información: ✓ aprobado / ◐ presente sin aprobar / ○ falta, por tipo de documento requerido
 
 **Archivos:** `services/documentosService.js`, `features/casos.js`, `core/ui.js`, `dashboard.html`, `docs/fase_a4_documentos.sql` · **DB:** tabla `documentos` + bucket Storage · **Esfuerzo:** L · **Depende de:** A1
 
@@ -369,3 +370,4 @@ Documentos por expediente con validación de estados.
 | 2026-06-01 | **Fix RLS roles** | 🐛 Cambiar rol "parecía" guardar pero no persistía (UPDATE afectaba 0 filas por RLS, sin error). `updateRole` ahora usa `.select().maybeSingle()` y el front detecta el 0-filas. SQL de reparación `docs/fix_usuarios_rls.sql` (re-crea políticas de `usuarios`). SW→v16. **Router fix:** datos se recargan en cada navegación (flag `_wired` por feature) → ya no hace falta F5. SW→v15 | — |
 | 2026-06-01 | **A2 Auditoría (slice 2 — CIERRE)** | 🟢 **A2 COMPLETO.** Timeline unificado por expediente: botón "Historial" en cada caso → modal con bitácora del caso + notas de seguimiento en orden cronológico y con autor (`getEntidadHistorial` + `getSeguimiento` con autor). SW→v17 | Probar el historial. **Siguiente: 🟠 A4 (Sistema documental) — el gran institucionalizador** |
 | 2026-06-01 | **A4 Documental (slice 1)** | 🟢 Tabla `documentos` + bucket privado de Storage + políticas por rol (`docs/fase_a4_documentos.sql`). `documentosService` (subir/listar/signed URL/estado/borrar). Modal **Documentos** por caso: subir (tipo, `autor_externo`, vencimiento, validación 10 MB), ver (URL firmada), cambiar estado (recibido/en_revisión/aprobado/rechazado, `vencido` calculado), eliminar — todo por rol. Documentos alimentan el **timeline**. Badges de estado. SW→v18 | Usuario corre `fase_a4_documentos.sql` (incluye bucket). **A4 slice 2: pestañas del expediente + checklist visual** |
+| 2026-06-01 | **A4 Documental (slice 2 — CIERRE)** | 🟢 **A4 COMPLETO.** Vista de expediente unificada: un botón "Expediente" por caso abre un modal con pestañas **Información · Documentos · Seguimiento · Historial** (se fusionaron los 3 modales antiguos en uno; mismos IDs → sin reescribir la lógica). Pestaña Información con **checklist visual** de documentos requeridos (✓/◐/○). CSS de pestañas. SW→v19 | Probar el expediente. **🟠 Fase Profesional COMPLETA (A2+A4+A3). Siguiente: A3 Dashboard ejecutivo** |

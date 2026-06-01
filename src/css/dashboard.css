@@ -217,6 +217,24 @@ body { overflow: hidden; }
 .activity-text  { color: var(--text-2); line-height: 1.5; }
 .activity-time  { font-size: .75rem; color: var(--text-3); margin-top: 1px; }
 
+/* ── Pestañas del expediente (A4) ────────────────────────────── */
+.exp-tabs {
+  display: flex; gap: 2px;
+  border-bottom: 1px solid var(--border-2);
+  margin-bottom: 14px;
+}
+.exp-tab {
+  background: none; border: none;
+  padding: 8px 13px; font: inherit;
+  font-size: .8125rem; font-weight: 600;
+  color: var(--text-3); cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.exp-tab:hover { color: var(--text-2); }
+.exp-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.exp-panel { display: none; }
+.exp-panel.active { display: block; }
+
 /* ── Stage bars ──────────────────────────────────────────────── */
 .stage-list { padding: 0 20px 4px; display: flex; flex-direction: column; gap: 10px; }
 .stage-row {
