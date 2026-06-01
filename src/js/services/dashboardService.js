@@ -53,7 +53,8 @@ export const dashboardService = {
     return r;
   },
 
-  // Casos abiertos (no cerrados) agrupados por trabajador social asignado.
+  // Carga de trabajo: casos abiertos (no cerrados) por trabajador asignado.
+  // Orden ALFABÉTICO a propósito: es distribución de carga, NO un ranking de desempeño.
   async getCasosPorTrabajador() {
     const { data } = await supabase.from('casos')
       .select('usuario:usuarios(nombre, email)')
@@ -64,7 +65,9 @@ export const dashboardService = {
       const nombre = c.usuario?.nombre ?? c.usuario?.email ?? 'Sin asignar';
       map.set(nombre, (map.get(nombre) ?? 0) + 1);
     });
-    return [...map.entries()].map(([nombre, count]) => ({ nombre, count }));
+    return [...map.entries()]
+      .map(([nombre, count]) => ({ nombre, count }))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre));
   },
 
   // Casos cerrados por mes en los últimos N meses (buckets continuos).

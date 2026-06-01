@@ -145,7 +145,7 @@ Caso #125
 ### A3 — Dashboard ejecutivo 📊
 Métricas de **gestión**, no solo conteos.
 - [x] KPI **tiempo promedio de adopción** (días, usa `fecha_inicio`/`fecha_cierre`)
-- [x] KPI/gráfica **casos abiertos por trabajador social** (barras horizontales)
+- [x] KPI/gráfica **carga de trabajo por trabajador social** (barras horizontales, orden alfabético + nota "no es un ranking" → distribución de carga, no competencia)
 - [x] KPI familias evaluadas (aprobadas/pendientes/rechazadas) → `getFamiliasPorEstado`
 - [x] Gráfica casos cerrados por mes (barras, últimos 6 meses)
 - [x] Gráficas (Chart.js CDN, carga diferida): adopciones/mes · niños por estado · niños por género · embudo por etapa (barras existentes)
@@ -222,11 +222,11 @@ Documentos por expediente con validación de estados.
 ---
 
 ### B3 — Backups y recuperación 💾 (alta percepción, bajo esfuerzo)
-- [ ] Documentar el respaldo automático de Supabase (frecuencia/retención del plan)
-- [ ] Script de **export completo** (`pg_dump` / SQL Editor) versionado en `/docs/backup`
-- [ ] **Restauración probada** en proyecto Supabase de prueba (y documentada)
-- [ ] Rutina de backup mensual documentada
-- [ ] `RECOVERY.md` — guía de recuperación ante errores
+- [x] Documentar el respaldo automático de Supabase (frecuencia/retención del plan) → `docs/backup/README.md §2`
+- [x] Script de **export completo** (`pg_dump`) versionado → `docs/backup/backup.ps1` + `backup.sh` + `inventory.sql`
+- [ ] **Restauración probada** en proyecto Supabase de prueba *(procedimiento documentado; falta que el usuario lo ejecute una vez)*
+- [x] Rutina de backup mensual documentada → `docs/backup/README.md §6`
+- [x] `docs/RECOVERY.md` — guía de recuperación ante errores (9 escenarios)
 
 **Archivos:** `/docs/backup/*`, `RECOVERY.md` · **DB:** — · **Esfuerzo:** S-M · **Depende de:** nada
 
@@ -374,3 +374,5 @@ Documentos por expediente con validación de estados.
 | 2026-06-01 | **Docs: Ver + Descargar** | 🟢 Cada documento tiene **Ver** (abre en pestaña) y **Descargar** (URL firmada con `download`). SW→v20 | — |
 | 2026-06-01 | **A3 Dashboard (CIERRE)** | 🟢 **A3 COMPLETO.** KPI días promedio de adopción. Métodos de gestión en `dashboardService` (tiempo promedio, familias por estado, casos por trabajador, cerrados por mes, distribución niños). **Chart.js** vía CDN con carga diferida + destrucción/recreación segura: 4 gráficas (adopciones/mes, casos por trabajador, niños por estado, niños por género). SW→v21 | Probar el dashboard. **🟢 Fase Profesional cerrada. Siguiente fase: 🟡 Institucional → B2 (Documentación técnica)** |
 | 2026-06-01 | **B2 Documentación (CIERRE)** | 🟢 **B2 COMPLETO.** 5 documentos en `/docs`: ARCHITECTURE, DATABASE, SECURITY, DEPLOYMENT, USER_MANUAL — reflejan el estado real tras A0–A4/B1. Sin código (solo escritura). | Revisar/ajustar textos. **Siguiente: 🟡 B3 (Backups y recuperación)** |
+| 2026-06-01 | **A3 ajuste ético** | 🧭 "Casos por trabajador" → **"Carga de trabajo"** (orden alfabético + nota "no es un ranking"). Decisión: una adopción no es una venta; el dashboard mide gestión y equilibrio de carga, nunca competencia entre trabajadores. SW→v22 | — |
+| 2026-06-01 | **B3 Backups (CIERRE)** | 🟢 **B3 COMPLETO** (código). `docs/backup/` con README (estrategia, backups automáticos, pg_dump, rutina mensual), `backup.ps1`/`backup.sh`, `inventory.sql`; `docs/RECOVERY.md` (9 escenarios). Pendiente acción del usuario: **probar una restauración** en proyecto de prueba. | **Siguiente: 🟡 B6 (QA y pruebas)** |
