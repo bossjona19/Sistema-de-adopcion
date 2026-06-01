@@ -31,7 +31,10 @@ export function initModals() {
   });
 }
 
-export function confirm(message, { danger = false } = {}) {
+// confirm(message, { danger, requireText })
+// Si se pasa `requireText`, el usuario debe escribir ese texto exacto para
+// habilitar el botón de confirmar (doble confirmación para acciones destructivas).
+export function confirm(message, { danger = false, requireText = null } = {}) {
   return new Promise(resolve => {
     let overlay = document.getElementById('_confirm-modal');
     if (!overlay) {
@@ -39,12 +42,14 @@ export function confirm(message, { danger = false } = {}) {
       overlay.id = '_confirm-modal';
       overlay.className = 'modal-overlay';
       overlay.innerHTML = `
-        <div class="modal" style="max-width:380px;">
+        <div class="modal" style="max-width:400px;">
           <div class="modal-header" style="padding-bottom:12px;">
             <span class="modal-title" style="font-size:.9375rem;" id="_confirm-title">Confirmar</span>
           </div>
           <div class="modal-body" style="padding-top:4px;">
             <p id="_confirm-msg" style="font-size:.875rem;color:var(--text-2);"></p>
+            <input id="_confirm-input" class="form-input" type="text" autocomplete="off"
+                   style="margin-top:12px;display:none;">
           </div>
           <div class="modal-footer">
             <button class="btn btn-ghost btn-sm" id="_confirm-cancel">Cancelar</button>
@@ -55,18 +60,31 @@ export function confirm(message, { danger = false } = {}) {
     }
 
     document.getElementById('_confirm-msg').textContent = message;
-    const okBtn = document.getElementById('_confirm-ok');
+    const okBtn     = document.getElementById('_confirm-ok');
+    const cancelBtn = document.getElementById('_confirm-cancel');
+    const input     = document.getElementById('_confirm-input');
     okBtn.className = danger ? 'btn btn-danger btn-sm' : 'btn btn-primary btn-sm';
 
+    const needsText = !!requireText;
+    input.style.display = needsText ? '' : 'none';
+    input.value = '';
+    input.placeholder = needsText ? `Escribe "${requireText}" para confirmar` : '';
+    okBtn.disabled = needsText;
+    input.oninput = needsText
+      ? () => { okBtn.disabled = input.value.trim() !== requireText; }
+      : null;
+
     overlay.classList.add('open');
+    if (needsText) setTimeout(() => input.focus(), 50);
 
     const done = result => {
       overlay.classList.remove('open');
+      input.oninput = okBtn.onclick = cancelBtn.onclick = overlay.onclick = null;
       resolve(result);
     };
 
-    okBtn.onclick     = () => done(true);
-    document.getElementById('_confirm-cancel').onclick = () => done(false);
-    overlay.onclick = e => { if (e.target === overlay) done(false); };
+    okBtn.onclick     = () => { if (!okBtn.disabled) done(true); };
+    cancelBtn.onclick = () => done(false);
+    overlay.onclick   = e => { if (e.target === overlay) done(false); };
   });
 }

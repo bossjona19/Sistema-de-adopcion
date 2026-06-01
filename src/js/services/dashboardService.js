@@ -3,10 +3,10 @@ import { supabase } from '../core/supabase.js';
 export const dashboardService = {
   async getKPIs() {
     const [menores, familias, activos, cerrados] = await Promise.all([
-      supabase.from('menores').select('*',  { count: 'exact', head: true }),
-      supabase.from('familias').select('*', { count: 'exact', head: true }),
-      supabase.from('casos').select('*',    { count: 'exact', head: true }).neq('etapa', 'cierre'),
-      supabase.from('casos').select('*',    { count: 'exact', head: true }).eq('etapa',  'cierre'),
+      supabase.from('menores').select('*',  { count: 'exact', head: true }).is('deleted_at', null),
+      supabase.from('familias').select('*', { count: 'exact', head: true }).is('deleted_at', null),
+      supabase.from('casos').select('*',    { count: 'exact', head: true }).is('deleted_at', null).neq('etapa', 'cierre'),
+      supabase.from('casos').select('*',    { count: 'exact', head: true }).is('deleted_at', null).eq('etapa',  'cierre'),
     ]);
     return {
       menores:  menores.count  ?? 0,
@@ -19,7 +19,7 @@ export const dashboardService = {
   async getEtapas() {
     const stages = ['solicitud', 'evaluacion', 'asignacion', 'seguimiento', 'cierre'];
     const results = await Promise.all(
-      stages.map(s => supabase.from('casos').select('*', { count: 'exact', head: true }).eq('etapa', s))
+      stages.map(s => supabase.from('casos').select('*', { count: 'exact', head: true }).is('deleted_at', null).eq('etapa', s))
     );
     return stages.map((etapa, i) => ({ etapa, count: results[i].count ?? 0 }));
   },

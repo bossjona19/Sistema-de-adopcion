@@ -244,9 +244,13 @@ async function saveNota(ev) {
 }
 
 async function removeCaso(id) {
-  const ok = await confirm('¿Eliminar este caso? Esta acción no se puede deshacer.', { danger: true });
-  if (!ok) return;
   const caso = _list.find(x => x.id === id);
+  const code = id.slice(-6).toUpperCase();
+  const ok = await confirm(
+    `Vas a eliminar el caso #${code}. Irá a la papelera y podrás restaurarlo.`,
+    { danger: true, requireText: code }
+  );
+  if (!ok) return;
   const { error } = await casosService.remove(id);
   if (error) { toast('Error al eliminar', 'error'); return; }
   if (caso?.menor_id && caso.etapa !== 'cierre') {

@@ -40,6 +40,14 @@ const ADMIN_NAV = [
              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
            </svg>`,
   },
+  {
+    id: 'papelera',
+    label: 'Papelera',
+    icon: `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+             <polyline points="3 6 5 6 21 6"/>
+             <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+           </svg>`,
+  },
 ];
 
 export function mountSidebar({ name, initials, role = 'Usuario', canManageUsers = false, onNavigate, onLogout }) {

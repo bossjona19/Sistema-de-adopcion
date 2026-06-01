@@ -147,7 +147,11 @@ async function save(ev) {
 }
 
 async function remove(id) {
-  const ok = await confirm('¿Eliminar este niño del sistema?', { danger: true });
+  const m = _list.find(x => x.id === id);
+  const ok = await confirm(
+    `Vas a eliminar a "${m?.nombre ?? 'este niño'}". El registro irá a la papelera y podrás restaurarlo.`,
+    { danger: true, requireText: m?.nombre || 'ELIMINAR' }
+  );
   if (!ok) return;
   const { error } = await menoresService.remove(id);
   if (error) { toast('Error al eliminar', 'error'); return; }

@@ -140,7 +140,11 @@ async function save(ev) {
 }
 
 async function remove(id) {
-  const ok = await confirm('¿Eliminar esta familia del sistema?', { danger: true });
+  const f = _list.find(x => x.id === id);
+  const ok = await confirm(
+    `Vas a eliminar a la familia "${f?.apellido ?? '—'}". El registro irá a la papelera y podrás restaurarlo.`,
+    { danger: true, requireText: f?.apellido || 'ELIMINAR' }
+  );
   if (!ok) return;
   const { error } = await familiasService.remove(id);
   if (error) { toast('Error al eliminar', 'error'); return; }

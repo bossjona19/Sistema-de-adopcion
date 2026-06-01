@@ -23,4 +23,12 @@ export const familiasService = {
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id);
   },
+  getDeleted() {
+    return supabase.from('familias').select('id,apellido,deleted_at')
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false });
+  },
+  restore(id) {
+    return supabase.from('familias').update({ deleted_at: null }).eq('id', id);
+  },
 };

@@ -195,17 +195,17 @@ Documentos por expediente con validación de estados.
 > Lo que casi nadie pone en un proyecto universitario. Aquí está el mayor diferenciador.
 
 ### B1 — Seguridad institucional 🔐 (Muy importante)
-- [ ] **RLS auditada tabla por tabla** (no solo `auth_all` genérica) y por rol
-- [ ] Doble confirmación para acciones destructivas (escribir nombre / modal explícito)
-- [ ] **Soft delete COMPLETO** — `deleted_at` en niños, familias, **casos** y **documentos** (ya existe en niños/familias)
-- [ ] **Papelera de restauración** — listar y restaurar registros borrados (solo admin)
-- [ ] **Expiración de sesión** — configurar JWT/refresh en Supabase + aviso antes de expirar
-- [ ] Registro de **accesos al sistema** (login exitoso) en tabla propia
-- [ ] Superficiar **intentos fallidos** que Supabase Auth ya registra (logs/admin)
-- [ ] Permisos por acción crítica (se apoya en A1)
+- [x] **RLS auditada tabla por tabla** (no solo `auth_all` genérica) y por rol → `docs/fase_a1_rbac.sql` (hecho en A1)
+- [x] Doble confirmación para acciones destructivas → `confirm()` con `requireText` (escribir el nombre/código); cableado en borrar niño/familia/caso
+- [x] **Soft delete COMPLETO** — `deleted_at` en niños, familias y **casos** → `casosService.remove()` ahora hace soft delete + filtro; migración `docs/fase_b1_soft_delete.sql`. *(documentos: pendiente, llega con A4)*
+- [x] **Papelera de restauración** — panel "Papelera" (solo admin): lista niños/familias/casos borrados + restaurar, con `getDeleted()`/`restore()` en los 3 servicios
+- [x] **Expiración de sesión** — auto-logout por inactividad (15 min, aviso 1 min antes) → `core/session.js` + wiring en `main.js`. *(JWT/refresh = config de Supabase, opcional)*
+- [x] Registro de **accesos al sistema** (login exitoso) en tabla propia → `docs/fase_b1_accesos.sql` + `accesoService` (logs en email/password y Google). Lectura solo admin (vía Supabase; UI de listado = futuro menor)
+- [x] Superficiar **intentos fallidos** → Supabase Auth ya los registra: Dashboard › Logs › Auth (no requiere código; documentado en el SQL)
+- [x] Permisos por acción crítica (se apoya en A1) → `can()` en todas las features
 
-**Archivos:** migraciones SQL (RLS), `core/auth.js`, `components/modal.js`, services · **DB:** RLS por rol + tabla `accesos` · **Esfuerzo:** M-L · **Depende de:** A1
-**Nota stack:** sin servidor propio; expiración e intentos fallidos = configuración + logs de Supabase, no middleware.
+**Archivos:** `docs/fase_b1_*.sql`, `core/auth.js`, `core/session.js`, `components/modal.js`, `services/accesoService.js`, features · **DB:** `casos.deleted_at` + tabla `accesos` · **Esfuerzo:** M-L · **Depende de:** A1
+**Nota stack:** sin servidor propio; expiración (JWT) e intentos fallidos = configuración + logs de Supabase, no middleware.
 
 ---
 
@@ -345,7 +345,7 @@ Documentos por expediente con validación de estados.
 
 ## Riesgos heredados (del HANDOFF) y dónde se cierran
 
-- [ ] KPIs cuentan soft-deleted → **A3**
+- [x] KPIs cuentan soft-deleted → **resuelto en B1** (`dashboardService` filtra `deleted_at is null` en KPIs y etapas)
 - [ ] `logAudit` falla silencioso con RLS → **A2**
 - [ ] Sin paginación (>200 registros) → **B4**
 - [ ] PWA icons solo SVG (iOS) → pendiente menor (puede ir en B2/A pulido)
@@ -363,3 +363,5 @@ Documentos por expediente con validación de estados.
 | 2026-05-31 | **A1 Roles** | 🟡 Código listo (parte 1): migración RBAC+RLS (`docs/fase_a1_rbac.sql`), `can()`/`roleLabel()` en auth, gating de UI en menores/familias/casos/notas, rol real en sidebar, SW→v10 | Usuario corre el SQL + prueba; luego A1-parte 2 (UI asignar roles) |
 | 2026-06-01 | **A1 Roles** | 🟢 SQL RLS ejecutado por el usuario en Supabase. **A1-parte 2 lista:** `usuariosService` + `features/usuarios.js` + panel/modal "Usuarios" (solo admin, vía `can('manage_users')` y nav condicional), búsqueda/filtro por rol, badges de rol, anti-lockout (no editas tu propio rol), SW→v11 | Verificar en prod: admin gestiona roles · director solo lectura. Luego B1 (soft delete casos, fix KPI soft-deleted) |
 | 2026-06-01 | **A1 · diseño de roles** | 🧭 Decisión de diseño: rol = conjunto de permisos, no cargo. **`consultor → director`** (código, UI, SQL canónico + `docs/fase_a1_director_rename.sql`). `psicologo`/`abogado` NO son roles → su trabajo se modela en A4 (documento tipado + `autor_externo`) + nota A2. Añadido **B8 · Privacidad por asignación de casos** como mejora futura (ROL+ASIGNACIÓN) | Usuario corre `fase_a1_director_rename.sql`; seguir con B1 |
+| 2026-06-01 | **B1 Seguridad (slice 1)** | 🟢 **Soft delete completo** (casos → soft delete + filtro; migración `docs/fase_b1_soft_delete.sql` con `deleted_at` + índice parcial). **Papelera** (panel solo admin: lista y restaura niños/familias/casos; `getDeleted()`/`restore()` en los 3 servicios). **Fix KPI soft-deleted** en `dashboardService`. SW→v12 | Usuario corre `fase_b1_soft_delete.sql` + prueba. Siguientes slices B1: doble confirmación (escribir nombre), expiración de sesión, tabla `accesos` |
+| 2026-06-01 | **B1 Seguridad (slice 2 — CIERRE)** | 🟢 **B1 COMPLETO.** Doble confirmación destructiva (`confirm()` con `requireText`, cableado en los 3 borrados). Auto-logout por inactividad (`core/session.js`, 15 min). Registro de accesos (`docs/fase_b1_accesos.sql` + `accesoService`, logs en email y Google). Intentos fallidos = logs de Supabase Auth (documentado). SW→v13 | Usuario corre `fase_b1_accesos.sql` + prueba. **Siguiente fase: 🟠 Profesional → A2 (Auditoría + timeline)** |

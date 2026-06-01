@@ -40,11 +40,12 @@ export async function handleOAuthCallback() {
   }
 
   const code = params.get('code');
-  if (!code) return; // carga normal, no es un retorno de OAuth
+  if (!code) return false; // carga normal, no es un retorno de OAuth
 
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   cleanAuthParamsFromUrl(); // quita ?code= de la URL aunque falle
   if (error) throw error;
+  return true; // hubo un login real por OAuth
 }
 
 function cleanAuthParamsFromUrl() {

@@ -5,6 +5,7 @@ export const casosService = {
     return supabase
       .from('casos')
       .select('*, familia:familias(apellido), menor:menores(nombre)')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false });
   },
   getMenoresDisponibles(includeId = null) {
@@ -18,6 +19,7 @@ export const casosService = {
   getCasosActivos() {
     return supabase.from('casos')
       .select('familia_id')
+      .is('deleted_at', null)
       .neq('etapa', 'cierre');
   },
   create(payload) {
@@ -27,7 +29,21 @@ export const casosService = {
     return supabase.from('casos').update(payload).eq('id', id);
   },
   remove(id) {
-    return supabase.from('casos').delete().eq('id', id);
+    return supabase.from('casos')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id);
+  },
+  getDeleted() {
+    return supabase
+      .from('casos')
+      .select('*, familia:familias(apellido), menor:menores(nombre)')
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false });
+  },
+  restore(id) {
+    return supabase.from('casos')
+      .update({ deleted_at: null })
+      .eq('id', id);
   },
   getSeguimiento(casoId) {
     return supabase
