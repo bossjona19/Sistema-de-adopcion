@@ -47,6 +47,9 @@ export const casosService = {
   update(id, payload) {
     return supabase.from('casos').update(payload).eq('id', id);
   },
+  setEstadoPost(id, estado_post) {
+    return supabase.from('casos').update({ estado_post }).eq('id', id);
+  },
   remove(id) {
     return supabase.from('casos')
       .update({ deleted_at: new Date().toISOString() })

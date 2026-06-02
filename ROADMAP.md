@@ -192,6 +192,25 @@ Documentos por expediente con validación de estados.
 
 ---
 
+### A7 — Seguimiento post-adopción 🏠 (añadida 2026-06-02)
+Extiende el ciclo de vida **después** de la adopción: bienestar del menor/familia con trazabilidad.
+**Sub-estados del caso (tras Cierre):** `no_iniciado → en_seguimiento → completado → cerrado`.
+
+**Slice 1 — ✅ COMPLETADO**
+- [x] Tabla `postadopcion` (tipo: visita/informe_psicológico/informe_social/incidencia · fecha · responsable · observaciones · próxima visita) → `docs/fase_a7_postadopcion.sql`
+- [x] Columna `casos.estado_post` + RLS que **hereda** la visibilidad del caso (como B8)
+- [x] Pestaña **"Post-adopción"** en el expediente (se habilita al llegar a Cierre): registrar visitas/informes, programar próxima visita, cambiar estado
+- [x] Tipo de documento `informe_seguimiento` (adjuntar informes en la pestaña Documentos)
+- [x] Integrado al **timeline** (Historial) y a la bitácora (entidad `postadopcion`)
+
+**Slice 2 — ⏳ pendiente**
+- [ ] Dashboard: KPI/lista de **casos en seguimiento** y **próximas visitas / vencimientos**
+- [ ] **PDF de seguimiento** (para dirección / entidades externas)
+
+**Archivos:** `docs/fase_a7_postadopcion.sql`, `services/postadopcionService.js`, `features/casos.js`, `dashboard.html` · **DB:** tabla `postadopcion` + `casos.estado_post` · **Esfuerzo:** M · **Depende de:** A4, B8
+
+---
+
 # VÍA B — Operación y madurez institucional
 
 > Lo que casi nadie pone en un proyecto universitario. Aquí está el mayor diferenciador.
@@ -377,6 +396,7 @@ Documentos por expediente con validación de estados.
 | 2026-06-01 | **B3 Backups (CIERRE)** | 🟢 **B3 COMPLETO** (código). `docs/backup/` con README (estrategia, backups automáticos, pg_dump, rutina mensual), `backup.ps1`/`backup.sh`, `inventory.sql`; `docs/RECOVERY.md` (9 escenarios). Pendiente acción del usuario: **probar una restauración** en proyecto de prueba. | **Siguiente: 🟡 B6 (QA y pruebas)** |
 | 2026-06-01 | **B6 QA (CIERRE)** | 🟢 **B6 COMPLETO.** `docs/qa/test-cases.md` (8 áreas, ~40 casos manuales: auth/roles/CRUD/casos/expediente/auditoría/dashboard/PWA) + `docs/qa/regression-checklist.md` (humo + por área + regla de release). Sin código. | **🟡 Fase Institucional CERRADA (B2+B3+B6). Siguiente: 🟢 Escalabilidad → B4 (paginación/rendimiento)** |
 | 2026-06-02 | **Fix export Excel** | 🐛 SheetJS daba "No se pudo generar" → URL del CDN mal (`/package/dist/` es del CDN propio de SheetJS, no de jsdelivr). Corregido a `/dist/` (verificado 200). SW→v27 | — |
+| 2026-06-02 | **A7 Post-adopción (slice 1)** | 🟢 Nueva fase (idea del usuario: el bienestar posterior importa). Tabla `postadopcion` + `casos.estado_post` (`fase_a7_postadopcion.sql`, RLS hereda visibilidad del caso). Pestaña **"Post-adopción"** en el expediente (habilitada al Cierre): visitas/informes/incidencias, próxima visita, estados `no_iniciado→en_seguimiento→completado→cerrado`. Tipo doc `informe_seguimiento`. Integrado a timeline + bitácora. SW→v29 | Usuario corre `fase_a7_postadopcion.sql`. **A7 slice 2: dashboard de vencimientos + PDF** |
 | 2026-06-02 | **B5 Calidad/Monitoreo (CIERRE)** | 🟢 **B5 COMPLETO.** Logger global puro (`core/logger.js`, tope+dedupe) → `errorService` → tabla `errores` (`fase_b5_errores.sql`). Panel **Monitoreo** (admin). `404.html` amigable. `docs/MONITORING.md` (logs Supabase/Vercel + checks de integridad). SW→v28 | Usuario corre `fase_b5_errores.sql`. **Falta de 🟢: A6 (notificaciones), B7 (config institucional)** | 🟢 **B8 COMPLETO.** RLS por propiedad: trabajador_social ve/opera solo sus casos (`usuario_id=auth.uid()`); admin/coord/director ven todos (`ve_todos_casos()`). Notas y documentos **cascadan** el aislamiento vía `caso_id in (select id from casos)`. UI: selector de **Responsable** (admin/coord) en el modal + checkbox "**Solo mis casos**" (persistente en URL). `docs/fase_b8_asignacion.sql`. SW→v26 | Usuario corre `fase_b8_asignacion.sql` + prueba con un trabajador_social. Falta de 🟢: A6, B5, B7 |
 | 2026-06-02 | **A5 Reportes+Filtros (CIERRE)** | 🟢 **A5 COMPLETO.** `core/export.js` (CSV nativo + PDF jsPDF/autotable + Excel SheetJS, CDN diferido); botones Exportar en los 3 listados; `getForExport` exporta TODO el filtrado (no solo la página). Filtros persistentes en URL (router soporta `#tab?k=v` con replaceState; restauran al recargar/compartir); filtro de **género** añadido a niños. SW→v25 | Probar export y URLs filtradas. **Siguiente: A6 (notificaciones, opcional) o B5/B7** |
 | 2026-06-02 | **B4 Rendimiento (CIERRE)** | 🟢 **B4 COMPLETO.** Paginación server-side (`.range()`, 20/pág, `count:'exact'`) + búsqueda/filtros movidos al servidor (debounce 300 ms) en niños/familias/casos. Helper `pagerHtml` + controles. Índices `docs/fase_b4_indices.sql` (GIN pg_trgm + parciales). `docs/seed_grande.sql` para validar. SW→v23 | Usuario: correr `fase_b4_indices.sql` + (opcional) `seed_grande.sql` en proyecto de prueba. **Siguiente: A5 (Búsqueda avanzada + Reportes)** |

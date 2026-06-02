@@ -1,4 +1,4 @@
-const CACHE = 'omega-v28';
+const CACHE = 'omega-v29';
 
 const STATIC = [
   '/',
@@ -34,6 +34,7 @@ const STATIC = [
   '/src/js/services/accesoService.js',
   '/src/js/services/documentosService.js',
   '/src/js/services/errorService.js',
+  '/src/js/services/postadopcionService.js',
   // Features
   '/src/js/features/menores.js',
   '/src/js/features/familias.js',

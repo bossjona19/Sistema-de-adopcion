@@ -2,6 +2,7 @@ import { casosService }    from '../services/casosService.js';
 import { familiasService } from '../services/familiasService.js';
 import { menoresService }  from '../services/menoresService.js';
 import { documentosService } from '../services/documentosService.js';
+import { postadopcionService } from '../services/postadopcionService.js';
 import { usuariosService } from '../services/usuariosService.js';
 import { logAudit, getUserId, getEntidadHistorial } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
@@ -43,7 +44,20 @@ const TIPO_DOC_LABELS = {
   informe_social:         'Informe social',
   documento_legal:        'Documento legal',
   acta_nacimiento:        'Acta de nacimiento',
+  informe_seguimiento:    'Informe de seguimiento',
   otro:                   'Otro',
+};
+const POST_TIPO_LABELS = {
+  visita:              'Visita de seguimiento',
+  informe_psicologico: 'Informe psicológico',
+  informe_social:      'Informe social',
+  incidencia:          'Incidencia',
+};
+const POST_ESTADO_LABELS = {
+  no_iniciado:   'No iniciado',
+  en_seguimiento:'En seguimiento',
+  completado:    'Seguimiento completado',
+  cerrado:       'Cerrado',
 };
 const ESTADO_DOC_LABELS = { recibido: 'Recibido', en_revision: 'En revisión', aprobado: 'Aprobado', rechazado: 'Rechazado' };
 const MAX_DOC_MB = 10;
@@ -104,6 +118,15 @@ export async function setupCasos() {
     document.getElementById('expediente-tabs')?.addEventListener('click', e => {
       const b = e.target.closest('[data-exptab]');
       if (b) showExpTab(b.dataset.exptab);
+    });
+
+    // Post-adopción: registrar entrada / cambiar estado del seguimiento
+    document.getElementById('exp-post')?.addEventListener('click', async e => {
+      if (e.target.closest('[data-post-action="add"]')) await addPost();
+    });
+    document.getElementById('exp-post')?.addEventListener('change', async e => {
+      const sel = e.target.closest('[data-post-action="estado"]');
+      if (sel) await cambiarEstadoPost(sel.value);
     });
 
     // Documentos: subida + acciones de la lista (ver / cambiar estado / eliminar)
@@ -408,6 +431,7 @@ async function showExpTab(tab) {
   if (tab === 'info')      await renderInfo(_expCasoId);
   if (tab === 'docs')      await loadDocs();
   if (tab === 'notas')     await renderNotas(_expCasoId);
+  if (tab === 'post')      await renderPost(_expCasoId);
   if (tab === 'historial') await renderHistorial(_expCasoId);
 }
 
@@ -548,6 +572,118 @@ async function eliminarDoc(id, path) {
   await loadDocs();
 }
 
+// ── Post-adopción (A7) ───────────────────────────────────────
+const escapePost = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+async function renderPost(id) {
+  const caso = _list.find(x => x.id === id);
+  const cont = document.getElementById('exp-post');
+  if (!caso) { cont.innerHTML = ''; return; }
+
+  if (caso.etapa !== 'cierre') {
+    cont.innerHTML = `<p style="color:var(--text-3);padding:10px 0;">
+      El seguimiento post-adopción se habilita cuando el caso llega a <strong>Cierre</strong> (adopción finalizada).</p>`;
+    return;
+  }
+
+  cont.innerHTML = `<div style="padding:12px;text-align:center;"><div class="spinner"></div></div>`;
+  const { data, error } = await postadopcionService.list(id);
+  if (error) { cont.innerHTML = `<p style="color:var(--danger);padding:8px;">No se pudo cargar el seguimiento.</p>`; return; }
+
+  const editable = can('edit');
+  const estado = caso.estado_post ?? 'no_iniciado';
+  const hoy = new Date().toISOString().slice(0, 10);
+  const prox = (data ?? []).map(r => r.proxima_visita).filter(d => d && d >= hoy).sort()[0];
+
+  const lista = (data ?? []).length
+    ? data.map(r => `
+        <div style="border-left:3px solid var(--primary-dim);padding:8px 12px;margin-bottom:8px;background:var(--surface-2);border-radius:0 var(--r-sm) var(--r-sm) 0;">
+          <div style="display:flex;justify-content:space-between;gap:8px;">
+            <strong style="font-size:.8125rem;">${POST_TIPO_LABELS[r.tipo] ?? r.tipo}</strong>
+            <span style="font-size:.75rem;color:var(--text-3);">${formatDate(r.fecha)}</span>
+          </div>
+          ${r.observaciones ? `<p style="font-size:.875rem;color:var(--text-2);margin:4px 0 0;">${escapePost(r.observaciones)}</p>` : ''}
+          <div style="font-size:.75rem;color:var(--text-3);margin-top:3px;">
+            ${r.responsable?.nombre ? 'Responsable: ' + escapePost(r.responsable.nombre) : ''}${r.proxima_visita ? ` · Próxima visita: ${formatDate(r.proxima_visita)}` : ''}
+          </div>
+        </div>`).join('')
+    : `<p style="color:var(--text-3);font-size:.875rem;padding:8px 0;">Sin registros de seguimiento.</p>`;
+
+  const estadoCtrl = editable
+    ? `<select class="form-select" data-post-action="estado" style="width:auto;">
+        ${Object.entries(POST_ESTADO_LABELS).map(([v, l]) => `<option value="${v}" ${estado === v ? 'selected' : ''}>${l}</option>`).join('')}
+       </select>`
+    : `<span class="badge badge-${estado === 'cerrado' ? 'cierre' : estado === 'completado' ? 'aprobado' : 'en_revision'}">${POST_ESTADO_LABELS[estado]}</span>`;
+
+  const form = editable ? `
+    <hr style="margin:14px 0;">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="post-tipo">Tipo *</label>
+        <select class="form-select" id="post-tipo">
+          ${Object.entries(POST_TIPO_LABELS).map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="post-fecha">Fecha</label>
+        <input class="form-input" id="post-fecha" type="date" value="${hoy}">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="post-obs">Observaciones</label>
+      <textarea class="form-textarea" id="post-obs" style="min-height:60px;" placeholder="Detalle de la visita / informe…"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="post-proxima">Próxima visita (opcional)</label>
+      <input class="form-input" id="post-proxima" type="date">
+    </div>
+    <div style="display:flex;justify-content:flex-end;">
+      <button class="btn btn-primary btn-sm" data-post-action="add">Registrar seguimiento</button>
+    </div>` : '';
+
+  cont.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="font-size:.8125rem;color:var(--text-3);">Estado del seguimiento:</span>
+      ${estadoCtrl}
+    </div>
+    ${prox ? `<div style="font-size:.8125rem;color:var(--text-2);margin-bottom:12px;">📅 Próxima visita programada: <strong>${formatDate(prox)}</strong></div>` : ''}
+    ${lista}
+    ${form}`;
+}
+
+async function addPost() {
+  const tipo    = document.getElementById('post-tipo')?.value;
+  const fecha   = document.getElementById('post-fecha')?.value || new Date().toISOString().slice(0, 10);
+  const obs     = document.getElementById('post-obs')?.value.trim();
+  const proxima = document.getElementById('post-proxima')?.value || null;
+
+  const { error } = await postadopcionService.create({
+    caso_id: _expCasoId, tipo, fecha,
+    observaciones: obs || null, proxima_visita: proxima, responsable: getUserId(),
+  });
+  if (error) { toast('Error al registrar: ' + error.message, 'error'); return; }
+
+  // Primer registro → arranca el seguimiento automáticamente.
+  const caso = _list.find(x => x.id === _expCasoId);
+  if (caso && caso.estado_post === 'no_iniciado') {
+    await casosService.setEstadoPost(_expCasoId, 'en_seguimiento');
+    caso.estado_post = 'en_seguimiento';
+  }
+  await logAudit(`Seguimiento post-adopción: ${POST_TIPO_LABELS[tipo] ?? tipo}`, 'postadopcion', { entidadId: _expCasoId, despues: obs?.slice(0, 80) });
+  toast('Seguimiento registrado', 'success');
+  await renderPost(_expCasoId);
+}
+
+async function cambiarEstadoPost(estado) {
+  const { error } = await casosService.setEstadoPost(_expCasoId, estado);
+  if (error) { toast('Error al cambiar el estado', 'error'); return; }
+  const caso = _list.find(x => x.id === _expCasoId);
+  if (caso) caso.estado_post = estado;
+  await logAudit('Cambiar estado post-adopción', 'postadopcion', { entidadId: _expCasoId, despues: POST_ESTADO_LABELS[estado] });
+  toast('Estado actualizado', 'success');
+  await renderPost(_expCasoId);
+}
+
 const ETAPA_LABELS = {
   solicitud: 'Solicitud', evaluacion: 'Evaluación', asignacion: 'Asignación',
   seguimiento: 'Seguimiento', cierre: 'Cierre',
@@ -560,10 +696,11 @@ async function renderHistorial(id) {
   const body = document.getElementById('historial-body');
   body.innerHTML = `<div style="padding:24px;text-align:center;"><div class="spinner"></div></div>`;
 
-  const [hist, notas, docs] = await Promise.all([
+  const [hist, notas, docs, post] = await Promise.all([
     getEntidadHistorial('casos', id),
     casosService.getSeguimiento(id),
     documentosService.list(id),
+    postadopcionService.list(id),
   ]);
 
   if (hist.error || notas.error) {
@@ -585,6 +722,9 @@ async function renderHistorial(id) {
   });
   (docs.data ?? []).forEach(d => {
     events.push({ fecha: d.fecha, texto: `Documento agregado: ${TIPO_DOC_LABELS[d.tipo] ?? d.tipo} (${d.nombre})`, autor: d.autor_externo || null });
+  });
+  (post.data ?? []).forEach(r => {
+    events.push({ fecha: r.fecha, texto: `Post-adopción · ${POST_TIPO_LABELS[r.tipo] ?? r.tipo}${r.observaciones ? ': ' + r.observaciones : ''}`, autor: r.responsable?.nombre ?? null });
   });
 
   events.sort((a, b) => new Date(a.fecha) - new Date(b.fecha)); // cronológico ascendente

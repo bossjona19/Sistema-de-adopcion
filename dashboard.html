@@ -455,6 +455,7 @@
             <option value="casos">Casos</option>
             <option value="seguimiento">Seguimiento</option>
             <option value="documentos">Documentos</option>
+            <option value="postadopcion">Post-adopción</option>
             <option value="usuarios">Usuarios</option>
           </select>
           <input class="form-input" id="bitacora-desde" type="date" style="width:auto;" title="Desde">
@@ -682,6 +683,7 @@
         <button type="button" class="exp-tab active" data-exptab="info">Información</button>
         <button type="button" class="exp-tab" data-exptab="docs">Documentos</button>
         <button type="button" class="exp-tab" data-exptab="notas">Seguimiento</button>
+        <button type="button" class="exp-tab" data-exptab="post">Post-adopción</button>
         <button type="button" class="exp-tab" data-exptab="historial">Historial</button>
       </div>
 
@@ -703,6 +705,7 @@
                   <option value="informe_social">Informe social</option>
                   <option value="documento_legal">Documento legal</option>
                   <option value="acta_nacimiento">Acta de nacimiento</option>
+                  <option value="informe_seguimiento">Informe de seguimiento</option>
                   <option value="otro">Otro</option>
                 </select>
               </div>
@@ -741,6 +744,9 @@
           </div>
         </form>
       </div>
+
+      <!-- Post-adopción -->
+      <div class="exp-panel" data-exppanel="post" id="exp-post"></div>
 
       <!-- Historial -->
       <div class="exp-panel" data-exppanel="historial">
