@@ -6,6 +6,13 @@ export const familiasService = {
       .is('deleted_at', null)
       .order('fecha_solicitud', { ascending: false });
   },
+  // Página server-side con búsqueda (apellido/contacto) y filtro. Devuelve { data, count, error }.
+  getPage({ search = '', estado = '', from = 0, to = 19 } = {}) {
+    let q = supabase.from('familias').select('*', { count: 'exact' }).is('deleted_at', null);
+    if (search) q = q.or(`apellido.ilike.%${search}%,contacto.ilike.%${search}%`);
+    if (estado) q = q.eq('estado_eval', estado);
+    return q.order('fecha_solicitud', { ascending: false }).range(from, to);
+  },
   getAprobadas() {
     return supabase.from('familias').select('id,apellido')
       .eq('estado_eval', 'aprobada')

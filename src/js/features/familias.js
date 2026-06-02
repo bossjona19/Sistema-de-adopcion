@@ -2,18 +2,32 @@ import { familiasService } from '../services/familiasService.js';
 import { logAudit } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
-import { getInitials, formatDate, badgeHtml, diffSummary } from '../core/ui.js';
+import { getInitials, formatDate, badgeHtml, diffSummary, pagerHtml } from '../core/ui.js';
 import { can } from '../core/auth.js';
 
+const PAGE_SIZE = 20;
 let _list   = [];
 let _editId = null;
 let _wired  = false;
+let _page   = 0;
+let _total  = 0;
+let _searchTimer = null;
 
 // ── Public ───────────────────────────────────────────────────
 export async function setupFamilias() {
   if (!_wired) {
-    document.getElementById('familias-search')?.addEventListener('input', filter);
-    document.getElementById('familias-filter')?.addEventListener('change', filter);
+    document.getElementById('familias-search')?.addEventListener('input', () => {
+      clearTimeout(_searchTimer);
+      _searchTimer = setTimeout(applyFilters, 300); // debounce: búsqueda server-side
+    });
+    document.getElementById('familias-filter')?.addEventListener('change', applyFilters);
+    document.getElementById('familias-pager')?.addEventListener('click', e => {
+      const b = e.target.closest('[data-page-action]');
+      if (!b || b.disabled) return;
+      if (b.dataset.pageAction === 'prev' && _page > 0) _page--;
+      else if (b.dataset.pageAction === 'next') _page++;
+      load();
+    });
 
     const btnNueva = document.getElementById('btn-nueva-familia');
     if (btnNueva && !can('create')) btnNueva.style.display = 'none';
@@ -45,14 +59,21 @@ export async function setupFamilias() {
 async function load() {
   const tbody = document.getElementById('familias-tbody');
   tbody.innerHTML = `<tr class="loading-row"><td colspan="5"><div class="spinner"></div></td></tr>`;
-  const { data, error } = await familiasService.getAll();
+  const from = _page * PAGE_SIZE;
+  const { data, count, error } = await familiasService.getPage({
+    search: document.getElementById('familias-search')?.value.trim() ?? '',
+    estado: document.getElementById('familias-filter')?.value ?? '',
+    from, to: from + PAGE_SIZE - 1,
+  });
   if (error) { toast('Error al cargar familias', 'error'); return; }
-  _list = data ?? [];
+  _list  = data ?? [];
+  _total = count ?? 0;
+  document.getElementById('familias-count').textContent = _total;
   render(_list);
+  document.getElementById('familias-pager').innerHTML = pagerHtml(_page, PAGE_SIZE, _total);
 }
 
 function render(list) {
-  document.getElementById('familias-count').textContent = list.length;
   const tbody = document.getElementById('familias-tbody');
 
   if (!list.length) {
@@ -96,13 +117,10 @@ function render(list) {
   `).join('');
 }
 
-function filter() {
-  const q = (document.getElementById('familias-search')?.value ?? '').toLowerCase();
-  const e = document.getElementById('familias-filter')?.value ?? '';
-  render(_list.filter(f =>
-    (!q || f.apellido.toLowerCase().includes(q) || (f.contacto ?? '').toLowerCase().includes(q)) &&
-    (!e || f.estado_eval === e)
-  ));
+// Búsqueda/filtro cambiaron → volver a la primera página y recargar (server-side).
+function applyFilters() {
+  _page = 0;
+  load();
 }
 
 function edit(id) {

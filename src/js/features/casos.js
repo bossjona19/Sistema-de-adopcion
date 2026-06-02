@@ -5,7 +5,7 @@ import { documentosService } from '../services/documentosService.js';
 import { logAudit, getUserId, getEntidadHistorial } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
-import { badgeHtml, formatDate, formatDateTime } from '../core/ui.js';
+import { badgeHtml, formatDate, formatDateTime, pagerHtml } from '../core/ui.js';
 import { can } from '../core/auth.js';
 import { createCombobox } from '../../components/combobox.js';
 
@@ -16,6 +16,10 @@ let _cbMen  = null;
 let _wired  = false;
 let _docsCasoId = null;
 let _expCasoId  = null;
+
+const PAGE_SIZE = 20;
+let _page  = 0;
+let _total = 0;
 
 const TIPO_DOC_LABELS = {
   evaluacion_psicologica: 'Evaluación psicológica',
@@ -34,7 +38,14 @@ export async function setupCasos() {
     _cbFam = createCombobox(document.getElementById('cb-familia'), [], { placeholder: 'Buscar familia…' });
     _cbMen = createCombobox(document.getElementById('cb-menor'),   [], { placeholder: 'Buscar niño…'   });
 
-    document.getElementById('casos-filter')?.addEventListener('change', filter);
+    document.getElementById('casos-filter')?.addEventListener('change', applyFilters);
+    document.getElementById('casos-pager')?.addEventListener('click', e => {
+      const b = e.target.closest('[data-page-action]');
+      if (!b || b.disabled) return;
+      if (b.dataset.pageAction === 'prev' && _page > 0) _page--;
+      else if (b.dataset.pageAction === 'next') _page++;
+      load();
+    });
 
     const btnNuevo = document.getElementById('btn-nuevo-caso');
     if (btnNuevo && !can('create')) btnNuevo.style.display = 'none';
@@ -95,14 +106,20 @@ export async function setupCasos() {
 async function load() {
   const tbody = document.getElementById('casos-tbody');
   tbody.innerHTML = `<tr class="loading-row"><td colspan="5"><div class="spinner"></div></td></tr>`;
-  const { data, error } = await casosService.getAll();
+  const from = _page * PAGE_SIZE;
+  const { data, count, error } = await casosService.getPage({
+    etapa: document.getElementById('casos-filter')?.value ?? '',
+    from, to: from + PAGE_SIZE - 1,
+  });
   if (error) { toast('Error al cargar casos', 'error'); return; }
-  _list = data ?? [];
+  _list  = data ?? [];
+  _total = count ?? 0;
+  document.getElementById('casos-count').textContent = _total;
   render(_list);
+  document.getElementById('casos-pager').innerHTML = pagerHtml(_page, PAGE_SIZE, _total);
 }
 
 function render(list) {
-  document.getElementById('casos-count').textContent = list.length;
   const tbody = document.getElementById('casos-tbody');
 
   if (!list.length) {
@@ -150,9 +167,10 @@ function render(list) {
   `).join('');
 }
 
-function filter() {
-  const e = document.getElementById('casos-filter')?.value ?? '';
-  render(e ? _list.filter(c => c.etapa === e) : _list);
+// Filtro por etapa cambió → volver a la primera página y recargar (server-side).
+function applyFilters() {
+  _page = 0;
+  load();
 }
 
 async function populateSelects(selFamId = '', selMenId = '') {

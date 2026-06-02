@@ -8,6 +8,15 @@ export const casosService = {
       .is('deleted_at', null)
       .order('created_at', { ascending: false });
   },
+  // Página server-side con filtro por etapa. Devuelve { data, count, error }.
+  getPage({ etapa = '', from = 0, to = 19 } = {}) {
+    let q = supabase
+      .from('casos')
+      .select('*, familia:familias(apellido), menor:menores(nombre)', { count: 'exact' })
+      .is('deleted_at', null);
+    if (etapa) q = q.eq('etapa', etapa);
+    return q.order('created_at', { ascending: false }).range(from, to);
+  },
   getMenoresDisponibles(includeId = null) {
     const q = supabase.from('menores').select('id,nombre,estado')
       .is('deleted_at', null)

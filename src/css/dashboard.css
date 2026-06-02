@@ -217,6 +217,13 @@ body { overflow: hidden; }
 .activity-text  { color: var(--text-2); line-height: 1.5; }
 .activity-time  { font-size: .75rem; color: var(--text-3); margin-top: 1px; }
 
+/* ── Paginador (B4) ──────────────────────────────────────────── */
+.pager {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 12px 4px;
+}
+.pager:empty { display: none; }
+
 /* ── Pestañas del expediente (A4) ────────────────────────────── */
 .exp-tabs {
   display: flex; gap: 2px;

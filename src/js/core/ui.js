@@ -28,6 +28,19 @@ export function badgeHtml(value) {
   return `<span class="badge badge-${value}">${LABELS[value] ?? value}</span>`;
 }
 
+// HTML del paginador: "X–Y de N" + botones Anterior/Siguiente (con data-page-action).
+export function pagerHtml(page, pageSize, total) {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const from = total === 0 ? 0 : page * pageSize + 1;
+  const to   = Math.min(total, (page + 1) * pageSize);
+  return `
+    <span style="font-size:.8125rem;color:var(--text-3);">${from}–${to} de ${total}</span>
+    <div style="display:flex;gap:6px;">
+      <button class="btn btn-ghost btn-sm" data-page-action="prev" ${page <= 0 ? 'disabled' : ''}>‹ Anterior</button>
+      <button class="btn btn-ghost btn-sm" data-page-action="next" ${page >= totalPages - 1 ? 'disabled' : ''}>Siguiente ›</button>
+    </div>`;
+}
+
 export function setEl(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;

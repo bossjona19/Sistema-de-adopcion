@@ -233,11 +233,11 @@ Documentos por expediente con validación de estados.
 ---
 
 ### B4 — Paginación y rendimiento ⚡ (debe escalar a miles de expedientes)
-- [ ] **Paginación server-side** con `.range()` de Supabase en todos los listados
-- [ ] Lazy loading / carga incremental en tablas
-- [ ] Índices SQL para los filtros de A5 (revisar EXPLAIN)
-- [ ] Búsquedas eficientes (índices de texto / `ilike` acotado)
-- [ ] Validar comportamiento con dataset grande (seed de ~5.000 registros)
+- [x] **Paginación server-side** con `.range()` en niños/familias/casos (20 por página, `count: 'exact'`)
+- [x] Carga incremental por página + controles Anterior/Siguiente (`pagerHtml`)
+- [x] **Búsqueda y filtros server-side** (antes eran client-side → solo buscaban la página cargada); búsqueda con debounce 300 ms
+- [x] Índices SQL → `docs/fase_b4_indices.sql` (GIN `pg_trgm` para texto + parciales por estado/etapa/orden)
+- [ ] Validar con dataset grande → `docs/seed_grande.sql` (~5.000 niños/2.000 familias/1.000 casos) *(pendiente: correr en proyecto de prueba)*
 
 **Archivos:** `services/*`, `features/*`, migración índices · **DB:** índices · **Esfuerzo:** M · **Depende de:** A5 (filtros)
 
@@ -379,3 +379,4 @@ Documentos por expediente con validación de estados.
 | 2026-06-01 | **A3 ajuste ético** | 🧭 "Casos por trabajador" → **"Carga de trabajo"** (orden alfabético + nota "no es un ranking"). Decisión: una adopción no es una venta; el dashboard mide gestión y equilibrio de carga, nunca competencia entre trabajadores. SW→v22 | — |
 | 2026-06-01 | **B3 Backups (CIERRE)** | 🟢 **B3 COMPLETO** (código). `docs/backup/` con README (estrategia, backups automáticos, pg_dump, rutina mensual), `backup.ps1`/`backup.sh`, `inventory.sql`; `docs/RECOVERY.md` (9 escenarios). Pendiente acción del usuario: **probar una restauración** en proyecto de prueba. | **Siguiente: 🟡 B6 (QA y pruebas)** |
 | 2026-06-01 | **B6 QA (CIERRE)** | 🟢 **B6 COMPLETO.** `docs/qa/test-cases.md` (8 áreas, ~40 casos manuales: auth/roles/CRUD/casos/expediente/auditoría/dashboard/PWA) + `docs/qa/regression-checklist.md` (humo + por área + regla de release). Sin código. | **🟡 Fase Institucional CERRADA (B2+B3+B6). Siguiente: 🟢 Escalabilidad → B4 (paginación/rendimiento)** |
+| 2026-06-02 | **B4 Rendimiento (CIERRE)** | 🟢 **B4 COMPLETO.** Paginación server-side (`.range()`, 20/pág, `count:'exact'`) + búsqueda/filtros movidos al servidor (debounce 300 ms) en niños/familias/casos. Helper `pagerHtml` + controles. Índices `docs/fase_b4_indices.sql` (GIN pg_trgm + parciales). `docs/seed_grande.sql` para validar. SW→v23 | Usuario: correr `fase_b4_indices.sql` + (opcional) `seed_grande.sql` en proyecto de prueba. **Siguiente: A5 (Búsqueda avanzada + Reportes)** |
