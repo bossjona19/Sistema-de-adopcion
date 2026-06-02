@@ -2,8 +2,10 @@ import { familiasService } from '../services/familiasService.js';
 import { logAudit } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
+import { casosService } from '../services/casosService.js';
+import { configService } from '../services/configService.js';
 import { getInitials, formatDate, badgeHtml, diffSummary, pagerHtml } from '../core/ui.js';
-import { exportCSV, exportPDF, exportExcel } from '../core/export.js';
+import { exportCSV, exportPDF, exportExcel, reportePDF } from '../core/export.js';
 import { getParams, setParams } from '../core/router.js';
 import { can } from '../core/auth.js';
 
@@ -61,6 +63,7 @@ export async function setupFamilias() {
       const { action, id } = btn.dataset;
       if (action === 'edit-familia')   edit(id);
       if (action === 'delete-familia') remove(id);
+      if (action === 'report-familia') reporteFamilia(id);
     });
     _wired = true;
   }
@@ -119,7 +122,14 @@ function render(list) {
       <td>${badgeHtml(f.estado_eval)}</td>
       <td>${formatDate(f.fecha_solicitud)}</td>
       <td>
-        ${editable || deletable ? `<div class="table-actions">
+        <div class="table-actions">
+          <button class="btn btn-ghost btn-icon btn-xs"
+            data-action="report-familia" data-id="${f.id}" title="Reporte PDF">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </button>
           ${editable ? `<button class="btn btn-ghost btn-icon btn-xs"
             data-action="edit-familia" data-id="${f.id}" title="Editar">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -134,7 +144,7 @@ function render(list) {
               <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m5 5v6m4-6v6"/>
             </svg>
           </button>` : ''}
-        </div>` : '<span style="color:var(--text-3);">—</span>'}
+        </div>
       </td>
     </tr>
   `).join('');
@@ -148,6 +158,31 @@ function applyFilters() {
   });
   _page = 0;
   load();
+}
+
+async function reporteFamilia(id) {
+  const f = _list.find(x => x.id === id);
+  if (!f) return;
+  const [org, casosRes] = await Promise.all([configService.get(), casosService.getByFamilia(id)]);
+  const bloques = [
+    { heading: 'Datos de la familia', lines: [
+      `Apellido: ${f.apellido}`,
+      `Contacto: ${f.contacto ?? '—'}`,
+      `Estado de evaluación: ${f.estado_eval}`,
+      `Fecha de solicitud: ${formatDate(f.fecha_solicitud)}`,
+      f.notas ? `Notas: ${f.notas}` : null,
+    ].filter(Boolean) },
+    { heading: 'Casos asociados', table: {
+      columns: ['Caso', 'Niño', 'Etapa', 'Inicio', 'Cierre'],
+      rows: (casosRes.data ?? []).map(c => [
+        '#' + c.id.slice(-6).toUpperCase(), c.menor?.nombre ?? '—',
+        c.etapa, formatDate(c.fecha_inicio), c.fecha_cierre ? formatDate(c.fecha_cierre) : '—',
+      ]),
+    } },
+  ];
+  try {
+    await reportePDF(org, `Reporte de la familia · ${f.apellido}`, bloques, `familia_${id.slice(-6)}.pdf`);
+  } catch { toast('No se pudo generar el reporte', 'error'); }
 }
 
 async function exportar(tipo) {

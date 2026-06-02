@@ -4,11 +4,12 @@ import { menoresService }  from '../services/menoresService.js';
 import { documentosService } from '../services/documentosService.js';
 import { postadopcionService } from '../services/postadopcionService.js';
 import { usuariosService } from '../services/usuariosService.js';
+import { configService } from '../services/configService.js';
 import { logAudit, getUserId, getEntidadHistorial } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
 import { badgeHtml, formatDate, formatDateTime, pagerHtml } from '../core/ui.js';
-import { exportCSV, exportPDF, exportExcel } from '../core/export.js';
+import { exportCSV, exportPDF, exportExcel, reportePDF } from '../core/export.js';
 import { getParams, setParams } from '../core/router.js';
 import { can, getRole } from '../core/auth.js';
 import { createCombobox } from '../../components/combobox.js';
@@ -120,6 +121,7 @@ export async function setupCasos() {
       const b = e.target.closest('[data-exptab]');
       if (b) showExpTab(b.dataset.exptab);
     });
+    document.getElementById('exp-pdf')?.addEventListener('click', reporteCasoConsolidado);
 
     // Post-adopción: registrar entrada / cambiar estado del seguimiento
     document.getElementById('exp-post')?.addEventListener('click', async e => {
@@ -687,6 +689,52 @@ async function addPost() {
   } finally {
     _savingPost = false;
   }
+}
+
+// Expediente consolidado para impresión: info + documentos + notas + post-adopción + historial.
+async function reporteCasoConsolidado() {
+  const id = _expCasoId;
+  const caso = _list.find(x => x.id === id);
+  if (!caso) return;
+  const code = id.slice(-6).toUpperCase();
+
+  const [org, docs, notas, post, hist] = await Promise.all([
+    configService.get(),
+    documentosService.list(id),
+    casosService.getSeguimiento(id),
+    postadopcionService.list(id),
+    getEntidadHistorial('casos', id),
+  ]);
+
+  const bloques = [
+    { heading: 'Información del expediente', lines: [
+      `Caso: #${code}`,
+      `Niño: ${caso.menor?.nombre ?? '—'}`,
+      `Familia: ${caso.familia?.apellido ?? '—'}`,
+      `Etapa: ${ETAPA_LABELS[caso.etapa] ?? caso.etapa}`,
+      `Estado post-adopción: ${POST_ESTADO_LABELS[caso.estado_post] ?? caso.estado_post ?? '—'}`,
+    ] },
+    { heading: 'Documentos', table: {
+      columns: ['Tipo', 'Nombre', 'Estado', 'Fecha'],
+      rows: (docs.data ?? []).map(d => [TIPO_DOC_LABELS[d.tipo] ?? d.tipo, d.nombre, d.estado, formatDate(d.fecha)]),
+    } },
+    { heading: 'Seguimiento (notas)', table: {
+      columns: ['Fecha', 'Descripción'],
+      rows: (notas.data ?? []).map(n => [formatDate(n.fecha), n.descripcion]),
+    } },
+    { heading: 'Post-adopción', table: {
+      columns: ['Fecha', 'Tipo', 'Observaciones', 'Próxima visita'],
+      rows: (post.data ?? []).map(r => [formatDate(r.fecha), POST_TIPO_LABELS[r.tipo] ?? r.tipo, r.observaciones ?? '', r.proxima_visita ? formatDate(r.proxima_visita) : '']),
+    } },
+    { heading: 'Historial de cambios', table: {
+      columns: ['Fecha', 'Acción', 'Cambio'],
+      rows: (hist.data ?? []).map(h => [formatDate(h.fecha), h.accion, [h.valor_antes, h.valor_despues].filter(Boolean).join(' → ')]),
+    } },
+  ];
+
+  try {
+    await reportePDF(org, `Expediente consolidado · Caso #${code}`, bloques, `expediente_${code}.pdf`);
+  } catch { toast('No se pudo generar el expediente', 'error'); }
 }
 
 async function exportarPostPDF() {

@@ -8,6 +8,7 @@ import { initIdleTimeout } from './core/session.js';
 import { initErrorLogger } from './core/logger.js';
 import { accesoService } from './services/accesoService.js';
 import { errorService } from './services/errorService.js';
+import { configService } from './services/configService.js';
 import { toast } from '../components/toast.js';
 import { initOverview } from './pages/dashboard.js';
 import { setupMenores } from './features/menores.js';
@@ -17,6 +18,7 @@ import { setupUsuarios } from './features/usuarios.js';
 import { setupPapelera } from './features/papelera.js';
 import { setupBitacora } from './features/bitacora.js';
 import { setupErrores } from './features/errores.js';
+import { setupConfig } from './features/config.js';
 
 // ── Logger global de errores (lo antes posible, para capturar todo) ──
 initErrorLogger({ onError: errorService.log });
@@ -44,7 +46,8 @@ document.getElementById('header-user-name').textContent = displayName;
 document.getElementById('header-avatar').textContent    = initials;
 
 // ── Shell ─────────────────────────────────────────────────────
-mountSidebar({ name: displayName, initials, role: roleLabel(), canManageUsers: can('manage_users'), onNavigate: navigateTo, onLogout: signOut }); // must precede initRouter — creates .nav-link nodes that setActiveNav targets
+const org = await configService.get();
+mountSidebar({ name: displayName, initials, role: roleLabel(), org: org.nombre, canManageUsers: can('manage_users'), onNavigate: navigateTo, onLogout: signOut }); // must precede initRouter — creates .nav-link nodes that setActiveNav targets
 initMobileMenu();
 initModals();
 
@@ -77,6 +80,10 @@ async function initTab(tab) {
   if (tab === 'errores') {
     if (!can('manage_users')) return navigateTo('overview'); // monitoreo: solo admin
     return setupErrores();
+  }
+  if (tab === 'config') {
+    if (!can('manage_users')) return navigateTo('overview'); // configuración: solo admin
+    return setupConfig();
   }
 }
 

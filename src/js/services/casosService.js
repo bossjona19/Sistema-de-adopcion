@@ -35,6 +35,18 @@ export const casosService = {
       ? q.or(`estado.eq.disponible,id.eq.${includeId}`)
       : q.eq('estado', 'disponible');
   },
+  getByMenor(menorId) {
+    return supabase.from('casos')
+      .select('id, etapa, fecha_inicio, fecha_cierre, familia:familias(apellido)')
+      .is('deleted_at', null).eq('menor_id', menorId)
+      .order('created_at', { ascending: false });
+  },
+  getByFamilia(familiaId) {
+    return supabase.from('casos')
+      .select('id, etapa, fecha_inicio, fecha_cierre, menor:menores(nombre)')
+      .is('deleted_at', null).eq('familia_id', familiaId)
+      .order('created_at', { ascending: false });
+  },
   getCasosActivos() {
     return supabase.from('casos')
       .select('familia_id')

@@ -1,9 +1,11 @@
 import { menoresService } from '../services/menoresService.js';
+import { casosService } from '../services/casosService.js';
+import { configService } from '../services/configService.js';
 import { logAudit } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
 import { getInitials, formatDate, badgeHtml, calcAge, diffSummary, pagerHtml } from '../core/ui.js';
-import { exportCSV, exportPDF, exportExcel } from '../core/export.js';
+import { exportCSV, exportPDF, exportExcel, reportePDF } from '../core/export.js';
 import { getParams, setParams } from '../core/router.js';
 import { can } from '../core/auth.js';
 
@@ -63,6 +65,7 @@ export async function setupMenores() {
       const { action, id } = btn.dataset;
       if (action === 'edit-menor')   edit(id);
       if (action === 'delete-menor') remove(id);
+      if (action === 'report-menor') reporteNino(id);
     });
     _wired = true;
   }
@@ -130,7 +133,14 @@ function render(list) {
       <td style="max-width:200px;" class="truncate">${m.descripcion ?? '—'}</td>
       <td>${formatDate(m.created_at)}</td>
       <td>
-        ${editable || deletable ? `<div class="table-actions">
+        <div class="table-actions">
+          <button class="btn btn-ghost btn-icon btn-xs"
+            data-action="report-menor" data-id="${m.id}" title="Reporte PDF">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </button>
           ${editable ? `<button class="btn btn-ghost btn-icon btn-xs"
             data-action="edit-menor" data-id="${m.id}" title="Editar">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -145,7 +155,7 @@ function render(list) {
               <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m5 5v6m4-6v6"/>
             </svg>
           </button>` : ''}
-        </div>` : '<span style="color:var(--text-3);">—</span>'}
+        </div>
       </td>
     </tr>
   `;
@@ -161,6 +171,34 @@ function applyFilters() {
   });
   _page = 0;
   load();
+}
+
+// Reporte PDF institucional de un niño (datos + casos asociados).
+async function reporteNino(id) {
+  const m = _list.find(x => x.id === id);
+  if (!m) return;
+  const [org, casosRes] = await Promise.all([configService.get(), casosService.getByMenor(id)]);
+  const edad = calcAge(m.fecha_nacimiento) ?? m.edad;
+  const bloques = [
+    { heading: 'Datos del niño', lines: [
+      `Nombre: ${m.nombre}`,
+      `Edad: ${edad != null ? edad + ' años' : '—'}`,
+      `Género: ${m.genero ?? '—'}`,
+      `Estado: ${m.estado}`,
+      `Registrado: ${formatDate(m.created_at)}`,
+      m.descripcion ? `Descripción: ${m.descripcion}` : null,
+    ].filter(Boolean) },
+    { heading: 'Casos asociados', table: {
+      columns: ['Caso', 'Familia', 'Etapa', 'Inicio', 'Cierre'],
+      rows: (casosRes.data ?? []).map(c => [
+        '#' + c.id.slice(-6).toUpperCase(), 'Familia ' + (c.familia?.apellido ?? '—'),
+        c.etapa, formatDate(c.fecha_inicio), c.fecha_cierre ? formatDate(c.fecha_cierre) : '—',
+      ]),
+    } },
+  ];
+  try {
+    await reportePDF(org, `Reporte del niño · ${m.nombre}`, bloques, `nino_${id.slice(-6)}.pdf`);
+  } catch { toast('No se pudo generar el reporte', 'error'); }
 }
 
 // Exporta TODO el listado filtrado (no solo la página actual).

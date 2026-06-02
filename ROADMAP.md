@@ -290,12 +290,24 @@ Extiende el ciclo de vida **después** de la adopción: bienestar del menor/fami
 
 ---
 
-### B7 — Configuración institucional ⚙️ (adaptable, no atado a una sola ONG)
-- [ ] Tabla `config` / `organizacion` (nombre, logo, contacto)
-- [ ] Catálogos editables: tipos de documento, catálogos de estados
-- [ ] Pantalla de administración para editarlos
+### B7 — Configuración institucional ⚙️ (adaptable, no atado a una sola ONG) — ✅ COMPLETADO
+- [x] Tabla `organizacion` (nombre, contacto, dirección, logo_url) → `docs/fase_b7_organizacion.sql`
+- [x] Pantalla de administración (panel **Configuración**, solo admin) + nombre de la ONG en el sidebar
+- [x] `configService` (cacheado) — alimenta la cabecera de los reportes (A8)
+- [ ] Catálogos editables (tipos de documento/estados) — *diferido (requiere CHECK dinámicos); bajo ROI*
 
-**Archivos:** nuevo `services/configService.js`, `features/config.js`, migración SQL · **DB:** tabla `config` · **Esfuerzo:** M · **Depende de:** A1
+**Archivos:** `services/configService.js`, `features/config.js`, `dashboard.html`, `sidebar.js`, `docs/fase_b7_organizacion.sql` · **DB:** tabla `organizacion` · **Esfuerzo:** M
+
+---
+
+### A8 — Expedientes y Reportes institucionales 📄 (añadida 2026-06-02) — ✅ COMPLETADO
+PDFs con cabecera institucional (logo + datos ONG de B7) para entregar a dirección/entidades.
+- [x] **Reporte PDF del Niño** (datos + casos asociados) — botón en cada fila de Niños
+- [x] **Reporte PDF de la Familia** (datos + casos asociados) — botón en cada fila de Familias
+- [x] **Expediente consolidado del Caso** (info + documentos + notas + post-adopción + historial) — botón "Expediente PDF" en el modal
+- [x] Cabecera con **logo y datos de la ONG** (`reportePDF` en `core/export.js`; logo vía dataURL best-effort, tolera CORS)
+
+**Archivos:** `core/export.js` (`reportePDF`/`loadLogo`), `casosService.js` (`getByMenor`/`getByFamilia`), `features/menores|familias|casos.js` · **DB:** — · **Esfuerzo:** M · **Depende de:** A4, B7
 
 ---
 
@@ -398,6 +410,7 @@ Extiende el ciclo de vida **después** de la adopción: bienestar del menor/fami
 | 2026-06-01 | **B6 QA (CIERRE)** | 🟢 **B6 COMPLETO.** `docs/qa/test-cases.md` (8 áreas, ~40 casos manuales: auth/roles/CRUD/casos/expediente/auditoría/dashboard/PWA) + `docs/qa/regression-checklist.md` (humo + por área + regla de release). Sin código. | **🟡 Fase Institucional CERRADA (B2+B3+B6). Siguiente: 🟢 Escalabilidad → B4 (paginación/rendimiento)** |
 | 2026-06-02 | **Fix export Excel** | 🐛 SheetJS daba "No se pudo generar" → URL del CDN mal (`/package/dist/` es del CDN propio de SheetJS, no de jsdelivr). Corregido a `/dist/` (verificado 200). SW→v27 | — |
 | 2026-06-02 | **A7 Post-adopción (slice 1)** | 🟢 Nueva fase (idea del usuario: el bienestar posterior importa). Tabla `postadopcion` + `casos.estado_post` (`fase_a7_postadopcion.sql`, RLS hereda visibilidad del caso). Pestaña **"Post-adopción"** en el expediente (habilitada al Cierre): visitas/informes/incidencias, próxima visita, estados `no_iniciado→en_seguimiento→completado→cerrado`. Tipo doc `informe_seguimiento`. Integrado a timeline + bitácora. SW→v29 | Usuario corre `fase_a7_postadopcion.sql`. **A7 slice 2: dashboard de vencimientos + PDF** |
+| 2026-06-02 | **B7 Config + A8 Reportes (CIERRE)** | 🟢 **B7:** tabla `organizacion` + `configService` + panel **Configuración** (admin) + nombre ONG en sidebar (`fase_b7_organizacion.sql`). **A8:** `reportePDF` (cabecera con logo+datos ONG, tolera CORS) → Reporte PDF de **Niño**, **Familia** y **Expediente consolidado del Caso** (info+docs+notas+post-adopción+historial). SW→v32 | Usuario corre `fase_b7_organizacion.sql` + configura su ONG. **Falta de 🟢: A6 (notificaciones)** |
 | 2026-06-02 | **A7 Post-adopción (slice 2 — CIERRE)** | 🟢 **A7 COMPLETO.** Tarjeta de dashboard "Seguimiento post-adopción" (casos en seguimiento + próximas visitas, vencidas en rojo). PDF de seguimiento por caso. **Fix doble-submit** (flag en post-adopción, botón en notas). SW→v30 | Probar. **Falta de 🟢: A6 (notificaciones), B7 (config institucional)** |
 | 2026-06-02 | **B5 Calidad/Monitoreo (CIERRE)** | 🟢 **B5 COMPLETO.** Logger global puro (`core/logger.js`, tope+dedupe) → `errorService` → tabla `errores` (`fase_b5_errores.sql`). Panel **Monitoreo** (admin). `404.html` amigable. `docs/MONITORING.md` (logs Supabase/Vercel + checks de integridad). SW→v28 | Usuario corre `fase_b5_errores.sql`. **Falta de 🟢: A6 (notificaciones), B7 (config institucional)** | 🟢 **B8 COMPLETO.** RLS por propiedad: trabajador_social ve/opera solo sus casos (`usuario_id=auth.uid()`); admin/coord/director ven todos (`ve_todos_casos()`). Notas y documentos **cascadan** el aislamiento vía `caso_id in (select id from casos)`. UI: selector de **Responsable** (admin/coord) en el modal + checkbox "**Solo mis casos**" (persistente en URL). `docs/fase_b8_asignacion.sql`. SW→v26 | Usuario corre `fase_b8_asignacion.sql` + prueba con un trabajador_social. Falta de 🟢: A6, B5, B7 |
 | 2026-06-02 | **A5 Reportes+Filtros (CIERRE)** | 🟢 **A5 COMPLETO.** `core/export.js` (CSV nativo + PDF jsPDF/autotable + Excel SheetJS, CDN diferido); botones Exportar en los 3 listados; `getForExport` exporta TODO el filtrado (no solo la página). Filtros persistentes en URL (router soporta `#tab?k=v` con replaceState; restauran al recargar/compartir); filtro de **género** añadido a niños. SW→v25 | Probar export y URLs filtradas. **Siguiente: A6 (notificaciones, opcional) o B5/B7** |
