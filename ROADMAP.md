@@ -237,7 +237,7 @@ Documentos por expediente con validación de estados.
 - [x] Carga incremental por página + controles Anterior/Siguiente (`pagerHtml`)
 - [x] **Búsqueda y filtros server-side** (antes eran client-side → solo buscaban la página cargada); búsqueda con debounce 300 ms
 - [x] Índices SQL → `docs/fase_b4_indices.sql` (GIN `pg_trgm` para texto + parciales por estado/etapa/orden)
-- [ ] Validar con dataset grande → `docs/seed_grande.sql` (~5.000 niños/2.000 familias/1.000 casos) *(pendiente: correr en proyecto de prueba)*
+- [ ] Validar con dataset grande → `docs/seed_grande.sql` (~5.000 familias / 1.500 niños / 1.000 casos — proporción realista: más solicitantes que niños) *(pendiente: correr en proyecto de prueba)*
 
 **Archivos:** `services/*`, `features/*`, migración índices · **DB:** índices · **Esfuerzo:** M · **Depende de:** A5 (filtros)
 
