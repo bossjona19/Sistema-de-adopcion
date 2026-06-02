@@ -24,6 +24,7 @@ let _cbMen  = null;
 let _wired  = false;
 let _docsCasoId = null;
 let _expCasoId  = null;
+let _savingPost = false; // evita doble-submit en post-adopción
 
 const PAGE_SIZE = 20;
 let _page  = 0;
@@ -123,6 +124,7 @@ export async function setupCasos() {
     // Post-adopción: registrar entrada / cambiar estado del seguimiento
     document.getElementById('exp-post')?.addEventListener('click', async e => {
       if (e.target.closest('[data-post-action="add"]')) await addPost();
+      if (e.target.closest('[data-post-action="pdf"]')) await exportarPostPDF();
     });
     document.getElementById('exp-post')?.addEventListener('change', async e => {
       const sel = e.target.closest('[data-post-action="estado"]');
@@ -383,9 +385,12 @@ async function renderNotas(id) {
 
 async function saveNota(ev) {
   ev.preventDefault();
+  const btn = ev.target.querySelector('[type=submit]');
+  if (btn?.disabled) return;            // ya se está guardando (anti doble-submit)
   const casoId = document.getElementById('notas-caso-id').value;
   const desc   = document.getElementById('notas-desc').value.trim();
   if (!desc) return;
+  if (btn) btn.disabled = true;
 
   const { error } = await casosService.addSeguimiento({
     caso_id:    casoId,
@@ -394,6 +399,7 @@ async function saveNota(ev) {
     usuario_id: getUserId(),
   });
 
+  if (btn) btn.disabled = false;
   if (error) { toast('Error al guardar nota', 'error'); return; }
   await logAudit('Agregar nota de seguimiento', 'seguimiento', { entidadId: casoId, despues: desc.slice(0, 80) });
   toast('Nota guardada', 'success');
@@ -645,6 +651,7 @@ async function renderPost(id) {
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
       <span style="font-size:.8125rem;color:var(--text-3);">Estado del seguimiento:</span>
       ${estadoCtrl}
+      ${(data ?? []).length ? `<button class="btn btn-ghost btn-xs" data-post-action="pdf" style="margin-left:auto;">PDF</button>` : ''}
     </div>
     ${prox ? `<div style="font-size:.8125rem;color:var(--text-2);margin-bottom:12px;">📅 Próxima visita programada: <strong>${formatDate(prox)}</strong></div>` : ''}
     ${lista}
@@ -652,26 +659,50 @@ async function renderPost(id) {
 }
 
 async function addPost() {
-  const tipo    = document.getElementById('post-tipo')?.value;
-  const fecha   = document.getElementById('post-fecha')?.value || new Date().toISOString().slice(0, 10);
-  const obs     = document.getElementById('post-obs')?.value.trim();
-  const proxima = document.getElementById('post-proxima')?.value || null;
+  if (_savingPost) return;          // bloquea el doble-click mientras guarda
+  _savingPost = true;
+  const btn = document.querySelector('#exp-post [data-post-action="add"]');
+  if (btn) btn.disabled = true;
+  try {
+    const tipo    = document.getElementById('post-tipo')?.value;
+    const fecha   = document.getElementById('post-fecha')?.value || new Date().toISOString().slice(0, 10);
+    const obs     = document.getElementById('post-obs')?.value.trim();
+    const proxima = document.getElementById('post-proxima')?.value || null;
 
-  const { error } = await postadopcionService.create({
-    caso_id: _expCasoId, tipo, fecha,
-    observaciones: obs || null, proxima_visita: proxima, responsable: getUserId(),
-  });
-  if (error) { toast('Error al registrar: ' + error.message, 'error'); return; }
+    const { error } = await postadopcionService.create({
+      caso_id: _expCasoId, tipo, fecha,
+      observaciones: obs || null, proxima_visita: proxima, responsable: getUserId(),
+    });
+    if (error) { toast('Error al registrar: ' + error.message, 'error'); if (btn) btn.disabled = false; return; }
 
-  // Primer registro → arranca el seguimiento automáticamente.
-  const caso = _list.find(x => x.id === _expCasoId);
-  if (caso && caso.estado_post === 'no_iniciado') {
-    await casosService.setEstadoPost(_expCasoId, 'en_seguimiento');
-    caso.estado_post = 'en_seguimiento';
+    // Primer registro → arranca el seguimiento automáticamente.
+    const caso = _list.find(x => x.id === _expCasoId);
+    if (caso && caso.estado_post === 'no_iniciado') {
+      await casosService.setEstadoPost(_expCasoId, 'en_seguimiento');
+      caso.estado_post = 'en_seguimiento';
+    }
+    await logAudit(`Seguimiento post-adopción: ${POST_TIPO_LABELS[tipo] ?? tipo}`, 'postadopcion', { entidadId: _expCasoId, despues: obs?.slice(0, 80) });
+    toast('Seguimiento registrado', 'success');
+    await renderPost(_expCasoId); // re-render → botón nuevo, ya habilitado
+  } finally {
+    _savingPost = false;
   }
-  await logAudit(`Seguimiento post-adopción: ${POST_TIPO_LABELS[tipo] ?? tipo}`, 'postadopcion', { entidadId: _expCasoId, despues: obs?.slice(0, 80) });
-  toast('Seguimiento registrado', 'success');
-  await renderPost(_expCasoId);
+}
+
+async function exportarPostPDF() {
+  const { data } = await postadopcionService.list(_expCasoId);
+  if (!data?.length) { toast('No hay seguimiento para exportar', 'warning'); return; }
+  const code = _expCasoId.slice(-6).toUpperCase();
+  const cols = [
+    { label: 'Fecha',          value: r => formatDate(r.fecha) },
+    { label: 'Tipo',           value: r => POST_TIPO_LABELS[r.tipo] ?? r.tipo },
+    { label: 'Responsable',    value: r => r.responsable?.nombre ?? '' },
+    { label: 'Observaciones',  value: r => r.observaciones ?? '' },
+    { label: 'Próxima visita', value: r => r.proxima_visita ? formatDate(r.proxima_visita) : '' },
+  ];
+  try {
+    await exportPDF(`Seguimiento post-adopción · Caso #${code}`, `seguimiento_${code}.pdf`, cols, data);
+  } catch { toast('No se pudo generar el PDF', 'error'); }
 }
 
 async function cambiarEstadoPost(estado) {

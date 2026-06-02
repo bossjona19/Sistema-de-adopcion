@@ -95,6 +95,28 @@ export const dashboardService = {
     return buckets;
   },
 
+  // Resumen de seguimiento post-adopción: casos en seguimiento + próximas visitas.
+  async getSeguimientoResumen() {
+    const hoy = new Date().toISOString().slice(0, 10);
+    const [enSeg, vis] = await Promise.all([
+      supabase.from('casos').select('*', { count: 'exact', head: true })
+        .is('deleted_at', null).eq('estado_post', 'en_seguimiento'),
+      supabase.from('postadopcion')
+        .select('proxima_visita, caso:casos(id, menor:menores(nombre), familia:familias(apellido))')
+        .not('proxima_visita', 'is', null)
+        .order('proxima_visita', { ascending: true })
+        .limit(8),
+    ]);
+    const visitas = (vis.data ?? []).map(v => ({
+      proxima_visita: v.proxima_visita,
+      vencida:        v.proxima_visita < hoy,
+      casoId:         v.caso?.id ?? '',
+      nino:           v.caso?.menor?.nombre ?? '—',
+      familia:        v.caso?.familia?.apellido ?? '—',
+    }));
+    return { enSeguimiento: enSeg.count ?? 0, visitas };
+  },
+
   // Distribución de niños por estado y por género.
   async getMenoresDist() {
     const { data } = await supabase.from('menores').select('estado, genero').is('deleted_at', null);

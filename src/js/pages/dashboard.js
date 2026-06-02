@@ -10,7 +10,30 @@ let _chartPromise = null;
 const _charts = {}; // instancias vivas, para destruir antes de re-render
 
 export async function initOverview() {
-  await Promise.all([loadKPIs(), loadStages(), loadActivity(), loadGestion()]);
+  await Promise.all([loadKPIs(), loadStages(), loadActivity(), loadGestion(), loadSeguimiento()]);
+}
+
+// ── Seguimiento post-adopción (A7) ────────────────────────────
+async function loadSeguimiento() {
+  const r = await dashboardService.getSeguimientoResumen();
+  const elN = document.getElementById('seg-encurso');
+  if (elN) elN.textContent = r.enSeguimiento;
+
+  const list = document.getElementById('seg-visitas');
+  if (!list) return;
+  if (!r.visitas.length) {
+    list.innerHTML = `<div style="padding:18px;text-align:center;font-size:.875rem;color:var(--text-3);">Sin visitas programadas</div>`;
+    return;
+  }
+  list.innerHTML = `<div class="activity-list">${r.visitas.map(v => `
+    <div class="activity-item">
+      <div class="activity-dot" style="background:${v.vencida ? 'var(--danger)' : 'var(--primary-dim)'};"></div>
+      <div>
+        <div class="activity-text">Caso #${(v.casoId || '').slice(-6).toUpperCase()} · ${v.nino} / Familia ${v.familia}</div>
+        <div class="activity-time">${v.vencida ? '⚠️ Vencida: ' : 'Próxima: '}${formatDate(v.proxima_visita)}</div>
+      </div>
+    </div>
+  `).join('')}</div>`;
 }
 
 // ── Chart.js (carga diferida vía CDN, solo al abrir el dashboard) ──
