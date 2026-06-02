@@ -131,7 +131,7 @@
           <polyline points="9 22 9 12 15 12 15 22"/>
         </svg>
       </div>
-      <span class="pub-brand-name">Proyecto OMEGA</span>
+      <span class="pub-brand-name" data-org>Proyecto OMEGA</span>
     </a>
     <div style="display:flex;gap:8px;align-items:center;">
       <a class="btn btn-ghost btn-sm" href="/solicitud.html">Solicitar adopción</a>
@@ -229,11 +229,15 @@
 
 <!-- Footer -->
 <footer class="pub-footer">
-  <p>Proyecto OMEGA &copy; 2026 · Sistema de Gestión de Adopciones ·
+  <p><span data-org>Proyecto OMEGA</span> &copy; 2026 · Sistema de Gestión de Adopciones ·
     <a href="/login.html">Acceso administrativo</a>
   </p>
 </footer>
 
+<script type="module">
+  import { applyBranding } from '/src/js/branding.js';
+  applyBranding();
+</script>
 <script type="module" src="/src/js/sw-register.js"></script>
 
 </body>

@@ -160,7 +160,7 @@
         </svg>
       </div>
       <div>
-        <span class="pub-brand-name">Proyecto OMEGA</span>
+        <span class="pub-brand-name" data-org>Proyecto OMEGA</span>
         <span class="pub-brand-sub">Sistema de Adopciones</span>
       </div>
     </a>
@@ -379,7 +379,7 @@
         <div class="form-check-group">
           <label class="form-check">
             <input type="checkbox" id="acepta_seguimiento" name="acepta_seguimiento" required>
-            <span>Acepto el proceso de seguimiento post-adopción por parte del equipo técnico de Proyecto OMEGA durante el período establecido por la legislación vigente de la República de Panamá.</span>
+            <span>Acepto el proceso de seguimiento post-adopción por parte del equipo técnico de <span data-org>Proyecto OMEGA</span> durante el período establecido por la legislación vigente de la República de Panamá.</span>
           </label>
           <label class="form-check">
             <input type="checkbox" id="acepta_evaluacion" name="acepta_evaluacion" required>
@@ -387,7 +387,7 @@
           </label>
           <label class="form-check">
             <input type="checkbox" id="acepta_terminos" name="acepta_terminos" required>
-            <span>Declaro bajo fe de juramento que toda la información proporcionada en este formulario es veraz y completa, y acepto los términos, condiciones y obligaciones del proceso de adopción de Proyecto OMEGA.</span>
+            <span>Declaro bajo fe de juramento que toda la información proporcionada en este formulario es veraz y completa, y acepto los términos, condiciones y obligaciones del proceso de adopción de <span data-org>Proyecto OMEGA</span>.</span>
           </label>
         </div>
 
@@ -425,11 +425,15 @@
 
 <!-- Footer -->
 <footer class="pub-footer">
-  <p>Proyecto OMEGA &copy; 2026 · Sistema de Gestión de Adopciones ·
+  <p><span data-org>Proyecto OMEGA</span> &copy; 2026 · Sistema de Gestión de Adopciones ·
     <a href="/login.html">Acceso administrativo</a>
   </p>
 </footer>
 
+<script type="module">
+  import { applyBranding } from '/src/js/branding.js';
+  applyBranding();
+</script>
 <script type="module" src="/src/js/pages/solicitud.js"></script>
 <script type="module" src="/src/js/sw-register.js"></script>
 

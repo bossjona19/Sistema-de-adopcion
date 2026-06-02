@@ -22,7 +22,7 @@
           <polyline points="9 22 9 12 15 12 15 22"/>
         </svg>
       </div>
-      <h1>Proyecto OMEGA</h1>
+      <h1 data-org>Proyecto OMEGA</h1>
       <p>Sistema de Gestión de Adopciones</p>
     </div>
 
@@ -80,7 +80,10 @@
 <script type="module">
   import { signIn, signInWithGoogle, redirectIfAuthenticated } from '/src/js/core/auth.js';
   import { accesoService } from '/src/js/services/accesoService.js';
+  import { applyBranding } from '/src/js/branding.js';
   import '/src/js/sw-register.js';
+
+  applyBranding();
 
   // Show error if redirected from requireAuth / OAuth callback
   const params = new URLSearchParams(location.search);

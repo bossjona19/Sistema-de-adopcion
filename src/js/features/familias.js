@@ -165,13 +165,21 @@ async function reporteFamilia(id) {
   if (!f) return;
   const [org, casosRes] = await Promise.all([configService.get(), casosService.getByFamilia(id)]);
   const bloques = [
-    { heading: 'Datos de la familia', lines: [
-      `Apellido: ${f.apellido}`,
+    { heading: 'Datos del solicitante', lines: [
+      `Nombre completo: ${f.nombre_completo ?? '—'}`,
+      `Cédula: ${f.cedula ?? '—'}`,
+      `Fecha de nacimiento: ${f.fecha_nacimiento ? formatDate(f.fecha_nacimiento) : '—'}`,
+      `Email: ${f.email ?? '—'}`,
+      `Teléfono: ${f.telefono ?? '—'}`,
+      `Dirección: ${f.direccion ?? '—'}`,
+    ] },
+    { heading: 'Familia y evaluación', lines: [
+      `Apellido familiar: ${f.apellido}`,
       `Contacto: ${f.contacto ?? '—'}`,
       `Estado de evaluación: ${f.estado_eval}`,
       `Fecha de solicitud: ${formatDate(f.fecha_solicitud)}`,
-      f.notas ? `Notas: ${f.notas}` : null,
-    ].filter(Boolean) },
+      `Notas: ${f.notas ?? '—'}`,
+    ] },
     { heading: 'Casos asociados', table: {
       columns: ['Caso', 'Niño', 'Etapa', 'Inicio', 'Cierre'],
       rows: (casosRes.data ?? []).map(c => [

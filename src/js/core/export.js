@@ -113,19 +113,28 @@ export async function reportePDF(org, titulo, bloques, filename) {
   if (sub) { doc.setFontSize(9); doc.setTextColor(120); doc.text(sub, tx, y + 12); }
   y += 22;
 
-  doc.setTextColor(20); doc.setFontSize(12); doc.text(titulo, 14, y);
-  doc.setDrawColor(220); doc.line(14, y + 3, pageW - 14, y + 3);
+  doc.setTextColor(20); doc.setFontSize(12);
+  const tLines = doc.splitTextToSize(titulo, pageW - 28); // título también ajusta ancho
+  doc.text(tLines, 14, y);
+  const ty = y + (tLines.length - 1) * 6;
+  doc.setDrawColor(220); doc.line(14, ty + 3, pageW - 14, ty + 3);
   doc.setFontSize(8); doc.setTextColor(140);
-  doc.text('Generado: ' + new Date().toLocaleString('es-ES'), 14, y + 9);
+  doc.text('Generado: ' + new Date().toLocaleString('es-ES'), 14, ty + 9);
   doc.setTextColor(20);
-  y += 16;
+  y = ty + 16;
 
   for (const b of bloques) {
     if (y > 265) { doc.addPage(); y = 16; }
     if (b.heading) { doc.setFontSize(11); doc.text(b.heading, 14, y); y += 6; }
     if (b.lines?.length) {
       doc.setFontSize(9);
-      for (const l of b.lines) { if (y > 282) { doc.addPage(); y = 16; } doc.text(String(l), 16, y); y += 5; }
+      const maxW = pageW - 16 - 14; // ancho disponible (margen izq. del texto + margen der.)
+      for (const l of b.lines) {
+        for (const wl of doc.splitTextToSize(String(l), maxW)) { // wrap automático
+          if (y > 285) { doc.addPage(); y = 16; }                 // continúa en otra página
+          doc.text(wl, 16, y); y += 5;
+        }
+      }
       y += 3;
     }
     if (b.table) {

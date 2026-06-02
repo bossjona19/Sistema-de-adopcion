@@ -9,6 +9,7 @@ import { initErrorLogger } from './core/logger.js';
 import { accesoService } from './services/accesoService.js';
 import { errorService } from './services/errorService.js';
 import { configService } from './services/configService.js';
+import { applyBranding } from './branding.js';
 import { toast } from '../components/toast.js';
 import { initOverview } from './pages/dashboard.js';
 import { setupMenores } from './features/menores.js';
@@ -47,6 +48,7 @@ document.getElementById('header-avatar').textContent    = initials;
 
 // ── Shell ─────────────────────────────────────────────────────
 const org = await configService.get();
+applyBranding(); // título del navegador + breadcrumb con el nombre de la ONG
 mountSidebar({ name: displayName, initials, role: roleLabel(), org: org.nombre, canManageUsers: can('manage_users'), onNavigate: navigateTo, onLogout: signOut }); // must precede initRouter — creates .nav-link nodes that setActiveNav targets
 initMobileMenu();
 initModals();
