@@ -24,7 +24,7 @@ async function ensureJsPDF() {
   return window.jspdf.jsPDF;
 }
 async function ensureXLSX() {
-  if (!window.XLSX) await loadScript('xlsx', 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/package/dist/xlsx.full.min.js');
+  if (!window.XLSX) await loadScript('xlsx', 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
   return window.XLSX;
 }
 
