@@ -3,7 +3,15 @@ import { logAudit } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
 import { getInitials, formatDate, badgeHtml, diffSummary, pagerHtml } from '../core/ui.js';
+import { exportCSV, exportPDF, exportExcel } from '../core/export.js';
 import { can } from '../core/auth.js';
+
+const EXPORT_COLS = [
+  { label: 'Apellido',  value: f => f.apellido },
+  { label: 'Contacto',  value: f => f.contacto ?? '' },
+  { label: 'Estado',    value: f => f.estado_eval },
+  { label: 'Solicitud', value: f => formatDate(f.fecha_solicitud) },
+];
 
 const PAGE_SIZE = 20;
 let _list   = [];
@@ -21,6 +29,10 @@ export async function setupFamilias() {
       _searchTimer = setTimeout(applyFilters, 300); // debounce: búsqueda server-side
     });
     document.getElementById('familias-filter')?.addEventListener('change', applyFilters);
+    document.getElementById('familias-export')?.addEventListener('click', e => {
+      const b = e.target.closest('[data-export]');
+      if (b) exportar(b.dataset.export);
+    });
     document.getElementById('familias-pager')?.addEventListener('click', e => {
       const b = e.target.closest('[data-page-action]');
       if (!b || b.disabled) return;
@@ -121,6 +133,21 @@ function render(list) {
 function applyFilters() {
   _page = 0;
   load();
+}
+
+async function exportar(tipo) {
+  const { data, error } = await familiasService.getForExport({
+    search: document.getElementById('familias-search')?.value.trim() ?? '',
+    estado: document.getElementById('familias-filter')?.value ?? '',
+  });
+  if (error) { toast('No se pudo exportar', 'error'); return; }
+  if (!data?.length) { toast('No hay datos para exportar', 'warning'); return; }
+  const stamp = new Date().toISOString().slice(0, 10);
+  try {
+    if (tipo === 'csv')   exportCSV(`familias_${stamp}.csv`, EXPORT_COLS, data);
+    if (tipo === 'pdf')   await exportPDF('Familias', `familias_${stamp}.pdf`, EXPORT_COLS, data);
+    if (tipo === 'excel') await exportExcel(`familias_${stamp}.xlsx`, 'Familias', EXPORT_COLS, data);
+  } catch { toast('No se pudo generar el archivo (¿sin conexión?)', 'error'); }
 }
 
 function edit(id) {

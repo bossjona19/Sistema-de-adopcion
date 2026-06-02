@@ -13,6 +13,12 @@ export const familiasService = {
     if (estado) q = q.eq('estado_eval', estado);
     return q.order('fecha_solicitud', { ascending: false }).range(from, to);
   },
+  getForExport({ search = '', estado = '' } = {}) {
+    let q = supabase.from('familias').select('*').is('deleted_at', null);
+    if (search) q = q.or(`apellido.ilike.%${search}%,contacto.ilike.%${search}%`);
+    if (estado) q = q.eq('estado_eval', estado);
+    return q.order('fecha_solicitud', { ascending: false }).range(0, 9999);
+  },
   getAprobadas() {
     return supabase.from('familias').select('id,apellido')
       .eq('estado_eval', 'aprobada')

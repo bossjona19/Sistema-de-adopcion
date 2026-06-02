@@ -217,6 +217,10 @@ body { overflow: hidden; }
 .activity-text  { color: var(--text-2); line-height: 1.5; }
 .activity-time  { font-size: .75rem; color: var(--text-3); margin-top: 1px; }
 
+/* ── Exportar (A5) ───────────────────────────────────────────── */
+.export-group { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.export-label { font-size: .75rem; color: var(--text-3); margin-right: 2px; }
+
 /* ── Paginador (B4) ──────────────────────────────────────────── */
 .pager {
   display: flex; align-items: center; justify-content: space-between;

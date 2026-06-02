@@ -13,6 +13,13 @@ export const menoresService = {
     if (estado) q = q.eq('estado', estado);
     return q.order('created_at', { ascending: false }).range(from, to);
   },
+  // Todas las filas que cumplen el filtro (para exportar). Acotado por seguridad.
+  getForExport({ search = '', estado = '' } = {}) {
+    let q = supabase.from('menores').select('*').is('deleted_at', null);
+    if (search) q = q.ilike('nombre', `%${search}%`);
+    if (estado) q = q.eq('estado', estado);
+    return q.order('created_at', { ascending: false }).range(0, 9999);
+  },
   create(payload) {
     return supabase.from('menores').insert(payload).select('id').single();
   },

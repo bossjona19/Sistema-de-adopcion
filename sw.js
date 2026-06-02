@@ -1,4 +1,4 @@
-const CACHE = 'omega-v23';
+const CACHE = 'omega-v24';
 
 const STATIC = [
   '/',
@@ -16,6 +16,7 @@ const STATIC = [
   '/src/js/core/ui.js',
   '/src/js/core/router.js',
   '/src/js/core/session.js',
+  '/src/js/core/export.js',
   // Entry points
   '/src/js/main.js',
   '/src/js/sw-register.js',

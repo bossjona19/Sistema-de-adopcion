@@ -17,6 +17,14 @@ export const casosService = {
     if (etapa) q = q.eq('etapa', etapa);
     return q.order('created_at', { ascending: false }).range(from, to);
   },
+  getForExport({ etapa = '' } = {}) {
+    let q = supabase
+      .from('casos')
+      .select('id, etapa, fecha_inicio, fecha_cierre, familia:familias(apellido), menor:menores(nombre)')
+      .is('deleted_at', null);
+    if (etapa) q = q.eq('etapa', etapa);
+    return q.order('created_at', { ascending: false }).range(0, 9999);
+  },
   getMenoresDisponibles(includeId = null) {
     const q = supabase.from('menores').select('id,nombre,estado')
       .is('deleted_at', null)

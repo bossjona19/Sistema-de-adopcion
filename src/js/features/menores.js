@@ -3,7 +3,16 @@ import { logAudit } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
 import { getInitials, formatDate, badgeHtml, calcAge, diffSummary, pagerHtml } from '../core/ui.js';
+import { exportCSV, exportPDF, exportExcel } from '../core/export.js';
 import { can } from '../core/auth.js';
+
+const EXPORT_COLS = [
+  { label: 'Nombre',     value: m => m.nombre },
+  { label: 'Edad',       value: m => calcAge(m.fecha_nacimiento) ?? m.edad ?? '' },
+  { label: 'Estado',     value: m => m.estado },
+  { label: 'Género',     value: m => m.genero ?? '' },
+  { label: 'Registrado', value: m => formatDate(m.created_at) },
+];
 
 const PAGE_SIZE = 20;
 let _list   = [];
@@ -21,6 +30,10 @@ export async function setupMenores() {
       _searchTimer = setTimeout(applyFilters, 300); // debounce: búsqueda server-side
     });
     document.getElementById('menores-filter')?.addEventListener('change', applyFilters);
+    document.getElementById('menores-export')?.addEventListener('click', e => {
+      const b = e.target.closest('[data-export]');
+      if (b) exportar(b.dataset.export);
+    });
     document.getElementById('menores-pager')?.addEventListener('click', e => {
       const b = e.target.closest('[data-page-action]');
       if (!b || b.disabled) return;
@@ -127,6 +140,22 @@ function render(list) {
 function applyFilters() {
   _page = 0;
   load();
+}
+
+// Exporta TODO el listado filtrado (no solo la página actual).
+async function exportar(tipo) {
+  const { data, error } = await menoresService.getForExport({
+    search: document.getElementById('menores-search')?.value.trim() ?? '',
+    estado: document.getElementById('menores-filter')?.value ?? '',
+  });
+  if (error) { toast('No se pudo exportar', 'error'); return; }
+  if (!data?.length) { toast('No hay datos para exportar', 'warning'); return; }
+  const stamp = new Date().toISOString().slice(0, 10);
+  try {
+    if (tipo === 'csv')   exportCSV(`ninos_${stamp}.csv`, EXPORT_COLS, data);
+    if (tipo === 'pdf')   await exportPDF('Niños', `ninos_${stamp}.pdf`, EXPORT_COLS, data);
+    if (tipo === 'excel') await exportExcel(`ninos_${stamp}.xlsx`, 'Niños', EXPORT_COLS, data);
+  } catch { toast('No se pudo generar el archivo (¿sin conexión?)', 'error'); }
 }
 
 function edit(id) {

@@ -6,6 +6,7 @@ import { logAudit, getUserId, getEntidadHistorial } from '../services/auditServi
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
 import { badgeHtml, formatDate, formatDateTime, pagerHtml } from '../core/ui.js';
+import { exportCSV, exportPDF, exportExcel } from '../core/export.js';
 import { can } from '../core/auth.js';
 import { createCombobox } from '../../components/combobox.js';
 
@@ -20,6 +21,15 @@ let _expCasoId  = null;
 const PAGE_SIZE = 20;
 let _page  = 0;
 let _total = 0;
+
+const EXPORT_COLS = [
+  { label: 'ID',      value: c => '#' + c.id.slice(-6).toUpperCase() },
+  { label: 'Familia', value: c => c.familia?.apellido ?? '' },
+  { label: 'Niño',    value: c => c.menor?.nombre ?? '' },
+  { label: 'Etapa',   value: c => c.etapa },
+  { label: 'Inicio',  value: c => formatDate(c.fecha_inicio) },
+  { label: 'Cierre',  value: c => c.fecha_cierre ? formatDate(c.fecha_cierre) : '' },
+];
 
 const TIPO_DOC_LABELS = {
   evaluacion_psicologica: 'Evaluación psicológica',
@@ -39,6 +49,10 @@ export async function setupCasos() {
     _cbMen = createCombobox(document.getElementById('cb-menor'),   [], { placeholder: 'Buscar niño…'   });
 
     document.getElementById('casos-filter')?.addEventListener('change', applyFilters);
+    document.getElementById('casos-export')?.addEventListener('click', e => {
+      const b = e.target.closest('[data-export]');
+      if (b) exportar(b.dataset.export);
+    });
     document.getElementById('casos-pager')?.addEventListener('click', e => {
       const b = e.target.closest('[data-page-action]');
       if (!b || b.disabled) return;
@@ -171,6 +185,20 @@ function render(list) {
 function applyFilters() {
   _page = 0;
   load();
+}
+
+async function exportar(tipo) {
+  const { data, error } = await casosService.getForExport({
+    etapa: document.getElementById('casos-filter')?.value ?? '',
+  });
+  if (error) { toast('No se pudo exportar', 'error'); return; }
+  if (!data?.length) { toast('No hay datos para exportar', 'warning'); return; }
+  const stamp = new Date().toISOString().slice(0, 10);
+  try {
+    if (tipo === 'csv')   exportCSV(`casos_${stamp}.csv`, EXPORT_COLS, data);
+    if (tipo === 'pdf')   await exportPDF('Casos de adopción', `casos_${stamp}.pdf`, EXPORT_COLS, data);
+    if (tipo === 'excel') await exportExcel(`casos_${stamp}.xlsx`, 'Casos', EXPORT_COLS, data);
+  } catch { toast('No se pudo generar el archivo (¿sin conexión?)', 'error'); }
 }
 
 async function populateSelects(selFamId = '', selMenId = '') {
