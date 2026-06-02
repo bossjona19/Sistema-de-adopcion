@@ -173,13 +173,14 @@ Documentos por expediente con validación de estados.
 
 ---
 
-### A5 — Búsqueda avanzada + Reportes 🔎📄
-- [ ] Filtros combinados (edad, género, estado, fecha) persistentes en la URL
-- [ ] Export CSV (nativo) de cualquier listado filtrado
-- [ ] Export PDF (jsPDF) — ej. "Casos activos · últimos 6 meses"
-- [ ] Export Excel (SheetJS) — ej. "Adopciones completadas 2026"
+### A5 — Búsqueda avanzada + Reportes 🔎📄 — ✅ COMPLETADO
+- [x] Filtros combinados persistentes en la URL → niños (búsqueda + estado + **género**), familias (búsqueda + estado), casos (etapa); router soporta `#tab?clave=valor`
+- [x] Export **CSV** (nativo, con BOM) de cualquier listado filtrado
+- [x] Export **PDF** (jsPDF + autotable, CDN diferido)
+- [x] Export **Excel** (SheetJS, CDN diferido)
+- *(Export respeta el filtro actual; ej. Casos→Cierre + PDF = "adopciones completadas". Filtro por edad/rango de fecha = mejora futura menor.)*
 
-**Archivos:** `features/*`, nuevo `services/reportService.js`, + jsPDF/SheetJS · **DB:** — · **Esfuerzo:** M · **Depende de:** A3, A1
+**Archivos:** `core/export.js`, `core/router.js` (params), `features/*`, `services/*` (`getForExport`) · **DB:** — · **Esfuerzo:** M · **Depende de:** A3, A1, B4
 
 ---
 
@@ -277,22 +278,17 @@ Documentos por expediente con validación de estados.
 
 ---
 
-### B8 — Privacidad por asignación de casos 🔒 (futuro — alto valor)
-> *Idea de diseño (2026-06-01).* El salto real de profesionalismo no es tener más roles,
-> sino **ROL + ASIGNACIÓN**: que un trabajador social vea **solo los casos asignados a él**,
-> no todos. Con datos de niños/familias es lo correcto en privacidad.
->
-> **Decisión:** se documenta como mejora futura (no prioritaria todavía).
-> **Alcance pragmático elegido** (80% del valor, 20% del esfuerzo): aislar la visibilidad
-> de **casos**; niños y familias siguen siendo catálogo compartido del staff. El aislamiento
-> total por registro en todas las tablas es un proyecto mayor (RLS con joins, niños sin caso).
+### B8 — Privacidad por asignación de casos 🔒 — ✅ COMPLETADO (2026-06-02)
+> El salto real de profesionalismo: **ROL + ASIGNACIÓN**. Un trabajador social ve **solo
+> los casos asignados a él**; admin/coordinador/director (supervisión) ven todos.
 
-- [ ] Columna `casos.asignado_a → usuarios(id)` + UI para asignar responsable (admin/coordinador)
-- [ ] RLS `casos`: `admin`/`coordinador` ven todos; `trabajador_social` solo `asignado_a = auth.uid()`
-- [ ] Filtro "Mis casos" en el listado
-- [ ] (Decidir) si las notas/documentos heredan el mismo aislamiento que su caso
+- [x] Reutilizado `casos.usuario_id` como responsable (no se duplicó columna) + UI para asignar (admin/coordinador) en el modal de caso
+- [x] RLS `casos`: supervisión ve todos; `trabajador_social` solo `usuario_id = auth.uid()` (`docs/fase_b8_asignacion.sql`, helper `ve_todos_casos()`)
+- [x] Filtro "**Solo mis casos**" en el listado (persistente en URL)
+- [x] Notas y documentos **heredan** el aislamiento del caso (RLS por subconsulta `caso_id in (select id from casos)`)
 
-**Archivos:** migración SQL, `casosService.js`, `features/casos.js`, RLS · **DB:** `casos.asignado_a` + RLS · **Esfuerzo:** M-L · **Depende de:** A1
+**Archivos:** `docs/fase_b8_asignacion.sql`, `casosService.js`, `features/casos.js`, `dashboard.html` · **DB:** RLS + índice `casos_usuario_idx` · **Esfuerzo:** M-L · **Depende de:** A1
+**Nota:** niños y familias siguen siendo catálogo compartido (decisión de alcance). La bitácora la sigue viendo el staff (no se aísla).
 
 ---
 
@@ -379,4 +375,6 @@ Documentos por expediente con validación de estados.
 | 2026-06-01 | **A3 ajuste ético** | 🧭 "Casos por trabajador" → **"Carga de trabajo"** (orden alfabético + nota "no es un ranking"). Decisión: una adopción no es una venta; el dashboard mide gestión y equilibrio de carga, nunca competencia entre trabajadores. SW→v22 | — |
 | 2026-06-01 | **B3 Backups (CIERRE)** | 🟢 **B3 COMPLETO** (código). `docs/backup/` con README (estrategia, backups automáticos, pg_dump, rutina mensual), `backup.ps1`/`backup.sh`, `inventory.sql`; `docs/RECOVERY.md` (9 escenarios). Pendiente acción del usuario: **probar una restauración** en proyecto de prueba. | **Siguiente: 🟡 B6 (QA y pruebas)** |
 | 2026-06-01 | **B6 QA (CIERRE)** | 🟢 **B6 COMPLETO.** `docs/qa/test-cases.md` (8 áreas, ~40 casos manuales: auth/roles/CRUD/casos/expediente/auditoría/dashboard/PWA) + `docs/qa/regression-checklist.md` (humo + por área + regla de release). Sin código. | **🟡 Fase Institucional CERRADA (B2+B3+B6). Siguiente: 🟢 Escalabilidad → B4 (paginación/rendimiento)** |
+| 2026-06-02 | **B8 Privacidad por asignación (CIERRE)** | 🟢 **B8 COMPLETO.** RLS por propiedad: trabajador_social ve/opera solo sus casos (`usuario_id=auth.uid()`); admin/coord/director ven todos (`ve_todos_casos()`). Notas y documentos **cascadan** el aislamiento vía `caso_id in (select id from casos)`. UI: selector de **Responsable** (admin/coord) en el modal + checkbox "**Solo mis casos**" (persistente en URL). `docs/fase_b8_asignacion.sql`. SW→v26 | Usuario corre `fase_b8_asignacion.sql` + prueba con un trabajador_social. Falta de 🟢: A6, B5, B7 |
+| 2026-06-02 | **A5 Reportes+Filtros (CIERRE)** | 🟢 **A5 COMPLETO.** `core/export.js` (CSV nativo + PDF jsPDF/autotable + Excel SheetJS, CDN diferido); botones Exportar en los 3 listados; `getForExport` exporta TODO el filtrado (no solo la página). Filtros persistentes en URL (router soporta `#tab?k=v` con replaceState; restauran al recargar/compartir); filtro de **género** añadido a niños. SW→v25 | Probar export y URLs filtradas. **Siguiente: A6 (notificaciones, opcional) o B5/B7** |
 | 2026-06-02 | **B4 Rendimiento (CIERRE)** | 🟢 **B4 COMPLETO.** Paginación server-side (`.range()`, 20/pág, `count:'exact'`) + búsqueda/filtros movidos al servidor (debounce 300 ms) en niños/familias/casos. Helper `pagerHtml` + controles. Índices `docs/fase_b4_indices.sql` (GIN pg_trgm + parciales). `docs/seed_grande.sql` para validar. SW→v23 | Usuario: correr `fase_b4_indices.sql` + (opcional) `seed_grande.sql` en proyecto de prueba. **Siguiente: A5 (Búsqueda avanzada + Reportes)** |

@@ -10,8 +10,34 @@ export function initRouter(onInit, onActivate) {
   navigateTo(location.hash.slice(1) || 'overview');
 }
 
-export function navigateTo(tab) {
-  if (!TABS.includes(tab)) tab = 'overview';
+// El hash puede llevar query params del tab actual: "#menores?estado=x&genero=y".
+export function parseHash() {
+  const [tab, qs = ''] = location.hash.slice(1).split('?');
+  return { tab, params: new URLSearchParams(qs) };
+}
+
+// Params del tab actual (para que las features restauren sus filtros).
+export function getParams() {
+  return parseHash().params;
+}
+
+// Escribe los filtros en la URL SIN navegar (replaceState → no dispara hashchange).
+export function setParams(obj) {
+  const { tab } = parseHash();
+  const sp = new URLSearchParams();
+  Object.entries(obj).forEach(([k, v]) => { if (v) sp.set(k, v); });
+  const qs = sp.toString();
+  history.replaceState(null, '', '#' + (tab || 'overview') + (qs ? '?' + qs : ''));
+}
+
+export function navigateTo(input) {
+  const [rawTab, qs = ''] = (input || '').split('?');
+  const tab = TABS.includes(rawTab) ? rawTab : 'overview';
+
+  // Sincroniza la URL (sin disparar navegación). Al venir del sidebar (tab plano)
+  // se limpia el query del tab anterior; al venir del hash se conserva.
+  const target = '#' + tab + (qs ? '?' + qs : '');
+  if (location.hash !== target) history.replaceState(null, '', target);
 
   TABS.forEach(t => {
     document.getElementById('panel-' + t)?.classList.toggle('active', t === tab);

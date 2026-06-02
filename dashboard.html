@@ -203,6 +203,12 @@
             <option value="en_proceso">En proceso</option>
             <option value="adoptado">Adoptado</option>
           </select>
+          <select class="form-select" id="menores-genero" style="width:auto;">
+            <option value="">Todos los géneros</option>
+            <option value="masculino">Masculino</option>
+            <option value="femenino">Femenino</option>
+            <option value="otro">Otro</option>
+          </select>
           <div class="export-group" id="menores-export">
             <span class="export-label">Exportar:</span>
             <button class="btn btn-ghost btn-xs" data-export="csv">CSV</button>
@@ -331,6 +337,9 @@
             <option value="seguimiento">Seguimiento</option>
             <option value="cierre">Cierre</option>
           </select>
+          <label class="mis-casos">
+            <input type="checkbox" id="casos-mine"> Solo mis casos
+          </label>
           <div class="export-group" id="casos-export">
             <span class="export-label">Exportar:</span>
             <button class="btn btn-ghost btn-xs" data-export="csv">CSV</button>
@@ -609,6 +618,12 @@
             <option value="asignacion">Asignación</option>
             <option value="seguimiento">Seguimiento</option>
             <option value="cierre">Cierre</option>
+          </select>
+        </div>
+        <div class="form-group" id="c-responsable-group" style="display:none;">
+          <label class="form-label" for="c-responsable">Responsable (trabajador asignado)</label>
+          <select class="form-select" id="c-responsable">
+            <option value="">— Sin asignar —</option>
           </select>
         </div>
       </div>

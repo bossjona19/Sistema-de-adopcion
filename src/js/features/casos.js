@@ -2,13 +2,19 @@ import { casosService }    from '../services/casosService.js';
 import { familiasService } from '../services/familiasService.js';
 import { menoresService }  from '../services/menoresService.js';
 import { documentosService } from '../services/documentosService.js';
+import { usuariosService } from '../services/usuariosService.js';
 import { logAudit, getUserId, getEntidadHistorial } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
 import { badgeHtml, formatDate, formatDateTime, pagerHtml } from '../core/ui.js';
 import { exportCSV, exportPDF, exportExcel } from '../core/export.js';
-import { can } from '../core/auth.js';
+import { getParams, setParams } from '../core/router.js';
+import { can, getRole } from '../core/auth.js';
 import { createCombobox } from '../../components/combobox.js';
+
+// Solo admin/coordinador asignan el responsable de un caso (B8).
+const puedeAsignar = () => ['admin', 'coordinador'].includes(getRole());
+let _responsablesLoaded = false;
 
 let _list   = [];
 let _editId = null;
@@ -49,6 +55,7 @@ export async function setupCasos() {
     _cbMen = createCombobox(document.getElementById('cb-menor'),   [], { placeholder: 'Buscar niño…'   });
 
     document.getElementById('casos-filter')?.addEventListener('change', applyFilters);
+    document.getElementById('casos-mine')?.addEventListener('change', applyFilters);
     document.getElementById('casos-export')?.addEventListener('click', e => {
       const b = e.target.closest('[data-export]');
       if (b) exportar(b.dataset.export);
@@ -75,6 +82,8 @@ export async function setupCasos() {
       _cbFam.setDisabled(false);
       _cbMen.setDisabled(false);
       await populateSelects();
+      const respSel = document.getElementById('c-responsable');
+      if (respSel) respSel.value = '';
       btn.disabled = false;
       openModal('modal-caso');
     });
@@ -113,6 +122,12 @@ export async function setupCasos() {
     _wired = true;
   }
 
+  const p = getParams(); // restaura filtros desde la URL
+  const f = document.getElementById('casos-filter');
+  const m = document.getElementById('casos-mine');
+  if (f) f.value = p.get('etapa') ?? '';
+  if (m) m.checked = p.get('mias') === '1';
+  _page = 0;
   await load();
 }
 
@@ -123,6 +138,7 @@ async function load() {
   const from = _page * PAGE_SIZE;
   const { data, count, error } = await casosService.getPage({
     etapa: document.getElementById('casos-filter')?.value ?? '',
+    usuarioId: document.getElementById('casos-mine')?.checked ? getUserId() : '',
     from, to: from + PAGE_SIZE - 1,
   });
   if (error) { toast('Error al cargar casos', 'error'); return; }
@@ -181,8 +197,12 @@ function render(list) {
   `).join('');
 }
 
-// Filtro por etapa cambió → volver a la primera página y recargar (server-side).
+// Filtros cambiaron → persistir en URL, volver a la 1ª página y recargar.
 function applyFilters() {
+  setParams({
+    etapa: document.getElementById('casos-filter')?.value ?? '',
+    mias:  document.getElementById('casos-mine')?.checked ? '1' : '',
+  });
   _page = 0;
   load();
 }
@@ -190,6 +210,7 @@ function applyFilters() {
 async function exportar(tipo) {
   const { data, error } = await casosService.getForExport({
     etapa: document.getElementById('casos-filter')?.value ?? '',
+    usuarioId: document.getElementById('casos-mine')?.checked ? getUserId() : '',
   });
   if (error) { toast('No se pudo exportar', 'error'); return; }
   if (!data?.length) { toast('No hay datos para exportar', 'warning'); return; }
@@ -229,6 +250,27 @@ async function populateSelects(selFamId = '', selMenId = '') {
 
   if (selFamId) _cbFam.setValue(selFamId);
   if (selMenId) _cbMen.setValue(selMenId);
+
+  // Responsable: solo admin/coordinador pueden asignar (B8).
+  const grp = document.getElementById('c-responsable-group');
+  if (grp) {
+    if (puedeAsignar()) { grp.style.display = ''; await fillResponsables(); }
+    else grp.style.display = 'none';
+  }
+}
+
+async function fillResponsables() {
+  if (_responsablesLoaded) return;
+  const sel = document.getElementById('c-responsable');
+  if (!sel) return;
+  const { data } = await usuariosService.getAll();
+  (data ?? []).filter(u => u.rol !== 'director').forEach(u => {
+    const o = document.createElement('option');
+    o.value = u.id;
+    o.textContent = u.nombre || u.email;
+    sel.appendChild(o);
+  });
+  _responsablesLoaded = true;
 }
 
 async function editCaso(id) {
@@ -237,6 +279,8 @@ async function editCaso(id) {
   _editId = id;
   await populateSelects(c.familia_id, c.menor_id);
   document.getElementById('c-etapa').value = c.etapa;
+  const respSel = document.getElementById('c-responsable');
+  if (respSel) respSel.value = c.usuario_id ?? '';
   _cbFam.setDisabled(true);
   _cbMen.setDisabled(true);
   document.getElementById('caso-modal-title').textContent = `Caso #${id.slice(-6).toUpperCase()} — Actualizar`;
@@ -258,10 +302,14 @@ async function saveCaso(ev) {
     return;
   }
 
+  const responsableSel = document.getElementById('c-responsable')?.value || '';
+
   let error, entidadId = _editId, antes = null, despues = null;
   if (_editId) {
     const before = _list.find(x => x.id === _editId);
-    ({ error } = await casosService.update(_editId, { etapa }));
+    const payload = { etapa };
+    if (puedeAsignar()) payload.usuario_id = responsableSel || null; // reasignar responsable
+    ({ error } = await casosService.update(_editId, payload));
     if (!error && before && before.etapa !== etapa) { antes = before.etapa; despues = etapa; }
     if (!error && etapa === 'cierre' && before?.menor_id) {
       await menoresService.setEstado(before.menor_id, 'adoptado');
@@ -271,7 +319,7 @@ async function saveCaso(ev) {
       familia_id: familiaId,
       menor_id:   menorId,
       etapa,
-      usuario_id: getUserId(),
+      usuario_id: puedeAsignar() ? (responsableSel || getUserId()) : getUserId(),
     });
     error = res.error; entidadId = res.data?.id;
     if (!error) {

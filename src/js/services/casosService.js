@@ -8,21 +8,23 @@ export const casosService = {
       .is('deleted_at', null)
       .order('created_at', { ascending: false });
   },
-  // Página server-side con filtro por etapa. Devuelve { data, count, error }.
-  getPage({ etapa = '', from = 0, to = 19 } = {}) {
+  // Página server-side con filtro por etapa y (opcional) responsable. { data, count, error }.
+  getPage({ etapa = '', usuarioId = '', from = 0, to = 19 } = {}) {
     let q = supabase
       .from('casos')
-      .select('*, familia:familias(apellido), menor:menores(nombre)', { count: 'exact' })
+      .select('*, familia:familias(apellido), menor:menores(nombre), responsable:usuarios(nombre)', { count: 'exact' })
       .is('deleted_at', null);
-    if (etapa) q = q.eq('etapa', etapa);
+    if (etapa)     q = q.eq('etapa', etapa);
+    if (usuarioId) q = q.eq('usuario_id', usuarioId);
     return q.order('created_at', { ascending: false }).range(from, to);
   },
-  getForExport({ etapa = '' } = {}) {
+  getForExport({ etapa = '', usuarioId = '' } = {}) {
     let q = supabase
       .from('casos')
-      .select('id, etapa, fecha_inicio, fecha_cierre, familia:familias(apellido), menor:menores(nombre)')
+      .select('id, etapa, fecha_inicio, fecha_cierre, familia:familias(apellido), menor:menores(nombre), responsable:usuarios(nombre)')
       .is('deleted_at', null);
-    if (etapa) q = q.eq('etapa', etapa);
+    if (etapa)     q = q.eq('etapa', etapa);
+    if (usuarioId) q = q.eq('usuario_id', usuarioId);
     return q.order('created_at', { ascending: false }).range(0, 9999);
   },
   getMenoresDisponibles(includeId = null) {

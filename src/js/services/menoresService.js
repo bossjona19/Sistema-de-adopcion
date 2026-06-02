@@ -7,17 +7,19 @@ export const menoresService = {
       .order('created_at', { ascending: false });
   },
   // Página server-side con búsqueda y filtro. Devuelve { data, count, error }.
-  getPage({ search = '', estado = '', from = 0, to = 19 } = {}) {
+  getPage({ search = '', estado = '', genero = '', from = 0, to = 19 } = {}) {
     let q = supabase.from('menores').select('*', { count: 'exact' }).is('deleted_at', null);
     if (search) q = q.ilike('nombre', `%${search}%`);
     if (estado) q = q.eq('estado', estado);
+    if (genero) q = q.eq('genero', genero);
     return q.order('created_at', { ascending: false }).range(from, to);
   },
   // Todas las filas que cumplen el filtro (para exportar). Acotado por seguridad.
-  getForExport({ search = '', estado = '' } = {}) {
+  getForExport({ search = '', estado = '', genero = '' } = {}) {
     let q = supabase.from('menores').select('*').is('deleted_at', null);
     if (search) q = q.ilike('nombre', `%${search}%`);
     if (estado) q = q.eq('estado', estado);
+    if (genero) q = q.eq('genero', genero);
     return q.order('created_at', { ascending: false }).range(0, 9999);
   },
   create(payload) {

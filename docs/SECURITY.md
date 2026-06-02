@@ -88,9 +88,19 @@ Patrón por tabla (ver `fase_a1_rbac.sql`):
 - Acceso restringido por rol + auditoría completa de quién ve/cambia qué.
 - Retención/eliminación: soft delete + papelera (recuperable) antes de purgar.
 
-## 8. Riesgos conocidos / mejoras futuras
+## 8. Privacidad por asignación de casos (B8) ✅
 
-- **Privacidad por asignación (ROADMAP B8):** hoy *todo el staff ve todos los casos*.
-  La mejora es que un trabajador social vea **solo los suyos** (RLS por `casos.asignado_a`).
+Un **trabajador social ve y opera SOLO los casos asignados a él** (`casos.usuario_id =
+auth.uid()`); **admin, coordinador y director** (roles de supervisión) ven todos
+(función `ve_todos_casos()`). El aislamiento **cascada** a las **notas** y **documentos**
+de cada caso mediante subconsulta RLS `caso_id in (select id from casos)` — que a su vez
+respeta el RLS de casos. Ver `fase_b8_asignacion.sql`.
+- UI: solo admin/coordinador asignan el **responsable**; filtro "Solo mis casos".
+- Alcance: niños y familias siguen siendo **catálogo compartido** del staff.
+
+## 9. Riesgos conocidos / mejoras futuras
+
+- **Bitácora** la ve todo el staff (no se aísla por caso); contiene metadatos de acciones.
+- **Storage:** un usuario con rol podría firmar una URL de un archivo si conociera su ruta
+  exacta (las filas de `documentos` sí están aisladas, así que no puede descubrirlas por la app).
 - **Expiración de JWT** afinable en Supabase (config), complementaria al auto-logout.
-- Endurecer aún más las políticas de Storage por carpeta de caso (futuro).

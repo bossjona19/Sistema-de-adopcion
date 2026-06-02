@@ -4,6 +4,7 @@ import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
 import { getInitials, formatDate, badgeHtml, calcAge, diffSummary, pagerHtml } from '../core/ui.js';
 import { exportCSV, exportPDF, exportExcel } from '../core/export.js';
+import { getParams, setParams } from '../core/router.js';
 import { can } from '../core/auth.js';
 
 const EXPORT_COLS = [
@@ -30,6 +31,7 @@ export async function setupMenores() {
       _searchTimer = setTimeout(applyFilters, 300); // debounce: búsqueda server-side
     });
     document.getElementById('menores-filter')?.addEventListener('change', applyFilters);
+    document.getElementById('menores-genero')?.addEventListener('change', applyFilters);
     document.getElementById('menores-export')?.addEventListener('click', e => {
       const b = e.target.closest('[data-export]');
       if (b) exportar(b.dataset.export);
@@ -65,7 +67,20 @@ export async function setupMenores() {
     _wired = true;
   }
 
+  restoreFromUrl(); // filtros vienen de la URL (vista compartible/recargable)
+  _page = 0;
   await load();
+}
+
+// Restaura search/estado/género desde los query params del hash.
+function restoreFromUrl() {
+  const p = getParams();
+  const s = document.getElementById('menores-search');
+  const e = document.getElementById('menores-filter');
+  const g = document.getElementById('menores-genero');
+  if (s) s.value = p.get('q')      ?? '';
+  if (e) e.value = p.get('estado') ?? '';
+  if (g) g.value = p.get('genero') ?? '';
 }
 
 // ── Internal ─────────────────────────────────────────────────
@@ -76,6 +91,7 @@ async function load() {
   const { data, count, error } = await menoresService.getPage({
     search: document.getElementById('menores-search')?.value.trim() ?? '',
     estado: document.getElementById('menores-filter')?.value ?? '',
+    genero: document.getElementById('menores-genero')?.value ?? '',
     from, to: from + PAGE_SIZE - 1,
   });
   if (error) { toast('Error al cargar niños', 'error'); return; }
@@ -136,8 +152,13 @@ function render(list) {
   }).join('');
 }
 
-// Búsqueda/filtro cambiaron → volver a la primera página y recargar (server-side).
+// Búsqueda/filtro cambiaron → persistir en URL, volver a la 1ª página y recargar.
 function applyFilters() {
+  setParams({
+    q:      document.getElementById('menores-search')?.value.trim() ?? '',
+    estado: document.getElementById('menores-filter')?.value ?? '',
+    genero: document.getElementById('menores-genero')?.value ?? '',
+  });
   _page = 0;
   load();
 }
@@ -147,6 +168,7 @@ async function exportar(tipo) {
   const { data, error } = await menoresService.getForExport({
     search: document.getElementById('menores-search')?.value.trim() ?? '',
     estado: document.getElementById('menores-filter')?.value ?? '',
+    genero: document.getElementById('menores-genero')?.value ?? '',
   });
   if (error) { toast('No se pudo exportar', 'error'); return; }
   if (!data?.length) { toast('No hay datos para exportar', 'warning'); return; }

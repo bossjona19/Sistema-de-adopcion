@@ -4,6 +4,7 @@ import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
 import { getInitials, formatDate, badgeHtml, diffSummary, pagerHtml } from '../core/ui.js';
 import { exportCSV, exportPDF, exportExcel } from '../core/export.js';
+import { getParams, setParams } from '../core/router.js';
 import { can } from '../core/auth.js';
 
 const EXPORT_COLS = [
@@ -64,7 +65,17 @@ export async function setupFamilias() {
     _wired = true;
   }
 
+  restoreFromUrl(); // filtros desde la URL (vista compartible/recargable)
+  _page = 0;
   await load();
+}
+
+function restoreFromUrl() {
+  const p = getParams();
+  const s = document.getElementById('familias-search');
+  const e = document.getElementById('familias-filter');
+  if (s) s.value = p.get('q')      ?? '';
+  if (e) e.value = p.get('estado') ?? '';
 }
 
 // ── Internal ─────────────────────────────────────────────────
@@ -129,8 +140,12 @@ function render(list) {
   `).join('');
 }
 
-// Búsqueda/filtro cambiaron → volver a la primera página y recargar (server-side).
+// Búsqueda/filtro cambiaron → persistir en URL, volver a la 1ª página y recargar.
 function applyFilters() {
+  setParams({
+    q:      document.getElementById('familias-search')?.value.trim() ?? '',
+    estado: document.getElementById('familias-filter')?.value ?? '',
+  });
   _page = 0;
   load();
 }
