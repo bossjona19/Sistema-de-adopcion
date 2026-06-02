@@ -475,6 +475,36 @@
         </div>
       </div><!-- /panel-bitacora -->
 
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- PANEL: ERRORES / MONITOREO (admin)  -->
+      <!-- ═══════════════════════════════════ -->
+      <div id="panel-errores" class="panel">
+
+        <div class="page-hd">
+          <div>
+            <h3>Monitoreo de errores</h3>
+            <p>Errores de cliente capturados — <strong id="errores-count">0</strong> registros</p>
+          </div>
+          <div class="page-hd-actions">
+            <button class="btn btn-ghost btn-sm" id="errores-refresh">Actualizar</button>
+          </div>
+        </div>
+
+        <div class="card" style="overflow:hidden;padding:0;">
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr>
+                <th>Fecha</th><th>Mensaje</th><th>Origen</th><th>URL</th>
+              </tr></thead>
+              <tbody id="errores-tbody">
+                <tr class="loading-row"><td colspan="4"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /panel-errores -->
+
     </main><!-- /page-content -->
   </div><!-- /main-area -->
 </div><!-- /app-shell -->

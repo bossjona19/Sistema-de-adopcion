@@ -244,14 +244,15 @@ Documentos por expediente con validación de estados.
 
 ---
 
-### B5 — Calidad y monitoreo 📈 (versión ligera, sin over-engineering)
-- [ ] **Logger de errores** propio: `window.onerror`/`unhandledrejection` → tabla `errores` en Supabase
-- [ ] **Página de error amigable** (404 / 500 / sin permiso)
-- [ ] Logs de operaciones críticas (se apoya en A2)
-- [ ] Monitoreo ligero: Vercel Analytics + revisión de logs Supabase (no montar stack pesado)
-- [ ] Validación de integridad de datos (constraints DB + checks periódicos)
+### B5 — Calidad y monitoreo 📈 (versión ligera, sin over-engineering) — ✅ COMPLETADO
+- [x] **Logger de errores** propio: `core/logger.js` (puro) captura `error`/`unhandledrejection` → `errorService.log` → tabla `errores`; tope 20/sesión + dedupe
+- [x] **Página de error amigable** → `404.html` (Vercel la sirve auto); "sin permiso" ya redirige; toasts en fallos de carga
+- [x] **Panel Monitoreo** (solo admin) para ver los errores capturados
+- [x] Logs de operaciones críticas → bitácora (A2) + tabla `accesos` (B1)
+- [x] Monitoreo ligero documentado → `docs/MONITORING.md` (logger + logs Supabase + Vercel)
+- [x] Validación de integridad → constraints DB (CHECK/FK) + checks SQL periódicos en `MONITORING.md`
 
-**Archivos:** nuevo `core/logger.js`, página de error, migración `errores` · **DB:** tabla `errores` · **Esfuerzo:** M · **Depende de:** nada
+**Archivos:** `core/logger.js`, `services/errorService.js`, `features/errores.js`, `404.html`, `docs/MONITORING.md`, `docs/fase_b5_errores.sql` · **DB:** tabla `errores` · **Esfuerzo:** M
 
 ---
 
@@ -375,6 +376,7 @@ Documentos por expediente con validación de estados.
 | 2026-06-01 | **A3 ajuste ético** | 🧭 "Casos por trabajador" → **"Carga de trabajo"** (orden alfabético + nota "no es un ranking"). Decisión: una adopción no es una venta; el dashboard mide gestión y equilibrio de carga, nunca competencia entre trabajadores. SW→v22 | — |
 | 2026-06-01 | **B3 Backups (CIERRE)** | 🟢 **B3 COMPLETO** (código). `docs/backup/` con README (estrategia, backups automáticos, pg_dump, rutina mensual), `backup.ps1`/`backup.sh`, `inventory.sql`; `docs/RECOVERY.md` (9 escenarios). Pendiente acción del usuario: **probar una restauración** en proyecto de prueba. | **Siguiente: 🟡 B6 (QA y pruebas)** |
 | 2026-06-01 | **B6 QA (CIERRE)** | 🟢 **B6 COMPLETO.** `docs/qa/test-cases.md` (8 áreas, ~40 casos manuales: auth/roles/CRUD/casos/expediente/auditoría/dashboard/PWA) + `docs/qa/regression-checklist.md` (humo + por área + regla de release). Sin código. | **🟡 Fase Institucional CERRADA (B2+B3+B6). Siguiente: 🟢 Escalabilidad → B4 (paginación/rendimiento)** |
-| 2026-06-02 | **B8 Privacidad por asignación (CIERRE)** | 🟢 **B8 COMPLETO.** RLS por propiedad: trabajador_social ve/opera solo sus casos (`usuario_id=auth.uid()`); admin/coord/director ven todos (`ve_todos_casos()`). Notas y documentos **cascadan** el aislamiento vía `caso_id in (select id from casos)`. UI: selector de **Responsable** (admin/coord) en el modal + checkbox "**Solo mis casos**" (persistente en URL). `docs/fase_b8_asignacion.sql`. SW→v26 | Usuario corre `fase_b8_asignacion.sql` + prueba con un trabajador_social. Falta de 🟢: A6, B5, B7 |
+| 2026-06-02 | **Fix export Excel** | 🐛 SheetJS daba "No se pudo generar" → URL del CDN mal (`/package/dist/` es del CDN propio de SheetJS, no de jsdelivr). Corregido a `/dist/` (verificado 200). SW→v27 | — |
+| 2026-06-02 | **B5 Calidad/Monitoreo (CIERRE)** | 🟢 **B5 COMPLETO.** Logger global puro (`core/logger.js`, tope+dedupe) → `errorService` → tabla `errores` (`fase_b5_errores.sql`). Panel **Monitoreo** (admin). `404.html` amigable. `docs/MONITORING.md` (logs Supabase/Vercel + checks de integridad). SW→v28 | Usuario corre `fase_b5_errores.sql`. **Falta de 🟢: A6 (notificaciones), B7 (config institucional)** | 🟢 **B8 COMPLETO.** RLS por propiedad: trabajador_social ve/opera solo sus casos (`usuario_id=auth.uid()`); admin/coord/director ven todos (`ve_todos_casos()`). Notas y documentos **cascadan** el aislamiento vía `caso_id in (select id from casos)`. UI: selector de **Responsable** (admin/coord) en el modal + checkbox "**Solo mis casos**" (persistente en URL). `docs/fase_b8_asignacion.sql`. SW→v26 | Usuario corre `fase_b8_asignacion.sql` + prueba con un trabajador_social. Falta de 🟢: A6, B5, B7 |
 | 2026-06-02 | **A5 Reportes+Filtros (CIERRE)** | 🟢 **A5 COMPLETO.** `core/export.js` (CSV nativo + PDF jsPDF/autotable + Excel SheetJS, CDN diferido); botones Exportar en los 3 listados; `getForExport` exporta TODO el filtrado (no solo la página). Filtros persistentes en URL (router soporta `#tab?k=v` con replaceState; restauran al recargar/compartir); filtro de **género** añadido a niños. SW→v25 | Probar export y URLs filtradas. **Siguiente: A6 (notificaciones, opcional) o B5/B7** |
 | 2026-06-02 | **B4 Rendimiento (CIERRE)** | 🟢 **B4 COMPLETO.** Paginación server-side (`.range()`, 20/pág, `count:'exact'`) + búsqueda/filtros movidos al servidor (debounce 300 ms) en niños/familias/casos. Helper `pagerHtml` + controles. Índices `docs/fase_b4_indices.sql` (GIN pg_trgm + parciales). `docs/seed_grande.sql` para validar. SW→v23 | Usuario: correr `fase_b4_indices.sql` + (opcional) `seed_grande.sql` en proyecto de prueba. **Siguiente: A5 (Búsqueda avanzada + Reportes)** |

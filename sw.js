@@ -1,4 +1,4 @@
-const CACHE = 'omega-v27';
+const CACHE = 'omega-v28';
 
 const STATIC = [
   '/',
@@ -17,6 +17,7 @@ const STATIC = [
   '/src/js/core/router.js',
   '/src/js/core/session.js',
   '/src/js/core/export.js',
+  '/src/js/core/logger.js',
   // Entry points
   '/src/js/main.js',
   '/src/js/sw-register.js',
@@ -32,6 +33,7 @@ const STATIC = [
   '/src/js/services/usuariosService.js',
   '/src/js/services/accesoService.js',
   '/src/js/services/documentosService.js',
+  '/src/js/services/errorService.js',
   // Features
   '/src/js/features/menores.js',
   '/src/js/features/familias.js',
@@ -39,6 +41,7 @@ const STATIC = [
   '/src/js/features/usuarios.js',
   '/src/js/features/papelera.js',
   '/src/js/features/bitacora.js',
+  '/src/js/features/errores.js',
   // Components
   '/src/components/toast.js',
   '/src/components/modal.js',

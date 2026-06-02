@@ -1,5 +1,5 @@
-const TABS      = ['overview', 'menores', 'familias', 'casos', 'usuarios', 'papelera', 'bitacora'];
-const TAB_NAMES = { overview: 'Dashboard', menores: 'Niños', familias: 'Familias', casos: 'Casos', usuarios: 'Usuarios', papelera: 'Papelera', bitacora: 'Bitácora' };
+const TABS      = ['overview', 'menores', 'familias', 'casos', 'usuarios', 'papelera', 'bitacora', 'errores'];
+const TAB_NAMES = { overview: 'Dashboard', menores: 'Niños', familias: 'Familias', casos: 'Casos', usuarios: 'Usuarios', papelera: 'Papelera', bitacora: 'Bitácora', errores: 'Monitoreo' };
 let _onInit     = null;
 let _onActivate = null;
 

@@ -5,7 +5,9 @@ import { getInitials } from './core/ui.js';
 import { setAuditUser } from './services/auditService.js';
 import { initRouter, navigateTo } from './core/router.js';
 import { initIdleTimeout } from './core/session.js';
+import { initErrorLogger } from './core/logger.js';
 import { accesoService } from './services/accesoService.js';
+import { errorService } from './services/errorService.js';
 import { toast } from '../components/toast.js';
 import { initOverview } from './pages/dashboard.js';
 import { setupMenores } from './features/menores.js';
@@ -14,6 +16,10 @@ import { setupCasos } from './features/casos.js';
 import { setupUsuarios } from './features/usuarios.js';
 import { setupPapelera } from './features/papelera.js';
 import { setupBitacora } from './features/bitacora.js';
+import { setupErrores } from './features/errores.js';
+
+// ── Logger global de errores (lo antes posible, para capturar todo) ──
+initErrorLogger({ onError: errorService.log });
 
 // ── Auth ──────────────────────────────────────────────────────
 let didOAuthLogin = false;
@@ -67,6 +73,10 @@ async function initTab(tab) {
   if (tab === 'bitacora') {
     if (!can('manage_users')) return navigateTo('overview'); // bitácora: solo admin
     return setupBitacora();
+  }
+  if (tab === 'errores') {
+    if (!can('manage_users')) return navigateTo('overview'); // monitoreo: solo admin
+    return setupErrores();
   }
 }
 
