@@ -48,7 +48,7 @@ document.getElementById('header-avatar').textContent    = initials;
 // ── Shell ─────────────────────────────────────────────────────
 const org = await configService.get();
 import('./branding.js').then(m => m.applyBranding()).catch(() => {}); // branding defensivo: no debe poder romper el dashboard
-mountSidebar({ name: displayName, initials, role: roleLabel(), org: org.nombre, canManageUsers: can('manage_users'), onNavigate: navigateTo, onLogout: signOut }); // must precede initRouter — creates .nav-link nodes that setActiveNav targets
+mountSidebar({ name: displayName, initials, role: roleLabel(), org: org.nombre, logoUrl: org.logo_url, canManageUsers: can('manage_users'), onNavigate: navigateTo, onLogout: signOut }); // must precede initRouter — creates .nav-link nodes that setActiveNav targets
 initMobileMenu();
 initModals();
 

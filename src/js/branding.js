@@ -5,13 +5,23 @@ import { configService } from './services/configService.js';
 // - Cualquier elemento marcado con [data-org]: su texto pasa a ser el nombre.
 // White-label: cada ONG solo cambia el nombre en Configuración, sin tocar código.
 export async function applyBranding() {
-  let name = 'OMEGA';
+  let org = { nombre: 'OMEGA', logo_url: null };
   try {
-    name = (await configService.get())?.nombre || name;
-  } catch { /* sin conexión: se queda el texto por defecto del HTML */ }
+    org = await configService.get();
+  } catch { /* sin conexión: se queda el contenido por defecto del HTML */ }
+  const name = org?.nombre || 'OMEGA';
 
   if (document.title) {
     document.title = document.title.replace(/Proyecto OMEGA/g, name).replace(/\bOMEGA\b/g, name);
   }
   document.querySelectorAll('[data-org]').forEach(el => { el.textContent = name; });
+
+  // Logo de la ONG: si está configurado, reemplaza el ícono por defecto.
+  // (<img> no requiere CORS para mostrarse, a diferencia del canvas del PDF.)
+  if (org?.logo_url) {
+    const safe = String(org.logo_url).replace(/"/g, '%22');
+    document.querySelectorAll('[data-org-logo]').forEach(el => {
+      el.innerHTML = `<img src="${safe}" alt="${name}" style="width:100%;height:100%;object-fit:contain;border-radius:inherit;">`;
+    });
+  }
 }

@@ -257,7 +257,7 @@ body { overflow: hidden; }
 .stage-row {
   display: flex; align-items: center; gap: 10px; font-size: .8125rem;
 }
-.stage-name { width: 86px; flex-shrink: 0; color: var(--text-2); }
+.stage-name { width: 96px; flex-shrink: 0; white-space: nowrap; color: var(--text-2); }
 .stage-track {
   flex: 1; height: 5px; background: var(--border-2);
   border-radius: var(--r-full); overflow: hidden;
@@ -267,7 +267,7 @@ body { overflow: hidden; }
   background: var(--primary-dim);
   transition: width .6s cubic-bezier(.4,0,.2,1);
 }
-.stage-count { font-weight: 600; color: var(--text-1); width: 20px; text-align: right; }
+.stage-count { font-weight: 600; color: var(--text-1); min-width: 28px; flex-shrink: 0; text-align: right; white-space: nowrap; }
 
 /* ── Adoption flow banner ────────────────────────────────────── */
 .flow-banner {

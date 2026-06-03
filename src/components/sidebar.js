@@ -74,7 +74,7 @@ const ADMIN_NAV = [
   },
 ];
 
-export function mountSidebar({ name, initials, role = 'Usuario', org = 'OMEGA', canManageUsers = false, onNavigate, onLogout }) {
+export function mountSidebar({ name, initials, role = 'Usuario', org = 'OMEGA', logoUrl = '', canManageUsers = false, onNavigate, onLogout }) {
   const root = document.getElementById('sidebar-root');
   if (!root) return;
 
@@ -82,10 +82,12 @@ export function mountSidebar({ name, initials, role = 'Usuario', org = 'OMEGA', 
     <aside class="sidebar" id="sidebar">
       <a class="sidebar-brand" href="/index.html">
         <div class="sidebar-logo">
-          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          ${logoUrl
+            ? `<img src="${String(logoUrl).replace(/"/g, '%22')}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:inherit;">`
+            : `<svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
             <polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
+          </svg>`}
         </div>
         <div>
           <div class="sidebar-brand-name truncate">${org}</div>
