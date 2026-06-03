@@ -19,6 +19,7 @@ import { setupPapelera } from './features/papelera.js';
 import { setupBitacora } from './features/bitacora.js';
 import { setupErrores } from './features/errores.js';
 import { setupConfig } from './features/config.js';
+import { setupNotificaciones } from './features/notificaciones.js';
 
 // ── Logger global de errores (lo antes posible, para capturar todo) ──
 initErrorLogger({ onError: errorService.log });
@@ -51,6 +52,7 @@ import('./branding.js').then(m => m.applyBranding()).catch(() => {}); // brandin
 mountSidebar({ name: displayName, initials, role: roleLabel(), org: org.nombre, logoUrl: org.logo_url, canManageUsers: can('manage_users'), onNavigate: navigateTo, onLogout: signOut }); // must precede initRouter — creates .nav-link nodes that setActiveNav targets
 initMobileMenu();
 initModals();
+setupNotificaciones(); // campana + contador (A6)
 
 // ── Cierre por inactividad (auto-logout) ──────────────────────
 initIdleTimeout({

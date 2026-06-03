@@ -39,6 +39,19 @@
         </nav>
       </div>
       <div class="header-right">
+        <div class="notif-wrap">
+          <button class="notif-bell" id="notif-bell" aria-label="Notificaciones" type="button">
+            <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 01-3.46 0"/>
+            </svg>
+            <span class="notif-badge" id="notif-badge" hidden>0</span>
+          </button>
+          <div class="notif-panel" id="notif-panel" hidden>
+            <div class="notif-head">Notificaciones</div>
+            <div id="notif-list"></div>
+          </div>
+        </div>
         <div class="header-user">
           <div class="avatar avatar-sm" id="header-avatar">AD</div>
           <span class="header-user-name" id="header-user-name">Admin</span>

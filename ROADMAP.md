@@ -184,9 +184,12 @@ Documentos por expediente con validación de estados.
 
 ---
 
-### A6 — Notificaciones in-app 🔔 (opcional, menor ROI)
-- [ ] Migración: tabla `notificaciones` (usuario_id, tipo, mensaje, leida, fecha)
-- [ ] Disparar en eventos del flujo · campana con contador · marcar leída
+### A6 — Notificaciones in-app 🔔 (opcional, menor ROI) — ✅ COMPLETADO
+- [x] Migración: tabla `notificaciones` (usuario_id, tipo, mensaje, leida, fecha) + RLS (cada quien ve solo las suyas) → `docs/fase_a6_notificaciones.sql`
+- [x] **Campana con contador** en el header (badge de no leídas) + panel desplegable + **marcar leídas** al abrir
+- [x] **Disparo en evento de flujo:** al asignar/reasignar un caso a un trabajador, se le notifica ("Se te asignó el caso #…")
+
+**Archivos:** `services/notificacionesService.js`, `features/notificaciones.js`, `dashboard.html`, `dashboard.css`, `main.js`, `casos.js` · **DB:** tabla `notificaciones` · **Esfuerzo:** M · **Depende de:** A2/B8
 
 **Archivos:** nuevo `services/notificacionesService.js`, header · **DB:** tabla `notificaciones` · **Esfuerzo:** M · **Depende de:** A2
 
@@ -412,6 +415,7 @@ PDFs con cabecera institucional (logo + datos ONG de B7) para entregar a direcci
 | 2026-06-01 | **B6 QA (CIERRE)** | 🟢 **B6 COMPLETO.** `docs/qa/test-cases.md` (8 áreas, ~40 casos manuales: auth/roles/CRUD/casos/expediente/auditoría/dashboard/PWA) + `docs/qa/regression-checklist.md` (humo + por área + regla de release). Sin código. | **🟡 Fase Institucional CERRADA (B2+B3+B6). Siguiente: 🟢 Escalabilidad → B4 (paginación/rendimiento)** |
 | 2026-06-02 | **Fix export Excel** | 🐛 SheetJS daba "No se pudo generar" → URL del CDN mal (`/package/dist/` es del CDN propio de SheetJS, no de jsdelivr). Corregido a `/dist/` (verificado 200). SW→v27 | — |
 | 2026-06-02 | **A7 Post-adopción (slice 1)** | 🟢 Nueva fase (idea del usuario: el bienestar posterior importa). Tabla `postadopcion` + `casos.estado_post` (`fase_a7_postadopcion.sql`, RLS hereda visibilidad del caso). Pestaña **"Post-adopción"** en el expediente (habilitada al Cierre): visitas/informes/incidencias, próxima visita, estados `no_iniciado→en_seguimiento→completado→cerrado`. Tipo doc `informe_seguimiento`. Integrado a timeline + bitácora. SW→v29 | Usuario corre `fase_a7_postadopcion.sql`. **A7 slice 2: dashboard de vencimientos + PDF** |
+| 2026-06-03 | **A6 Notificaciones (CIERRE)** | 🟢 **A6 COMPLETO** — y con él, **TODO el ROADMAP**. Tabla `notificaciones` + RLS propias (`docs/fase_a6_notificaciones.sql`), `notificacionesService`, campana con badge de no leídas + panel + marcar leídas, disparo al asignar caso a un trabajador. SW→v41 | Usuario corre `fase_a6_notificaciones.sql`. 🎉 Roadmap terminado |
 | 2026-06-02 | **🐛 FIX CRÍTICO Service Worker** | Tras el deploy de Branding, el SW dejó a usuarios sin login. Causa: caché **desincronizada** + 2 bugs en `sw.js` — (1) `addAll` atómico (un archivo faltante rompía todo el install), (2) handler stale-while-revalidate que devolvía `undefined` → "Failed to convert value to 'Response'" y servía HTML/JS viejos tras deploy. Fix: precache resiliente (`Promise.allSettled`+`add`), **network-first** (no más código viejo tras deploy), y el handler **siempre** devuelve Response. SW→v35. (Login/Supabase nunca estuvieron rotos.) | Usuario redeploya; cambiar contraseña expuesta en URL |
 | 2026-06-02 | **Branding global (white-label)** | 🟢 `branding.js` (`applyBranding` + `data-org`): el nombre de B7 reemplaza "Proyecto OMEGA"/"OMEGA" en TODA referencia visible — login, landing, solicitud, 404, dashboard (breadcrumb+sidebar), título del navegador, footers, consentimientos y reportes. Cualquier ONG se adapta sin tocar código. SW→v33 | — |
 | 2026-06-02 | **B7 Config + A8 Reportes (CIERRE)** | 🟢 **B7:** tabla `organizacion` + `configService` + panel **Configuración** (admin) + nombre ONG en sidebar (`fase_b7_organizacion.sql`). **A8:** `reportePDF` (cabecera con logo+datos ONG, tolera CORS) → Reporte PDF de **Niño**, **Familia** y **Expediente consolidado del Caso** (info+docs+notas+post-adopción+historial). SW→v32 | Usuario corre `fase_b7_organizacion.sql` + configura su ONG. **Falta de 🟢: A6 (notificaciones)** |

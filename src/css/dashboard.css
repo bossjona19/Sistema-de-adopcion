@@ -252,6 +252,38 @@ body { overflow: hidden; }
 .exp-panel { display: none; }
 .exp-panel.active { display: block; }
 
+/* ── Notificaciones (A6) ─────────────────────────────────────── */
+.notif-wrap { position: relative; }
+.notif-bell {
+  position: relative; background: none; border: none; cursor: pointer;
+  color: var(--text-2); padding: 6px; border-radius: var(--r-sm);
+  display: flex; align-items: center;
+}
+.notif-bell:hover { background: var(--surface-2); color: var(--text-1); }
+.notif-badge {
+  position: absolute; top: -2px; right: -2px;
+  min-width: 16px; height: 16px; padding: 0 4px;
+  background: var(--danger); color: #fff;
+  font-size: .625rem; font-weight: 700; line-height: 16px; text-align: center;
+  border-radius: var(--r-full);
+}
+.notif-panel {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 50;
+  width: 300px; max-height: 380px; overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-xl);
+}
+.notif-head {
+  padding: 12px 14px; font-weight: 600; font-size: .875rem;
+  border-bottom: 1px solid var(--border-2);
+}
+.notif-item { padding: 10px 14px; border-bottom: 1px solid var(--border-2); }
+.notif-item:last-child { border-bottom: none; }
+.notif-item.unread { background: var(--primary-bg); }
+.notif-msg  { font-size: .8125rem; color: var(--text-1); line-height: 1.4; }
+.notif-time { font-size: .6875rem; color: var(--text-3); margin-top: 2px; }
+.notif-empty { padding: 24px 14px; text-align: center; font-size: .8125rem; color: var(--text-3); }
+
 /* ── Stage bars ──────────────────────────────────────────────── */
 .stage-list { padding: 0 20px 4px; display: flex; flex-direction: column; gap: 10px; }
 .stage-row {

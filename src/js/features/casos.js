@@ -5,6 +5,7 @@ import { documentosService } from '../services/documentosService.js';
 import { postadopcionService } from '../services/postadopcionService.js';
 import { usuariosService } from '../services/usuariosService.js';
 import { configService } from '../services/configService.js';
+import { notificacionesService } from '../services/notificacionesService.js';
 import { logAudit, getUserId, getEntidadHistorial } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
@@ -359,6 +360,13 @@ async function saveCaso(ev) {
   btn.disabled = false;
   if (error) { toast('Error: ' + error.message, 'error'); return; }
   await logAudit(_editId ? 'Actualizar caso' : 'Crear caso', 'casos', { entidadId, antes, despues });
+
+  // A6: notificar al responsable asignado (si no es quien hace el cambio)
+  const asignadoId = puedeAsignar() ? (responsableSel || null) : null;
+  if (asignadoId && asignadoId !== getUserId()) {
+    notificacionesService.create(asignadoId, `Se te asignó el caso #${(entidadId || _editId).slice(-6).toUpperCase()}`, 'asignacion');
+  }
+
   toast(_editId ? 'Caso actualizado' : 'Caso creado', 'success');
   closeModal('modal-caso');
   await load();
