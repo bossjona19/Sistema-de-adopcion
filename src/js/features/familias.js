@@ -180,6 +180,21 @@ async function reporteFamilia(id) {
       `Fecha de solicitud: ${formatDate(f.fecha_solicitud)}`,
       `Notas: ${f.notas ?? '—'}`,
     ] },
+    { heading: 'Perfil del solicitante', lines: [
+      `Estado civil: ${f.estado_civil ?? '—'}`,
+      `Ocupación: ${f.ocupacion ?? '—'}`,
+      `Ingresos aprox.: ${f.ingresos_aprox ?? '—'}`,
+      `N° de hijos: ${f.num_hijos ?? '—'}`,
+      `Personas en el hogar: ${f.num_personas_hogar ?? '—'}`,
+      `Experiencia con niños: ${f.experiencia_ninos ?? '—'}`,
+      `Preferencia de edad: ${f.preferencia_edad ?? '—'}`,
+    ] },
+    { heading: 'Motivación para adoptar', lines: [ f.motivacion ?? '—' ] },
+    { heading: 'Consentimientos', lines: [
+      `Acepta seguimiento post-adopción: ${f.acepta_seguimiento ? 'Sí' : 'No'}`,
+      `Acepta evaluación del equipo técnico: ${f.acepta_evaluacion ? 'Sí' : 'No'}`,
+      `Acepta términos y condiciones: ${f.acepta_terminos ? 'Sí' : 'No'}`,
+    ] },
     { heading: 'Casos asociados', table: {
       columns: ['Caso', 'Niño', 'Etapa', 'Inicio', 'Cierre'],
       rows: (casosRes.data ?? []).map(c => [

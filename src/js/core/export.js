@@ -99,52 +99,94 @@ export async function reportePDF(org, titulo, bloques, filename) {
   const JsPDF = await ensureJsPDF();
   const doc = new JsPDF();
   const pageW = doc.internal.pageSize.getWidth();
-  let y = 12;
+  const pageH = doc.internal.pageSize.getHeight();
+  const ACCENT = [55, 138, 221];
+  const M = 14;                 // margen
+  const LABEL_W = 46;           // ancho de la columna de etiquetas (kv)
+  let y = 14;
 
+  const ensure = (need = 8) => { if (y + need > pageH - 16) { doc.addPage(); y = 16; } };
+
+  // ── Cabecera institucional ──
   const logo = await loadLogo(org?.logo_url);
   if (logo) {
     const h = 16, w = Math.min(40, (logo.w / logo.h) * h);
-    try { doc.addImage(logo.dataUrl, 'PNG', 14, y, w, h); } catch { /* skip */ }
+    try { doc.addImage(logo.dataUrl, 'PNG', M, y, w, h); } catch { /* skip */ }
   }
-  const tx = logo ? 58 : 14;
-  doc.setFontSize(13); doc.setTextColor(20);
-  doc.text(org?.nombre || 'Proyecto OMEGA', tx, y + 6);
+  const tx = logo ? M + 44 : M;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(30);
+  doc.text(org?.nombre || 'OMEGA', tx, y + 6);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(120);
   const sub = [org?.contacto, org?.direccion].filter(Boolean).join('  ·  ');
-  if (sub) { doc.setFontSize(9); doc.setTextColor(120); doc.text(sub, tx, y + 12); }
+  if (sub) doc.text(doc.splitTextToSize(sub, pageW - tx - M), tx, y + 12);
   y += 22;
+  doc.setDrawColor(...ACCENT); doc.setLineWidth(0.8); doc.line(M, y, pageW - M, y);
+  doc.setLineWidth(0.2);
+  y += 9;
 
-  doc.setTextColor(20); doc.setFontSize(12);
-  const tLines = doc.splitTextToSize(titulo, pageW - 28); // título también ajusta ancho
-  doc.text(tLines, 14, y);
-  const ty = y + (tLines.length - 1) * 6;
-  doc.setDrawColor(220); doc.line(14, ty + 3, pageW - 14, ty + 3);
-  doc.setFontSize(8); doc.setTextColor(140);
-  doc.text('Generado: ' + new Date().toLocaleString('es-ES'), 14, ty + 9);
-  doc.setTextColor(20);
-  y = ty + 16;
+  // ── Título + fecha ──
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...ACCENT);
+  const tLines = doc.splitTextToSize(titulo, pageW - M * 2);
+  doc.text(tLines, M, y);
+  y += (tLines.length - 1) * 6 + 6;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150);
+  doc.text('Generado: ' + new Date().toLocaleString('es-ES'), M, y);
+  doc.setTextColor(30);
+  y += 9;
 
   for (const b of bloques) {
-    if (y > 265) { doc.addPage(); y = 16; }
-    if (b.heading) { doc.setFontSize(11); doc.text(b.heading, 14, y); y += 6; }
+    // Barra de sección
+    if (b.heading) {
+      ensure(14);
+      doc.setFillColor(238, 242, 248);
+      doc.rect(M, y - 4.5, pageW - M * 2, 8, 'F');
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...ACCENT);
+      doc.text(b.heading, M + 2.5, y + 1);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(30);
+      y += 11;
+    }
+
     if (b.lines?.length) {
       doc.setFontSize(9);
-      const maxW = pageW - 16 - 14; // ancho disponible (margen izq. del texto + margen der.)
       for (const l of b.lines) {
-        for (const wl of doc.splitTextToSize(String(l), maxW)) { // wrap automático
-          if (y > 285) { doc.addPage(); y = 16; }                 // continúa en otra página
-          doc.text(wl, 16, y); y += 5;
+        const s = String(l);
+        const idx = s.indexOf(': ');
+        if (idx > 0 && idx <= 30) {
+          // Par etiqueta/valor → etiqueta gris + valor oscuro en dos columnas
+          const label = s.slice(0, idx + 1);
+          const valLines = doc.splitTextToSize(s.slice(idx + 2), pageW - M - LABEL_W - M);
+          ensure(5 * valLines.length);
+          doc.setTextColor(120); doc.text(label, M + 2, y);
+          doc.setTextColor(30);  doc.text(valLines, M + LABEL_W, y);
+          y += 5 * valLines.length;
+        } else {
+          // Texto libre (p.ej. motivación) → ancho completo
+          for (const wl of doc.splitTextToSize(s, pageW - M * 2 - 2)) { ensure(5); doc.text(wl, M + 2, y); y += 5; }
         }
       }
-      y += 3;
+      y += 4;
     }
+
     if (b.table) {
       doc.autoTable({
         head: [b.table.columns], body: b.table.rows, startY: y,
-        styles: { fontSize: 8, cellPadding: 2 }, headStyles: { fillColor: [55, 138, 221] },
-        margin: { left: 14, right: 14 },
+        theme: 'grid',
+        styles: { fontSize: 8, cellPadding: 2.5, overflow: 'linebreak', textColor: 40, lineColor: [226, 232, 240] },
+        headStyles: { fillColor: ACCENT, textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 247, 250] },
+        margin: { left: M, right: M },
       });
-      y = doc.lastAutoTable.finalY + 8;
+      y = doc.lastAutoTable.finalY + 9;
     }
+  }
+
+  // ── Pie de página con numeración ──
+  const total = doc.getNumberOfPages();
+  for (let i = 1; i <= total; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8); doc.setTextColor(150);
+    doc.text(org?.nombre || 'OMEGA', M, pageH - 8);
+    doc.text(`Página ${i} de ${total}`, pageW - M, pageH - 8, { align: 'right' });
   }
 
   doc.save(filename);

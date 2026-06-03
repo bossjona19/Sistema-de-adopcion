@@ -739,6 +739,16 @@ async function reporteCasoConsolidado() {
       `Estado de evaluación: ${f.estado_eval ?? '—'}`,
       `Fecha de solicitud: ${f.fecha_solicitud ? formatDate(f.fecha_solicitud) : '—'}`,
     ] },
+    { heading: 'Perfil del solicitante', lines: [
+      `Estado civil: ${f.estado_civil ?? '—'}`,
+      `Ocupación: ${f.ocupacion ?? '—'}`,
+      `Ingresos aprox.: ${f.ingresos_aprox ?? '—'}`,
+      `N° de hijos: ${f.num_hijos ?? '—'}`,
+      `Personas en el hogar: ${f.num_personas_hogar ?? '—'}`,
+      `Experiencia con niños: ${f.experiencia_ninos ?? '—'}`,
+      `Preferencia de edad: ${f.preferencia_edad ?? '—'}`,
+    ] },
+    { heading: 'Motivación para adoptar', lines: [ f.motivacion ?? '—' ] },
     { heading: 'Documentos', table: {
       columns: ['Tipo', 'Nombre', 'Estado', 'Fecha'],
       rows: (docs.data ?? []).map(d => [TIPO_DOC_LABELS[d.tipo] ?? d.tipo, d.nombre, d.estado, formatDate(d.fecha)]),
