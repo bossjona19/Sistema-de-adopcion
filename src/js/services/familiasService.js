@@ -6,6 +6,9 @@ export const familiasService = {
       .is('deleted_at', null)
       .order('fecha_solicitud', { ascending: false });
   },
+  getById(id) {
+    return supabase.from('familias').select('*').eq('id', id).maybeSingle();
+  },
   // Página server-side con búsqueda (apellido/contacto) y filtro. Devuelve { data, count, error }.
   getPage({ search = '', estado = '', from = 0, to = 19 } = {}) {
     let q = supabase.from('familias').select('*', { count: 'exact' }).is('deleted_at', null);

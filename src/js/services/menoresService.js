@@ -6,6 +6,9 @@ export const menoresService = {
       .is('deleted_at', null)
       .order('created_at', { ascending: false });
   },
+  getById(id) {
+    return supabase.from('menores').select('*').eq('id', id).maybeSingle();
+  },
   // Página server-side con búsqueda y filtro. Devuelve { data, count, error }.
   getPage({ search = '', estado = '', genero = '', from = 0, to = 19 } = {}) {
     let q = supabase.from('menores').select('*', { count: 'exact' }).is('deleted_at', null);

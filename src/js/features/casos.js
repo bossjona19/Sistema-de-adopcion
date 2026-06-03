@@ -8,7 +8,7 @@ import { configService } from '../services/configService.js';
 import { logAudit, getUserId, getEntidadHistorial } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
-import { badgeHtml, formatDate, formatDateTime, pagerHtml } from '../core/ui.js';
+import { badgeHtml, formatDate, formatDateTime, pagerHtml, calcAge } from '../core/ui.js';
 import { exportCSV, exportPDF, exportExcel, reportePDF } from '../core/export.js';
 import { getParams, setParams } from '../core/router.js';
 import { can, getRole } from '../core/auth.js';
@@ -698,21 +698,46 @@ async function reporteCasoConsolidado() {
   if (!caso) return;
   const code = id.slice(-6).toUpperCase();
 
-  const [org, docs, notas, post, hist] = await Promise.all([
+  const [org, menorRes, familiaRes, docs, notas, post, hist] = await Promise.all([
     configService.get(),
+    menoresService.getById(caso.menor_id),
+    familiasService.getById(caso.familia_id),
     documentosService.list(id),
     casosService.getSeguimiento(id),
     postadopcionService.list(id),
     getEntidadHistorial('casos', id),
   ]);
+  const m = menorRes.data ?? {};
+  const f = familiaRes.data ?? {};
+  const edad = calcAge(m.fecha_nacimiento);
 
   const bloques = [
     { heading: 'Información del expediente', lines: [
       `Caso: #${code}`,
-      `Niño: ${caso.menor?.nombre ?? '—'}`,
-      `Familia: ${caso.familia?.apellido ?? '—'}`,
-      `Etapa: ${ETAPA_LABELS[caso.etapa] ?? caso.etapa}`,
+      `Etapa actual: ${ETAPA_LABELS[caso.etapa] ?? caso.etapa}`,
       `Estado post-adopción: ${POST_ESTADO_LABELS[caso.estado_post] ?? caso.estado_post ?? '—'}`,
+      `Responsable: ${caso.responsable?.nombre ?? '—'}`,
+      `Fecha de inicio: ${caso.fecha_inicio ? formatDate(caso.fecha_inicio) : '—'}`,
+      `Fecha de cierre: ${caso.fecha_cierre ? formatDate(caso.fecha_cierre) : '—'}`,
+    ] },
+    { heading: 'Datos del niño', lines: [
+      `Nombre: ${m.nombre ?? caso.menor?.nombre ?? '—'}`,
+      `Edad: ${edad != null ? edad + ' años' : '—'}`,
+      `Fecha de nacimiento: ${m.fecha_nacimiento ? formatDate(m.fecha_nacimiento) : '—'}`,
+      `Género: ${m.genero ?? '—'}`,
+      `Estado: ${m.estado ?? '—'}`,
+      `Descripción: ${m.descripcion ?? '—'}`,
+    ] },
+    { heading: 'Datos de la familia', lines: [
+      `Apellido: ${f.apellido ?? caso.familia?.apellido ?? '—'}`,
+      `Solicitante: ${f.nombre_completo ?? '—'}`,
+      `Cédula: ${f.cedula ?? '—'}`,
+      `Contacto: ${f.contacto ?? '—'}`,
+      `Email: ${f.email ?? '—'}`,
+      `Teléfono: ${f.telefono ?? '—'}`,
+      `Dirección: ${f.direccion ?? '—'}`,
+      `Estado de evaluación: ${f.estado_eval ?? '—'}`,
+      `Fecha de solicitud: ${f.fecha_solicitud ? formatDate(f.fecha_solicitud) : '—'}`,
     ] },
     { heading: 'Documentos', table: {
       columns: ['Tipo', 'Nombre', 'Estado', 'Fecha'],
