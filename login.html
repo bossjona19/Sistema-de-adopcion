@@ -77,13 +77,16 @@
   </div>
 </main>
 
+<!-- Branding (defensivo y AISLADO): dynamic import con catch. Si branding.js falla
+     o no está desplegado, el inicio de sesión NO se ve afectado. -->
+<script type="module">
+  import('/src/js/branding.js').then(m => m.applyBranding()).catch(() => {});
+</script>
+
 <script type="module">
   import { signIn, signInWithGoogle, redirectIfAuthenticated } from '/src/js/core/auth.js';
   import { accesoService } from '/src/js/services/accesoService.js';
-  import { applyBranding } from '/src/js/branding.js';
   import '/src/js/sw-register.js';
-
-  applyBranding();
 
   // Show error if redirected from requireAuth / OAuth callback
   const params = new URLSearchParams(location.search);
