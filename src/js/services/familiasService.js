@@ -1,11 +1,6 @@
 import { supabase } from '../core/supabase.js';
 
 export const familiasService = {
-  getAll() {
-    return supabase.from('familias').select('*')
-      .is('deleted_at', null)
-      .order('fecha_solicitud', { ascending: false });
-  },
   getById(id) {
     return supabase.from('familias').select('*').eq('id', id).maybeSingle();
   },

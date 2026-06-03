@@ -1,11 +1,6 @@
 import { supabase } from '../core/supabase.js';
 
 export const menoresService = {
-  getAll() {
-    return supabase.from('menores').select('*')
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
-  },
   getById(id) {
     return supabase.from('menores').select('*').eq('id', id).maybeSingle();
   },

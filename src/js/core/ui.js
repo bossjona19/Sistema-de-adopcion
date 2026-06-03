@@ -41,6 +41,11 @@ export function pagerHtml(page, pageSize, total) {
     </div>`;
 }
 
+// Escapa texto arbitrario antes de insertarlo como HTML (anti-XSS en innerHTML).
+export function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
 export function setEl(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;

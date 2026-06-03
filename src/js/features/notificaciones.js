@@ -1,5 +1,5 @@
 import { notificacionesService } from '../services/notificacionesService.js';
-import { formatDateTime } from '../core/ui.js';
+import { formatDateTime, escapeHtml } from '../core/ui.js';
 
 let _wired = false;
 
@@ -54,8 +54,4 @@ async function openPanel() {
   // Al abrir, marca todas como leídas y limpia el contador.
   await notificacionesService.markAllRead();
   await refreshBadge();
-}
-
-function escapeHtml(s) {
-  return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }

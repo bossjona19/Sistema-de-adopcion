@@ -1,6 +1,6 @@
 import { errorService } from '../services/errorService.js';
 import { toast } from '../../components/toast.js';
-import { formatDateTime } from '../core/ui.js';
+import { formatDateTime, escapeHtml } from '../core/ui.js';
 import { can } from '../core/auth.js';
 
 let _wired = false;
@@ -47,9 +47,4 @@ function render(list) {
       <td style="font-size:.8125rem;color:var(--text-3);max-width:220px;" class="truncate">${escapeHtml(e.url ?? '—')}</td>
     </tr>
   `).join('');
-}
-
-// Los mensajes de error pueden contener texto arbitrario → escapar antes de pintar.
-function escapeHtml(s) {
-  return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }

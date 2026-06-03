@@ -1,13 +1,6 @@
 import { supabase } from '../core/supabase.js';
 
 export const casosService = {
-  getAll() {
-    return supabase
-      .from('casos')
-      .select('*, familia:familias(apellido), menor:menores(nombre)')
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false });
-  },
   // Página server-side con filtro por etapa y (opcional) responsable. { data, count, error }.
   getPage({ etapa = '', usuarioId = '', from = 0, to = 19 } = {}) {
     let q = supabase

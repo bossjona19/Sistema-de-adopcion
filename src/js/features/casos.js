@@ -9,7 +9,7 @@ import { notificacionesService } from '../services/notificacionesService.js';
 import { logAudit, getUserId, getEntidadHistorial } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
-import { badgeHtml, formatDate, formatDateTime, pagerHtml, calcAge } from '../core/ui.js';
+import { badgeHtml, formatDate, formatDateTime, pagerHtml, calcAge, escapeHtml } from '../core/ui.js';
 import { exportCSV, exportPDF, exportExcel, reportePDF } from '../core/export.js';
 import { getParams, setParams } from '../core/router.js';
 import { can, getRole } from '../core/auth.js';
@@ -589,8 +589,6 @@ async function eliminarDoc(id, path) {
 }
 
 // ── Post-adopción (A7) ───────────────────────────────────────
-const escapePost = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
-
 async function renderPost(id) {
   const caso = _list.find(x => x.id === id);
   const cont = document.getElementById('exp-post');
@@ -618,9 +616,9 @@ async function renderPost(id) {
             <strong style="font-size:.8125rem;">${POST_TIPO_LABELS[r.tipo] ?? r.tipo}</strong>
             <span style="font-size:.75rem;color:var(--text-3);">${formatDate(r.fecha)}</span>
           </div>
-          ${r.observaciones ? `<p style="font-size:.875rem;color:var(--text-2);margin:4px 0 0;">${escapePost(r.observaciones)}</p>` : ''}
+          ${r.observaciones ? `<p style="font-size:.875rem;color:var(--text-2);margin:4px 0 0;">${escapeHtml(r.observaciones)}</p>` : ''}
           <div style="font-size:.75rem;color:var(--text-3);margin-top:3px;">
-            ${r.responsable?.nombre ? 'Responsable: ' + escapePost(r.responsable.nombre) : ''}${r.proxima_visita ? ` · Próxima visita: ${formatDate(r.proxima_visita)}` : ''}
+            ${r.responsable?.nombre ? 'Responsable: ' + escapeHtml(r.responsable.nombre) : ''}${r.proxima_visita ? ` · Próxima visita: ${formatDate(r.proxima_visita)}` : ''}
           </div>
         </div>`).join('')
     : `<p style="color:var(--text-3);font-size:.875rem;padding:8px 0;">Sin registros de seguimiento.</p>`;
