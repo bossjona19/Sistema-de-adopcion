@@ -9,7 +9,7 @@ import { notificacionesService } from '../services/notificacionesService.js';
 import { logAudit, getUserId, getEntidadHistorial } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
-import { badgeHtml, formatDate, formatDateTime, pagerHtml, calcAge, escapeHtml } from '../core/ui.js';
+import { badgeHtml, formatDate, formatDateTime, pagerHtml, calcAge, escapeHtml, estadoMenorLabel, prefEdadLabel } from '../core/ui.js';
 import { exportCSV, exportPDF, exportExcel, reportePDF } from '../core/export.js';
 import { getParams, setParams } from '../core/router.js';
 import { can, getRole } from '../core/auth.js';
@@ -731,7 +731,7 @@ async function reporteCasoConsolidado() {
       `Edad: ${edad != null ? edad + ' años' : '—'}`,
       `Fecha de nacimiento: ${m.fecha_nacimiento ? formatDate(m.fecha_nacimiento) : '—'}`,
       `Género: ${m.genero ?? '—'}`,
-      `Estado: ${m.estado ?? '—'}`,
+      `Estado: ${estadoMenorLabel(m.estado)}`,
       `Descripción: ${m.descripcion ?? '—'}`,
     ] },
     { heading: 'Datos de la familia', lines: [
@@ -752,7 +752,7 @@ async function reporteCasoConsolidado() {
       `N° de hijos: ${f.num_hijos ?? '—'}`,
       `Personas en el hogar: ${f.num_personas_hogar ?? '—'}`,
       `Experiencia con niños: ${f.experiencia_ninos ?? '—'}`,
-      `Preferencia de edad: ${f.preferencia_edad ?? '—'}`,
+      `Etapa de desarrollo preferida: ${prefEdadLabel(f.preferencia_edad)}`,
     ] },
     { heading: 'Motivación para adoptar', lines: [ f.motivacion ?? '—' ] },
     { heading: 'Documentos', table: {

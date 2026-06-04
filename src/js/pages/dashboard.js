@@ -127,7 +127,7 @@ async function loadGestion() {
   paint('chart-estado', {
     type: 'doughnut',
     data: {
-      labels: ['Disponible', 'En proceso', 'Adoptado'],
+      labels: ['En espera de adopción', 'En proceso de adopción', 'Adoptado'],
       datasets: [{
         data: [dist.estado.disponible, dist.estado.en_proceso, dist.estado.adoptado],
         backgroundColor: [COLORS.blue, COLORS.amber, COLORS.green],

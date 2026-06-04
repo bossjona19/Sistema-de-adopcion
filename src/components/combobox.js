@@ -1,4 +1,4 @@
-const STATUS_LABEL = { disponible: 'Disponible', en_proceso: 'En proceso', adoptado: 'Adoptado' };
+const STATUS_LABEL = { disponible: 'En espera de adopción', en_proceso: 'En proceso de adopción', adoptado: 'Adoptado' };
 
 export function createCombobox(container, initialItems = [], { placeholder = 'Seleccionar…' } = {}) {
   let _items    = initialItems;

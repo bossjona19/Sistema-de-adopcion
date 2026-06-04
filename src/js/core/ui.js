@@ -17,9 +17,31 @@ export function formatDateTime(iso) {
   });
 }
 
+// Estado del menor — terminología institucional (humana, no de "selección").
+// OJO: las CLAVES (disponible/en_proceso/adoptado) NO cambian → DB y lógica intactas;
+// solo cambia el TEXTO visible.
+export const ESTADO_MENOR_LABELS = {
+  disponible: 'En espera de adopción',
+  en_proceso: 'En proceso de adopción',
+  adoptado:   'Adoptado',
+};
+export const estadoMenorLabel = v => ESTADO_MENOR_LABELS[v] ?? (v ?? '—');
+
+// Preferencia por etapa de desarrollo (capa de presentación). Mantiene compatibilidad
+// con registros antiguos guardados como rangos de edad.
+export const PREFERENCIA_EDAD_LABELS = {
+  sin_preferencia: 'Sin preferencia',
+  bebe:            'Bebé',
+  ninez:           'Niñez',
+  adolescencia:    'Adolescencia',
+  // Registros antiguos (rangos) → se muestran mapeados a su etapa:
+  '0_3':  'Bebé', '4_7': 'Niñez', '8_12': 'Niñez', '13_17': 'Adolescencia',
+};
+export const prefEdadLabel = v => PREFERENCIA_EDAD_LABELS[v] ?? (v ?? '—');
+
 export function badgeHtml(value) {
   const LABELS = {
-    disponible:'Disponible', en_proceso:'En proceso', adoptado:'Adoptado',
+    ...ESTADO_MENOR_LABELS,
     pendiente:'Pendiente', aprobada:'Aprobada', rechazada:'Rechazada',
     solicitud:'Solicitud', evaluacion:'Evaluación', asignacion:'Asignación',
     seguimiento:'Seguimiento', cierre:'Cierre',

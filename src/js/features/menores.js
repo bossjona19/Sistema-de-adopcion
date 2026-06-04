@@ -4,7 +4,7 @@ import { configService } from '../services/configService.js';
 import { logAudit } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
-import { getInitials, formatDate, badgeHtml, calcAge, diffSummary, pagerHtml } from '../core/ui.js';
+import { getInitials, formatDate, badgeHtml, calcAge, diffSummary, pagerHtml, estadoMenorLabel } from '../core/ui.js';
 import { exportCSV, exportPDF, exportExcel, reportePDF } from '../core/export.js';
 import { getParams, setParams } from '../core/router.js';
 import { can } from '../core/auth.js';
@@ -12,7 +12,7 @@ import { can } from '../core/auth.js';
 const EXPORT_COLS = [
   { label: 'Nombre',     value: m => m.nombre },
   { label: 'Edad',       value: m => calcAge(m.fecha_nacimiento) ?? m.edad ?? '' },
-  { label: 'Estado',     value: m => m.estado },
+  { label: 'Estado',     value: m => estadoMenorLabel(m.estado) },
   { label: 'Género',     value: m => m.genero ?? '' },
   { label: 'Registrado', value: m => formatDate(m.created_at) },
 ];
@@ -184,7 +184,7 @@ async function reporteNino(id) {
       `Nombre: ${m.nombre}`,
       `Edad: ${edad != null ? edad + ' años' : '—'}`,
       `Género: ${m.genero ?? '—'}`,
-      `Estado: ${m.estado}`,
+      `Estado: ${estadoMenorLabel(m.estado)}`,
       `Registrado: ${formatDate(m.created_at)}`,
       m.descripcion ? `Descripción: ${m.descripcion}` : null,
     ].filter(Boolean) },

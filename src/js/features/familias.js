@@ -4,7 +4,7 @@ import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
 import { casosService } from '../services/casosService.js';
 import { configService } from '../services/configService.js';
-import { getInitials, formatDate, badgeHtml, diffSummary, pagerHtml } from '../core/ui.js';
+import { getInitials, formatDate, badgeHtml, diffSummary, pagerHtml, prefEdadLabel } from '../core/ui.js';
 import { exportCSV, exportPDF, exportExcel, reportePDF } from '../core/export.js';
 import { getParams, setParams } from '../core/router.js';
 import { can } from '../core/auth.js';
@@ -187,7 +187,7 @@ async function reporteFamilia(id) {
       `N° de hijos: ${f.num_hijos ?? '—'}`,
       `Personas en el hogar: ${f.num_personas_hogar ?? '—'}`,
       `Experiencia con niños: ${f.experiencia_ninos ?? '—'}`,
-      `Preferencia de edad: ${f.preferencia_edad ?? '—'}`,
+      `Etapa de desarrollo preferida: ${prefEdadLabel(f.preferencia_edad)}`,
     ] },
     { heading: 'Motivación para adoptar', lines: [ f.motivacion ?? '—' ] },
     { heading: 'Consentimientos', lines: [
