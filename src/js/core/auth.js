@@ -68,6 +68,32 @@ export async function signInWithGoogle() {
   if (error) throw error;
 }
 
+// ── Recuperación de contraseña ────────────────────────────────
+// Envía el correo con el enlace de recuperación (redirige a /restablecer.html).
+export async function requestPasswordReset(email) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/restablecer.html',
+  });
+  if (error) throw error;
+}
+
+// En /restablecer.html: canjea el código del enlace por una sesión de recuperación.
+// Devuelve true si había un código válido. (Mismo browser que pidió el reset.)
+export async function completeRecovery() {
+  const code = new URLSearchParams(window.location.search).get('code');
+  if (!code) return false;
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  window.history.replaceState({}, '', window.location.pathname);
+  if (error) throw error;
+  return true;
+}
+
+// Fija la nueva contraseña del usuario autenticado (sesión de recuperación).
+export async function updatePassword(password) {
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) throw error;
+}
+
 export async function signOut() {
   await supabase.auth.signOut();
   window.location.href = '/login.html';

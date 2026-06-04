@@ -1,4 +1,4 @@
-const CACHE = 'omega-v43';
+const CACHE = 'omega-v44';
 
 const STATIC = [
   '/',
@@ -6,6 +6,8 @@ const STATIC = [
   '/login.html',
   '/dashboard.html',
   '/solicitud.html',
+  '/recuperar.html',
+  '/restablecer.html',
   '/manifest.json',
   '/src/css/styles.css',
   '/src/css/dashboard.css',

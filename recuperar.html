@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperar contraseña — Proyecto OMEGA</title>
+  <link rel="icon" type="image/svg+xml" href="/src/assets/icons/favicon.svg">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/src/css/styles.css">
+  <link rel="stylesheet" href="/src/css/auth.css">
+</head>
+<body>
+
+<main class="auth-page">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="auth-logo" data-org-logo>
+        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <h1 data-org>Proyecto OMEGA</h1>
+      <p>Recuperar contraseña</p>
+    </div>
+
+    <form class="auth-form" id="recuperar-form" novalidate>
+      <div id="auth-error" class="auth-error" role="alert"></div>
+      <div id="auth-ok" class="auth-ok" role="status" style="display:none;"></div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">Correo electrónico</label>
+        <input class="form-input" type="email" id="email" name="email"
+               placeholder="admin@ejemplo.com" autocomplete="email" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full" id="submit-btn">
+        <span id="btn-text">Enviar enlace de recuperación</span>
+        <span id="btn-spinner" style="display:none;" class="spinner"></span>
+      </button>
+    </form>
+
+    <p class="auth-footer"><a href="/login.html">← Volver a iniciar sesión</a></p>
+  </div>
+</main>
+
+<script type="module">
+  import('/src/js/branding.js').then(m => m.applyBranding()).catch(() => {});
+</script>
+<script type="module">
+  import { requestPasswordReset } from '/src/js/core/auth.js';
+  import '/src/js/sw-register.js';
+
+  const form    = document.getElementById('recuperar-form');
+  const errorEl = document.getElementById('auth-error');
+  const okEl    = document.getElementById('auth-ok');
+  const btn     = document.getElementById('submit-btn');
+  const btnText = document.getElementById('btn-text');
+  const spinner = document.getElementById('btn-spinner');
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    errorEl.classList.remove('show');
+    okEl.style.display = 'none';
+
+    const email = form.email.value.trim();
+    if (!email) {
+      errorEl.textContent = 'Ingresa tu correo electrónico.';
+      errorEl.classList.add('show');
+      return;
+    }
+
+    btn.disabled = true;
+    btnText.textContent = 'Enviando…';
+    spinner.style.display = 'inline-block';
+
+    try {
+      await requestPasswordReset(email);
+      // Mensaje neutro: no revela si el correo existe (buena práctica de seguridad).
+      okEl.textContent = 'Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja.';
+      okEl.style.display = 'block';
+      form.reset();
+    } catch (err) {
+      errorEl.textContent = 'No se pudo enviar el enlace. Intenta de nuevo en unos minutos.';
+      errorEl.classList.add('show');
+    } finally {
+      btn.disabled = false;
+      btnText.textContent = 'Enviar enlace de recuperación';
+      spinner.style.display = 'none';
+    }
+  });
+</script>
+
+</body>
+</html>

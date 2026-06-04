@@ -71,6 +71,15 @@
 
 .auth-error.show { display: block; }
 
+.auth-ok {
+  background: var(--success-bg);
+  color: var(--success);
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  font-size: .875rem;
+  font-weight: 500;
+}
+
 .auth-footer {
   text-align: center;
   margin-top: 24px;

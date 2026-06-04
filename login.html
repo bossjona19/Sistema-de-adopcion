@@ -28,6 +28,7 @@
 
     <form class="auth-form" id="login-form" novalidate>
       <div id="auth-error" class="auth-error" role="alert"></div>
+      <div id="auth-ok" class="auth-ok" role="status" style="display:none;"></div>
 
       <div class="form-group">
         <label class="form-label" for="email">Correo electrónico</label>
@@ -59,6 +60,9 @@
         <span id="btn-text">Iniciar sesión</span>
         <span id="btn-spinner" style="display:none;" class="spinner" style="width:16px;height:16px;border-width:2px;"></span>
       </button>
+      <p style="text-align:center;margin-top:12px;font-size:.8125rem;">
+        <a href="/recuperar.html">¿Olvidaste tu contraseña?</a>
+      </p>
     </form>
 
     <div class="auth-divider">o</div>
@@ -98,6 +102,11 @@
     const errorEl = document.getElementById('auth-error');
     errorEl.textContent = authErrors[params.get('error')];
     errorEl.classList.add('show');
+  }
+  if (params.get('reset') === 'ok') {
+    const ok = document.getElementById('auth-ok');
+    ok.textContent = 'Contraseña actualizada. Inicia sesión con tu nueva contraseña.';
+    ok.style.display = 'block';
   }
 
   // Redirect if already logged in as admin

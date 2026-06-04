@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restablecer contraseña — Proyecto OMEGA</title>
+  <link rel="icon" type="image/svg+xml" href="/src/assets/icons/favicon.svg">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/src/css/styles.css">
+  <link rel="stylesheet" href="/src/css/auth.css">
+</head>
+<body>
+
+<main class="auth-page">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="auth-logo" data-org-logo>
+        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <h1 data-org>Proyecto OMEGA</h1>
+      <p>Nueva contraseña</p>
+    </div>
+
+    <div id="auth-error" class="auth-error" role="alert"></div>
+
+    <!-- Estado de carga inicial mientras se valida el enlace -->
+    <div id="loading" style="text-align:center;padding:18px;"><div class="spinner"></div></div>
+
+    <!-- Enlace inválido / expirado -->
+    <div id="invalid" style="display:none;">
+      <div class="auth-error show">El enlace es inválido o expiró. Solicita uno nuevo.</div>
+      <a class="btn btn-primary btn-full" href="/recuperar.html" style="margin-top:14px;">Solicitar otro enlace</a>
+    </div>
+
+    <!-- Formulario de nueva contraseña -->
+    <form class="auth-form" id="reset-form" novalidate style="display:none;">
+      <div class="form-group">
+        <label class="form-label" for="password">Nueva contraseña</label>
+        <input class="form-input" type="password" id="password" name="password"
+               placeholder="Mínimo 8 caracteres" autocomplete="new-password" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password2">Confirmar contraseña</label>
+        <input class="form-input" type="password" id="password2" name="password2"
+               placeholder="Repite la contraseña" autocomplete="new-password" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" id="submit-btn">
+        <span id="btn-text">Guardar contraseña</span>
+        <span id="btn-spinner" style="display:none;" class="spinner"></span>
+      </button>
+    </form>
+
+    <p class="auth-footer"><a href="/login.html">← Volver a iniciar sesión</a></p>
+  </div>
+</main>
+
+<script type="module">
+  import('/src/js/branding.js').then(m => m.applyBranding()).catch(() => {});
+</script>
+<script type="module">
+  import { completeRecovery, updatePassword, signOut } from '/src/js/core/auth.js';
+  import '/src/js/sw-register.js';
+
+  const loading = document.getElementById('loading');
+  const invalid = document.getElementById('invalid');
+  const form    = document.getElementById('reset-form');
+  const errorEl = document.getElementById('auth-error');
+  const btn     = document.getElementById('submit-btn');
+  const btnText = document.getElementById('btn-text');
+  const spinner = document.getElementById('btn-spinner');
+
+  // Validar el enlace al cargar (canjea el código por una sesión de recuperación).
+  try {
+    const ok = await completeRecovery();
+    loading.style.display = 'none';
+    if (ok) form.style.display = '';
+    else    invalid.style.display = 'block';
+  } catch {
+    loading.style.display = 'none';
+    invalid.style.display = 'block';
+  }
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    errorEl.classList.remove('show');
+
+    const pw  = form.password.value;
+    const pw2 = form.password2.value;
+
+    if (pw.length < 8) {
+      errorEl.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+      errorEl.classList.add('show');
+      return;
+    }
+    if (pw !== pw2) {
+      errorEl.textContent = 'Las contraseñas no coinciden.';
+      errorEl.classList.add('show');
+      return;
+    }
+
+    btn.disabled = true;
+    btnText.textContent = 'Guardando…';
+    spinner.style.display = 'inline-block';
+
+    try {
+      await updatePassword(pw);
+      await signOut(); // cierra la sesión de recuperación → redirige a /login.html
+      window.location.href = '/login.html?reset=ok';
+    } catch (err) {
+      errorEl.textContent = 'No se pudo actualizar la contraseña. El enlace pudo expirar; solicita uno nuevo.';
+      errorEl.classList.add('show');
+      btn.disabled = false;
+      btnText.textContent = 'Guardar contraseña';
+      spinner.style.display = 'none';
+    }
+  });
+</script>
+
+</body>
+</html>

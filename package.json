@@ -1,0 +1,10 @@
+{
+  "name": "omega-adopciones",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Proyecto OMEGA — Sistema de Gestión de Adopciones (HTML/CSS/JS + Supabase + Vercel)",
+  "scripts": {
+    "test": "node --test"
+  }
+}
