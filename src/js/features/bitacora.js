@@ -1,7 +1,7 @@
 import { getBitacora } from '../services/auditService.js';
 import { usuariosService } from '../services/usuariosService.js';
 import { toast } from '../../components/toast.js';
-import { formatDateTime } from '../core/ui.js';
+import { formatDateTime, escapeHtml } from '../core/ui.js';
 import { can } from '../core/auth.js';
 
 const ENTIDAD_LABELS = {
@@ -58,8 +58,8 @@ async function load() {
 
 function cambioHtml(antes, despues) {
   if (!antes && !despues) return '<span style="color:var(--text-3);">—</span>';
-  if (antes && despues)   return `<span style="color:var(--text-3);">${antes}</span> → <strong>${despues}</strong>`;
-  return despues || antes;
+  if (antes && despues)   return `<span style="color:var(--text-3);">${escapeHtml(antes)}</span> → <strong>${escapeHtml(despues)}</strong>`;
+  return escapeHtml(despues || antes);
 }
 
 function render(list) {
@@ -74,9 +74,9 @@ function render(list) {
   tbody.innerHTML = list.map(b => `
     <tr>
       <td style="white-space:nowrap;color:var(--text-3);font-size:.8125rem;">${formatDateTime(b.fecha)}</td>
-      <td>${b.usuario?.nombre ?? b.usuario?.email ?? '—'}</td>
-      <td>${b.accion}</td>
-      <td>${ENTIDAD_LABELS[b.entidad] ?? b.entidad}</td>
+      <td>${escapeHtml(b.usuario?.nombre ?? b.usuario?.email ?? '—')}</td>
+      <td>${escapeHtml(b.accion)}</td>
+      <td>${escapeHtml(ENTIDAD_LABELS[b.entidad] ?? b.entidad)}</td>
       <td style="font-size:.8125rem;">${cambioHtml(b.valor_antes, b.valor_despues)}</td>
     </tr>
   `).join('');

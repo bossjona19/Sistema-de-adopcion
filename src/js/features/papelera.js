@@ -4,7 +4,7 @@ import { casosService }    from '../services/casosService.js';
 import { logAudit } from '../services/auditService.js';
 import { confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
-import { formatDate } from '../core/ui.js';
+import { formatDate, escapeHtml } from '../core/ui.js';
 import { can } from '../core/auth.js';
 
 // Cada tipo: servicio + cómo mostrar la etiqueta de cada registro borrado.
@@ -71,7 +71,7 @@ function section(type, rows) {
   if (!rows.length) return '';
   const items = rows.map(r => `
     <tr>
-      <td>${TYPES[type].name(r)}</td>
+      <td>${escapeHtml(TYPES[type].name(r))}</td>
       <td style="color:var(--text-3);">${formatDate(r.deleted_at)}</td>
       <td style="text-align:right;">
         <button class="btn btn-ghost btn-xs" data-action="restore" data-type="${type}" data-id="${r.id}">

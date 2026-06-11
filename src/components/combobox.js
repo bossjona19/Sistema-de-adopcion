@@ -1,3 +1,5 @@
+import { escapeHtml } from '../js/core/ui.js';
+
 const STATUS_LABEL = { disponible: 'En espera de adopción', en_proceso: 'En proceso de adopción', adoptado: 'Adoptado' };
 
 export function createCombobox(container, initialItems = [], { placeholder = 'Seleccionar…' } = {}) {
@@ -40,8 +42,8 @@ export function createCombobox(container, initialItems = [], { placeholder = 'Se
       ? visible.map(i => `
           <li class="cb-item${i.id === _value ? ' cb-item--selected' : ''}"
               role="option" data-id="${i.id}" aria-selected="${i.id === _value}">
-            <span class="cb-item-label">${i.label}</span>
-            ${i.status ? `<span class="cb-status cb-status--${i.status}">${STATUS_LABEL[i.status] ?? i.status}</span>` : ''}
+            <span class="cb-item-label">${escapeHtml(i.label)}</span>
+            ${i.status ? `<span class="cb-status cb-status--${escapeHtml(i.status)}">${escapeHtml(STATUS_LABEL[i.status] ?? i.status)}</span>` : ''}
           </li>`).join('')
       : `<li class="cb-item cb-item--empty">Sin resultados</li>`;
   }

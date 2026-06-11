@@ -1,5 +1,5 @@
 import { dashboardService } from '../services/dashboardService.js';
-import { formatDate } from '../core/ui.js';
+import { formatDate, escapeHtml } from '../core/ui.js';
 
 const COLORS = {
   blue: '#378ADD', green: '#16A34A', amber: '#D97706',
@@ -29,7 +29,7 @@ async function loadSeguimiento() {
     <div class="activity-item">
       <div class="activity-dot" style="background:${v.vencida ? 'var(--danger)' : 'var(--primary-dim)'};"></div>
       <div>
-        <div class="activity-text">Caso #${(v.casoId || '').slice(-6).toUpperCase()} · ${v.nino} / Familia ${v.familia}</div>
+        <div class="activity-text">Caso #${(v.casoId || '').slice(-6).toUpperCase()} · ${escapeHtml(v.nino)} / Familia ${escapeHtml(v.familia)}</div>
         <div class="activity-time">${v.vencida ? '⚠️ Vencida: ' : 'Próxima: '}${formatDate(v.proxima_visita)}</div>
       </div>
     </div>
@@ -191,7 +191,7 @@ async function loadActivity() {
     <div class="activity-item">
       <div class="activity-dot"></div>
       <div>
-        <div class="activity-text">${item.accion} · <em>${item.entidad}</em></div>
+        <div class="activity-text">${escapeHtml(item.accion)} · <em>${escapeHtml(item.entidad)}</em></div>
         <div class="activity-time">${formatDate(item.fecha)}</div>
       </div>
     </div>

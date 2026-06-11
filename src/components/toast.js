@@ -45,7 +45,8 @@ export function toast(message, type = 'info', ms = 3500) {
     document.head.appendChild(s);
   }
 
-  el.innerHTML = `${ICONS[type] ?? ICONS.info}<span>${message}</span>`;
+  el.innerHTML = `${ICONS[type] ?? ICONS.info}<span></span>`;
+  el.querySelector('span').textContent = message;  // texto literal: nunca ejecuta HTML
   container().appendChild(el);
 
   setTimeout(() => {

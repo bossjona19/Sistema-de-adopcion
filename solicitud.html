@@ -416,7 +416,7 @@
       <h3>¡Solicitud enviada correctamente!</h3>
       <p style="margin-top:8px;">Hemos recibido su solicitud de adopción. El equipo técnico la revisará y se comunicará con usted a través del correo o teléfono proporcionado en un plazo de 5 a 10 días hábiles.</p>
       <p style="margin-top:12px;font-size:.8125rem;color:var(--text-3);">Conserve este número para referencia: <strong id="ref-number" style="color:var(--primary);font-family:var(--font-h);"></strong></p>
-      <button class="btn btn-outlined" style="margin-top:24px;" onclick="location.reload()">Enviar otra solicitud</button>
+      <button class="btn btn-outlined" style="margin-top:24px;" id="btn-otra-solicitud">Enviar otra solicitud</button>
     </div>
   </div>
 
@@ -429,10 +429,7 @@
   </p>
 </footer>
 
-<script type="module">
-  import { applyBranding } from '/src/js/branding.js';
-  applyBranding();
-</script>
+<script type="module" src="/src/js/pages/branding-init.js"></script>
 <script type="module" src="/src/js/pages/solicitud.js"></script>
 <script type="module" src="/src/js/sw-register.js"></script>
 

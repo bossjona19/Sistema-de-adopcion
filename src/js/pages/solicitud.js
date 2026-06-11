@@ -127,3 +127,6 @@ form.addEventListener('submit', async e => {
   document.getElementById('ref-number').textContent = 'REF-' + refCode;
   successEl.scrollIntoView({ behavior: 'smooth' });
 });
+
+// "Enviar otra solicitud" → recarga (antes era un onclick inline; movido aquí para CSP).
+document.getElementById('btn-otra-solicitud')?.addEventListener('click', () => location.reload());

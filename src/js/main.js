@@ -90,4 +90,7 @@ async function initTab(tab) {
   }
 }
 
+// Botón "Nuevo caso" del panel (antes onclick inline; movido aquí para CSP).
+document.getElementById('btn-nuevo-caso')?.addEventListener('click', () => navigateTo('casos'));
+
 initRouter(initTab, setActiveNav);

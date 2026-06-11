@@ -4,7 +4,7 @@ import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
 import { casosService } from '../services/casosService.js';
 import { configService } from '../services/configService.js';
-import { getInitials, formatDate, badgeHtml, diffSummary, pagerHtml, prefEdadLabel } from '../core/ui.js';
+import { getInitials, formatDate, badgeHtml, diffSummary, pagerHtml, prefEdadLabel, escapeHtml } from '../core/ui.js';
 import { exportCSV, exportPDF, exportExcel, reportePDF } from '../core/export.js';
 import { getParams, setParams } from '../core/router.js';
 import { can } from '../core/auth.js';
@@ -114,11 +114,11 @@ function render(list) {
     <tr>
       <td>
         <div class="table-name">
-          <div class="avatar avatar-sm">${getInitials(f.apellido)}</div>
-          Familia ${f.apellido}
+          <div class="avatar avatar-sm">${escapeHtml(getInitials(f.apellido))}</div>
+          Familia ${escapeHtml(f.apellido)}
         </div>
       </td>
-      <td>${f.contacto ?? '—'}</td>
+      <td>${escapeHtml(f.contacto ?? '—')}</td>
       <td>${badgeHtml(f.estado_eval)}</td>
       <td>${formatDate(f.fecha_solicitud)}</td>
       <td>

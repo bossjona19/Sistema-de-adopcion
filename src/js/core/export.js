@@ -35,6 +35,15 @@ function matrix(columns, rows) {
   }));
 }
 
+// Neutraliza inyección de fórmulas (CSV/Excel): una celda de texto que empieza
+// por = + - @ (o tab/CR) puede ejecutarse como fórmula al abrir el archivo en
+// Excel/LibreOffice/Sheets. Se antepone una comilla simple para forzar texto.
+// Solo afecta a strings; los números del sistema se dejan intactos.
+function formulaSafe(v) {
+  if (typeof v !== 'string') return v;
+  return /^[=+\-@\t\r]/.test(v) ? "'" + v : v;
+}
+
 function triggerDownload(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -46,7 +55,7 @@ function triggerDownload(blob, filename) {
 // ── CSV (nativo) ──────────────────────────────────────────────
 export function exportCSV(filename, columns, rows) {
   const esc = v => {
-    const s = String(v ?? '');
+    const s = String(formulaSafe(v) ?? '');
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const head = columns.map(c => esc(c.label)).join(',');
@@ -195,7 +204,7 @@ export async function reportePDF(org, titulo, bloques, filename) {
 // ── Excel (SheetJS) ───────────────────────────────────────────
 export async function exportExcel(filename, sheetName, columns, rows) {
   const XLSX = await ensureXLSX();
-  const aoa = [columns.map(c => c.label), ...matrix(columns, rows)];
+  const aoa = [columns.map(c => c.label), ...matrix(columns, rows).map(row => row.map(formulaSafe))];
   const ws  = XLSX.utils.aoa_to_sheet(aoa);
   const wb  = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));

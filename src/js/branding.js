@@ -1,4 +1,5 @@
 import { configService } from './services/configService.js';
+import { escapeHtml } from './core/ui.js';
 
 // Branding global (B7): aplica el nombre de la organización en toda referencia visible.
 // - Título del navegador: reemplaza "Proyecto OMEGA"/"OMEGA" por el nombre configurado.
@@ -19,9 +20,9 @@ export async function applyBranding() {
   // Logo de la ONG: si está configurado, reemplaza el ícono por defecto.
   // (<img> no requiere CORS para mostrarse, a diferencia del canvas del PDF.)
   if (org?.logo_url) {
-    const safe = String(org.logo_url).replace(/"/g, '%22');
+    const safe = escapeHtml(org.logo_url);
     document.querySelectorAll('[data-org-logo]').forEach(el => {
-      el.innerHTML = `<img src="${safe}" alt="${name}" style="width:100%;height:100%;object-fit:contain;border-radius:inherit;">`;
+      el.innerHTML = `<img src="${safe}" alt="${escapeHtml(name)}" style="width:100%;height:100%;object-fit:contain;border-radius:inherit;">`;
     });
   }
 }

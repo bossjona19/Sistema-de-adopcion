@@ -193,8 +193,8 @@ function render(list) {
       <td style="font-family:var(--font-h);font-weight:600;color:var(--text-3);font-size:.8rem;">
         #${c.id.slice(-6).toUpperCase()}
       </td>
-      <td>Familia ${c.familia?.apellido ?? '—'}</td>
-      <td>${c.menor?.nombre ?? '—'}</td>
+      <td>Familia ${escapeHtml(c.familia?.apellido ?? '—')}</td>
+      <td>${escapeHtml(c.menor?.nombre ?? '—')}</td>
       <td>${badgeHtml(c.etapa)}</td>
       <td>
         <div class="table-actions">
@@ -387,7 +387,7 @@ async function renderNotas(id) {
     : data.map(n => `
         <div style="border-left:3px solid var(--primary-dim);padding:8px 12px;margin-bottom:8px;
                     background:var(--surface-2);border-radius:0 var(--r-sm) var(--r-sm) 0;">
-          <p style="font-size:.875rem;color:var(--text-2);margin:0;">${n.descripcion}</p>
+          <p style="font-size:.875rem;color:var(--text-2);margin:0;">${escapeHtml(n.descripcion)}</p>
           <span style="font-size:.75rem;color:var(--text-3);">${formatDate(n.fecha)}</span>
         </div>
       `).join('');
@@ -474,8 +474,8 @@ async function renderInfo(id) {
 
   cont.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:18px;">
-      <div><span style="color:var(--text-3);font-size:.8125rem;">Niño:</span> <strong>${caso?.menor?.nombre ?? '—'}</strong></div>
-      <div><span style="color:var(--text-3);font-size:.8125rem;">Familia:</span> <strong>${caso?.familia?.apellido ?? '—'}</strong></div>
+      <div><span style="color:var(--text-3);font-size:.8125rem;">Niño:</span> <strong>${escapeHtml(caso?.menor?.nombre ?? '—')}</strong></div>
+      <div><span style="color:var(--text-3);font-size:.8125rem;">Familia:</span> <strong>${escapeHtml(caso?.familia?.apellido ?? '—')}</strong></div>
       <div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--text-3);font-size:.8125rem;">Etapa:</span> ${badgeHtml(caso?.etapa ?? '—')}</div>
     </div>
     <div class="card-title" style="font-size:.8125rem;margin-bottom:4px;">Checklist de documentos</div>
@@ -509,20 +509,20 @@ function renderDocs(docs) {
     <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border-2);">
       <div style="flex:1;min-width:0;">
         <div style="font-weight:600;font-size:.875rem;">${TIPO_DOC_LABELS[d.tipo] ?? d.tipo}</div>
-        <div style="font-size:.8125rem;color:var(--text-2);" class="truncate">${d.nombre}${d.autor_externo ? ` · <em>${d.autor_externo}</em>` : ''}</div>
+        <div style="font-size:.8125rem;color:var(--text-2);" class="truncate">${escapeHtml(d.nombre)}${d.autor_externo ? ` · <em>${escapeHtml(d.autor_externo)}</em>` : ''}</div>
         <div style="font-size:.75rem;color:var(--text-3);margin-top:3px;">
           ${badgeHtml(docEstado(d))} · ${formatDate(d.fecha)}${d.fecha_vencimiento ? ` · vence ${formatDate(d.fecha_vencimiento)}` : ''}
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
         <div style="display:flex;gap:4px;">
-          <button class="btn btn-ghost btn-xs" data-doc-action="ver" data-path="${d.storage_path}" title="Ver">Ver</button>
-          <button class="btn btn-ghost btn-xs" data-doc-action="descargar" data-path="${d.storage_path}" data-nombre="${d.nombre}" title="Descargar">Descargar</button>
+          <button class="btn btn-ghost btn-xs" data-doc-action="ver" data-path="${escapeHtml(d.storage_path)}" title="Ver">Ver</button>
+          <button class="btn btn-ghost btn-xs" data-doc-action="descargar" data-path="${escapeHtml(d.storage_path)}" data-nombre="${escapeHtml(d.nombre)}" title="Descargar">Descargar</button>
         </div>
         ${editable ? `<select class="form-select" data-doc-action="estado" data-id="${d.id}" style="width:auto;font-size:.75rem;padding:2px 6px;">
           ${Object.entries(ESTADO_DOC_LABELS).map(([v, l]) => `<option value="${v}" ${d.estado === v ? 'selected' : ''}>${l}</option>`).join('')}
         </select>` : ''}
-        ${deletable ? `<button class="btn btn-ghost btn-xs" data-doc-action="eliminar" data-id="${d.id}" data-path="${d.storage_path}" style="color:var(--danger);">Eliminar</button>` : ''}
+        ${deletable ? `<button class="btn btn-ghost btn-xs" data-doc-action="eliminar" data-id="${d.id}" data-path="${escapeHtml(d.storage_path)}" style="color:var(--danger);">Eliminar</button>` : ''}
       </div>
     </div>
   `).join('');
@@ -854,8 +854,8 @@ async function renderHistorial(id) {
         <div class="activity-item">
           <div class="activity-dot"></div>
           <div>
-            <div class="activity-text">${e.texto}</div>
-            <div class="activity-time">${formatDateTime(e.fecha)}${e.autor ? ' · ' + e.autor : ''}</div>
+            <div class="activity-text">${escapeHtml(e.texto)}</div>
+            <div class="activity-time">${formatDateTime(e.fecha)}${e.autor ? ' · ' + escapeHtml(e.autor) : ''}</div>
           </div>
         </div>`).join('')}</div>`
     : `<p style="color:var(--text-3);padding:8px;">Sin historial registrado todavía.</p>`;

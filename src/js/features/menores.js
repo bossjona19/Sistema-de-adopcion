@@ -4,7 +4,7 @@ import { configService } from '../services/configService.js';
 import { logAudit } from '../services/auditService.js';
 import { openModal, closeModal, confirm } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
-import { getInitials, formatDate, badgeHtml, calcAge, diffSummary, pagerHtml, estadoMenorLabel } from '../core/ui.js';
+import { getInitials, formatDate, badgeHtml, calcAge, diffSummary, pagerHtml, estadoMenorLabel, escapeHtml } from '../core/ui.js';
 import { exportCSV, exportPDF, exportExcel, reportePDF } from '../core/export.js';
 import { getParams, setParams } from '../core/router.js';
 import { can } from '../core/auth.js';
@@ -123,14 +123,14 @@ function render(list) {
       <td>
         <div class="table-name">
           ${m.foto_url
-            ? `<img src="${m.foto_url}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;" alt="">`
-            : `<div class="avatar avatar-sm">${getInitials(m.nombre)}</div>`}
-          ${m.nombre}
+            ? `<img src="${escapeHtml(m.foto_url)}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;" alt="">`
+            : `<div class="avatar avatar-sm">${escapeHtml(getInitials(m.nombre))}</div>`}
+          ${escapeHtml(m.nombre)}
         </div>
       </td>
       <td>${age != null ? age + ' años' : '—'}</td>
       <td>${badgeHtml(m.estado)}</td>
-      <td style="max-width:200px;" class="truncate">${m.descripcion ?? '—'}</td>
+      <td style="max-width:200px;" class="truncate">${escapeHtml(m.descripcion ?? '—')}</td>
       <td>${formatDate(m.created_at)}</td>
       <td>
         <div class="table-actions">

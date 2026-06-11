@@ -2,7 +2,7 @@ import { usuariosService } from '../services/usuariosService.js';
 import { logAudit, getUserId } from '../services/auditService.js';
 import { openModal, closeModal } from '../../components/modal.js';
 import { toast } from '../../components/toast.js';
-import { getInitials, formatDate } from '../core/ui.js';
+import { getInitials, formatDate, escapeHtml } from '../core/ui.js';
 import { can, ROLE_LABELS } from '../core/auth.js';
 
 let _list   = [];
@@ -65,11 +65,11 @@ function render(list) {
     <tr>
       <td>
         <div class="table-name">
-          <div class="avatar avatar-sm">${getInitials(u.nombre)}</div>
-          ${u.nombre ?? '—'}${isSelf ? ' <span style="color:var(--text-3);font-size:.75rem;">(tú)</span>' : ''}
+          <div class="avatar avatar-sm">${escapeHtml(getInitials(u.nombre))}</div>
+          ${escapeHtml(u.nombre ?? '—')}${isSelf ? ' <span style="color:var(--text-3);font-size:.75rem;">(tú)</span>' : ''}
         </div>
       </td>
-      <td>${u.email ?? '—'}</td>
+      <td>${escapeHtml(u.email ?? '—')}</td>
       <td>${roleBadge(u.rol)}</td>
       <td>${formatDate(u.created_at)}</td>
       <td>

@@ -1,3 +1,5 @@
+import { escapeHtml } from '../js/core/ui.js';
+
 const NAV = [
   {
     id: 'overview',
@@ -90,7 +92,7 @@ export function mountSidebar({ name, initials, role = 'Usuario', org = 'OMEGA', 
           </svg>`}
         </div>
         <div>
-          <div class="sidebar-brand-name truncate">${org}</div>
+          <div class="sidebar-brand-name truncate">${escapeHtml(org)}</div>
           <div class="sidebar-brand-sub">Gestión de Adopciones</div>
         </div>
       </a>
@@ -116,10 +118,10 @@ export function mountSidebar({ name, initials, role = 'Usuario', org = 'OMEGA', 
 
       <div class="sidebar-footer">
         <div class="sidebar-user">
-          <div class="avatar avatar-sm" style="background:rgba(255,255,255,.15);color:#fff;">${initials}</div>
+          <div class="avatar avatar-sm" style="background:rgba(255,255,255,.15);color:#fff;">${escapeHtml(initials)}</div>
           <div style="flex:1;min-width:0;">
-            <div class="sidebar-user-name truncate">${name}</div>
-            <div class="sidebar-user-role">${role}</div>
+            <div class="sidebar-user-name truncate">${escapeHtml(name)}</div>
+            <div class="sidebar-user-role">${escapeHtml(role)}</div>
           </div>
           <button class="btn-logout" id="btn-logout" title="Cerrar sesión">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
