@@ -73,7 +73,7 @@
             <p>Resumen general del sistema de adopciones</p>
           </div>
           <div class="page-hd-actions">
-            <button class="btn btn-primary btn-sm" id="btn-nuevo-caso">
+            <button class="btn btn-primary btn-sm" id="btn-panel-nuevo-caso">
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
@@ -700,12 +700,12 @@
     <form id="form-caso" novalidate>
       <div class="modal-body">
         <div class="form-group">
-          <label class="form-label">Familia *</label>
-          <div id="cb-familia"></div>
+          <span class="form-label" id="lbl-cb-familia">Familia *</span>
+          <div id="cb-familia" aria-labelledby="lbl-cb-familia"></div>
         </div>
         <div class="form-group">
-          <label class="form-label">Niño *</label>
-          <div id="cb-menor"></div>
+          <span class="form-label" id="lbl-cb-menor">Niño *</span>
+          <div id="cb-menor" aria-labelledby="lbl-cb-menor"></div>
         </div>
         <div class="form-group">
           <label class="form-label" for="c-etapa">Etapa del proceso *</label>
