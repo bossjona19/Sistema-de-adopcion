@@ -285,11 +285,11 @@ body { overflow: hidden; }
 .notif-empty { padding: 24px 14px; text-align: center; font-size: .8125rem; color: var(--text-3); }
 
 /* ── Stage bars ──────────────────────────────────────────────── */
-.stage-list { padding: 0 20px 4px; display: flex; flex-direction: column; gap: 10px; }
+.stage-list { padding: 16px 20px 8px; display: flex; flex-direction: column; gap: 10px; }
 .stage-row {
   display: flex; align-items: center; gap: 10px; font-size: .8125rem;
 }
-.stage-name { width: 96px; flex-shrink: 0; white-space: nowrap; color: var(--text-2); }
+.stage-name { width: 110px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-2); }
 .stage-track {
   flex: 1; height: 5px; background: var(--border-2);
   border-radius: var(--r-full); overflow: hidden;
