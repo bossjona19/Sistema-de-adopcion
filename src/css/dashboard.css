@@ -199,6 +199,7 @@ body { overflow: hidden; }
 .dash-grid {
   display: grid;
   grid-template-columns: 1fr 320px;
+  align-items: start;
   gap: 20px;
 }
 
