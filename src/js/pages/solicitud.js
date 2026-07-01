@@ -4,6 +4,16 @@ import { toast } from '../../components/toast.js';
 const form    = document.getElementById('solicitud-form');
 const errBox  = document.getElementById('form-error');
 
+// El selector de fecha no deja elegir a menores de la edad mínima:
+// tope máximo = hoy - 25 años. Refuerza la regla desde el propio control.
+(() => {
+  const fn = document.getElementById('fecha_nacimiento');
+  if (!fn) return;
+  const tope = new Date();
+  tope.setFullYear(tope.getFullYear() - 25);
+  fn.max = tope.toISOString().slice(0, 10);
+})();
+
 // ── Validation ───────────────────────────────────────────────
 function showError(msg) {
   errBox.textContent = msg;
@@ -19,14 +29,45 @@ function clearError() {
 function val(id) { return document.getElementById(id)?.value.trim() ?? ''; }
 function checked(id) { return document.getElementById(id)?.checked ?? false; }
 
+// Edad mínima legal del solicitante (Ley 46 de 2013, Panamá).
+const EDAD_MINIMA = 25;
+
+// Formato de cédula panameña: dos guiones, segmentos alfanuméricos.
+// Acepta cédulas estándar (8-123-4567) y especiales (PE-123-456, E-8-1234, 8-AV-1234).
+const CEDULA_RE = /^[A-Za-z0-9]{1,4}-[A-Za-z0-9]{1,5}-\d{1,6}$/;
+
+// Calcula la edad en años cumplidos a partir de 'YYYY-MM-DD'.
+function calcAge(dateStr) {
+  const nac = new Date(dateStr + 'T00:00:00');
+  if (Number.isNaN(nac.getTime())) return NaN;
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  const m = hoy.getMonth() - nac.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+  return edad;
+}
+
 function validate() {
   // Section 1
   if (!val('nombre_completo'))  return 'El nombre completo es obligatorio.';
   if (!val('cedula'))           return 'La cédula o documento de identidad es obligatoria.';
+  if (!CEDULA_RE.test(val('cedula')))
+    return 'La cédula no tiene un formato válido. Use el formato panameño, por ejemplo: 8-123-4567.';
   if (!val('fecha_nacimiento')) return 'La fecha de nacimiento es obligatoria.';
+
+  const edad = calcAge(val('fecha_nacimiento'));
+  const nac  = new Date(val('fecha_nacimiento') + 'T00:00:00');
+  if (Number.isNaN(edad))       return 'La fecha de nacimiento no es válida.';
+  if (nac > new Date())         return 'La fecha de nacimiento no puede estar en el futuro.';
+  if (edad > 120)               return 'Verifique la fecha de nacimiento: la edad no es válida.';
+  if (edad < EDAD_MINIMA)
+    return `El solicitante debe tener al menos ${EDAD_MINIMA} años para postularse a la adopción (Ley 46 de 2013).`;
+
   if (!val('email'))            return 'El correo electrónico es obligatorio.';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('email'))) return 'Ingrese un correo electrónico válido.';
   if (!val('telefono'))         return 'El teléfono de contacto es obligatorio.';
+  if ((val('telefono').match(/\d/g) || []).length < 7)
+    return 'Ingrese un teléfono de contacto válido (al menos 7 dígitos).';
   if (!val('direccion'))        return 'La dirección de residencia es obligatoria.';
 
   // Section 2
@@ -115,6 +156,18 @@ form.addEventListener('submit', async e => {
   btn.textContent = 'Enviar solicitud de adopción';
 
   if (error) {
+    // Duplicados: la DB rechaza con código 23505 (unique_violation).
+    // Traducimos a un mensaje claro según cuál constraint se violó.
+    if (error.code === '23505' || /duplicate key|unique constraint/i.test(error.message)) {
+      const msg = /email/i.test(error.message)
+        ? 'Ya existe una solicitud registrada con este correo electrónico.'
+        : /cedula/i.test(error.message)
+          ? 'Ya existe una solicitud registrada con esta cédula.'
+          : 'Ya existe una solicitud con estos datos (correo o cédula duplicados).';
+      toast(msg, 'error');
+      showError(msg);
+      return;
+    }
     toast('Error al enviar la solicitud. Por favor, intente nuevamente.', 'error');
     showError('No fue posible enviar la solicitud: ' + error.message);
     return;
