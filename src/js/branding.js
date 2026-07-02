@@ -13,7 +13,7 @@ export async function applyBranding() {
   const name = org?.nombre || 'OMEGA';
 
   if (document.title) {
-    document.title = document.title.replace(/Proyecto OMEGA/g, name).replace(/\bOMEGA\b/g, name);
+    document.title = document.title.replaceAll('Proyecto OMEGA', name).replaceAll(/\bOMEGA\b/g, name);
   }
   document.querySelectorAll('[data-org]').forEach(el => { el.textContent = name; });
 

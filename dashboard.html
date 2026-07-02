@@ -219,15 +219,15 @@
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
             </span>
-            <input class="form-input search-input" id="menores-search" type="search" placeholder="Buscar por nombre…">
+            <input class="form-input search-input" id="menores-search" type="search" placeholder="Buscar por nombre…" aria-label="Buscar niño por nombre">
           </div>
-          <select class="form-select" id="menores-filter" style="width:auto;">
+          <select class="form-select" id="menores-filter" style="width:auto;" aria-label="Filtrar niños por estado">
             <option value="">Todos los estados</option>
             <option value="disponible">En espera de adopción</option>
             <option value="en_proceso">En proceso de adopción</option>
             <option value="adoptado">Adoptado</option>
           </select>
-          <select class="form-select" id="menores-genero" style="width:auto;">
+          <select class="form-select" id="menores-genero" style="width:auto;" aria-label="Filtrar niños por género">
             <option value="">Todos los géneros</option>
             <option value="masculino">Masculino</option>
             <option value="femenino">Femenino</option>
@@ -285,9 +285,9 @@
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
             </span>
-            <input class="form-input search-input" id="familias-search" type="search" placeholder="Buscar por apellido…">
+            <input class="form-input search-input" id="familias-search" type="search" placeholder="Buscar por apellido…" aria-label="Buscar familia por apellido">
           </div>
-          <select class="form-select" id="familias-filter" style="width:auto;">
+          <select class="form-select" id="familias-filter" style="width:auto;" aria-label="Filtrar familias por estado">
             <option value="">Todos los estados</option>
             <option value="pendiente">Pendiente</option>
             <option value="aprobada">Aprobada</option>
@@ -353,7 +353,7 @@
         </div>
 
         <div class="toolbar">
-          <select class="form-select" id="casos-filter" style="width:auto;">
+          <select class="form-select" id="casos-filter" style="width:auto;" aria-label="Filtrar casos por etapa">
             <option value="">Todas las etapas</option>
             <option value="solicitud">Solicitud</option>
             <option value="evaluacion">Evaluación</option>
@@ -407,9 +407,9 @@
                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
             </span>
-            <input class="form-input search-input" id="usuarios-search" type="search" placeholder="Buscar por nombre o email…">
+            <input class="form-input search-input" id="usuarios-search" type="search" placeholder="Buscar por nombre o email…" aria-label="Buscar usuario por nombre o email">
           </div>
-          <select class="form-select" id="usuarios-filter" style="width:auto;">
+          <select class="form-select" id="usuarios-filter" style="width:auto;" aria-label="Filtrar usuarios por rol">
             <option value="">Todos los roles</option>
             <option value="admin">Administrador</option>
             <option value="coordinador">Coordinador</option>
@@ -469,10 +469,10 @@
         </div>
 
         <div class="toolbar">
-          <select class="form-select" id="bitacora-usuario" style="width:auto;">
+          <select class="form-select" id="bitacora-usuario" style="width:auto;" aria-label="Filtrar bitácora por usuario">
             <option value="">Todos los usuarios</option>
           </select>
-          <select class="form-select" id="bitacora-entidad" style="width:auto;">
+          <select class="form-select" id="bitacora-entidad" style="width:auto;" aria-label="Filtrar bitácora por entidad">
             <option value="">Todas las entidades</option>
             <option value="menores">Niños</option>
             <option value="familias">Familias</option>
@@ -482,8 +482,8 @@
             <option value="postadopcion">Post-adopción</option>
             <option value="usuarios">Usuarios</option>
           </select>
-          <input class="form-input" id="bitacora-desde" type="date" style="width:auto;" title="Desde">
-          <input class="form-input" id="bitacora-hasta" type="date" style="width:auto;" title="Hasta">
+          <input class="form-input" id="bitacora-desde" type="date" style="width:auto;" title="Desde" aria-label="Filtrar bitácora desde la fecha">
+          <input class="form-input" id="bitacora-hasta" type="date" style="width:auto;" title="Hasta" aria-label="Filtrar bitácora hasta la fecha">
         </div>
 
         <div class="card" style="overflow:hidden;padding:0;">

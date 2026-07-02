@@ -56,7 +56,7 @@ function triggerDownload(blob, filename) {
 export function exportCSV(filename, columns, rows) {
   const esc = v => {
     const s = String(formulaSafe(v) ?? '');
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    return /[",\n]/.test(s) ? `"${s.replaceAll('"', '""')}"` : s;
   };
   const head = columns.map(c => esc(c.label)).join(',');
   const body = rows.map(r => columns.map(c => esc(c.value(r))).join(',')).join('\n');

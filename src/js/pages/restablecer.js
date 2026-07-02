@@ -1,8 +1,8 @@
-import { completeRecovery, updatePassword, signOut } from '/src/js/core/auth.js';
-import '/src/js/sw-register.js';
+import { completeRecovery, updatePassword, signOut } from '../core/auth.js';
+import '../sw-register.js';
 
 // Branding defensivo y AISLADO: si branding.js falla, la página no se ve afectada.
-import('/src/js/branding.js').then(m => m.applyBranding()).catch(() => {});
+import('../branding.js').then(m => m.applyBranding()).catch(() => {});
 
 const loading = document.getElementById('loading');
 const invalid = document.getElementById('invalid');

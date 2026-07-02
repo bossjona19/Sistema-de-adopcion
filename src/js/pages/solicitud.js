@@ -44,7 +44,9 @@ function mensajeDuplicado(error) {
 // Formato de cédula panameña: dos guiones, segmentos alfanuméricos.
 // Acepta cédulas estándar (8-123-4567) y especiales (PE-123-456, E-8-1234, 8-AV-1234).
 const CEDULA_RE = /^[A-Za-z0-9]{1,4}-[A-Za-z0-9]{1,5}-\d{1,6}$/;
-const EMAIL_RE  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Lineal (sin backtracking): las etiquetas del dominio excluyen el punto,
+// así no hay solapamiento ambiguo entre los segmentos.
+const EMAIL_RE  = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
 
 // Calcula la edad en años cumplidos a partir de 'YYYY-MM-DD'.
 function calcAge(dateStr) {

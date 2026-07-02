@@ -1,10 +1,10 @@
-import { signIn, signInWithGoogle, redirectIfAuthenticated } from '/src/js/core/auth.js';
-import { accesoService } from '/src/js/services/accesoService.js';
-import '/src/js/sw-register.js';
+import { signIn, signInWithGoogle, redirectIfAuthenticated } from '../core/auth.js';
+import { accesoService } from '../services/accesoService.js';
+import '../sw-register.js';
 
 // Branding defensivo y AISLADO: si branding.js falla o no está desplegado,
 // el inicio de sesión NO se ve afectado.
-import('/src/js/branding.js').then(m => m.applyBranding()).catch(() => {});
+import('../branding.js').then(m => m.applyBranding()).catch(() => {});
 
 // Show error if redirected from requireAuth / OAuth callback
 const params = new URLSearchParams(location.search);
