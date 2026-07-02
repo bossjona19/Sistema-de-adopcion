@@ -19,6 +19,42 @@ import { createCombobox } from '../../components/combobox.js';
 const puedeAsignar = () => ['admin', 'coordinador'].includes(getRole());
 let _responsablesLoaded = false;
 
+// Ley 46 de 2013: la diferencia de edad entre adoptante y adoptado debe ser
+// de al menos 18 años y no mayor de 45.
+const DIF_EDAD_MIN = 18;
+const DIF_EDAD_MAX = 45;
+
+// Valida la diferencia de edad legal entre una familia y un niño.
+// Devuelve { ok, msg?, warn? }. Si falta alguna fecha, ok=true con aviso.
+function validarDiferenciaEdad(fam, men) {
+  const edadFam = calcAge(fam?.fecha_nacimiento);
+  const edadMen = calcAge(men?.fecha_nacimiento);
+  if (edadFam == null || edadMen == null) {
+    return { ok: true, warn: 'No se pudo verificar la diferencia de edad legal: falta la fecha de nacimiento de la familia o del niño.' };
+  }
+  const dif = edadFam - edadMen;
+  if (dif < DIF_EDAD_MIN || dif > DIF_EDAD_MAX) {
+    return {
+      ok: false,
+      msg: `Diferencia de edad no permitida: familia ${edadFam} años, niño ${edadMen} años (diferencia ${dif}). La Ley 46/2013 exige entre ${DIF_EDAD_MIN} y ${DIF_EDAD_MAX} años.`,
+    };
+  }
+  return { ok: true };
+}
+
+// Comprueba el filtro de edad antes de crear un caso. Muestra el aviso/error
+// y devuelve true solo si el caso puede crearse.
+async function pasaFiltroEdad(familiaId, menorId) {
+  const [famRes, menRes] = await Promise.all([
+    familiasService.getById(familiaId),
+    menoresService.getById(menorId),
+  ]);
+  const chk = validarDiferenciaEdad(famRes?.data, menRes?.data);
+  if (chk.warn) toast(chk.warn, 'warning');
+  if (!chk.ok) { toast(chk.msg, 'error'); return false; }
+  return true;
+}
+
 let _list   = [];
 let _editId = null;
 let _cbFam  = null;
@@ -343,6 +379,8 @@ async function saveCaso(ev) {
       await menoresService.setEstado(before.menor_id, 'adoptado');
     }
   } else {
+    // Ley 46/2013: la diferencia de edad familia–niño debe estar en el rango legal.
+    if (!await pasaFiltroEdad(familiaId, menorId)) { btn.disabled = false; return; }
     const res = await casosService.create({
       familia_id: familiaId,
       menor_id:   menorId,

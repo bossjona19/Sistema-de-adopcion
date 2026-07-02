@@ -5,7 +5,7 @@
 -- ============================================================
 --
 -- CONTEXTO: la profesora pide que el formulario público valide:
---   (1) edad mínima legal del solicitante (Ley 46 de 2013 → 25 años),
+--   (1) edad mínima legal del solicitante (Ley 46 de 2013 → mayoría de edad, 18 años),
 --   (2) correos duplicados (antes NO había restricción → se permitían),
 --   (3) cédulas duplicadas (ya existía uq_familias_cedula, se conserva),
 --   (4) formato correcto de los campos.
@@ -35,8 +35,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_familias_email_lower
 
 -- ─── C1.2: Edad mínima legal — reforzar la política RLS pública ──
 -- Se recrea 'public_insert_familias' añadiendo la exigencia de edad:
--- el solicitante debe haber nacido hace 25 años o más. Esto blinda el
--- servidor aunque alguien salte el formulario y golpee la API directo.
+-- el solicitante debe ser mayor de edad (haber nacido hace 18 años o más).
+-- Esto blinda el servidor aunque alguien salte el formulario y golpee la API.
+-- Nota: la diferencia de edad legal 18–45 con el niño se valida al ASIGNAR
+-- el caso (no aquí), porque en el formulario aún no hay un niño asociado.
 
 DROP POLICY IF EXISTS "public_insert_familias" ON public.familias;
 
@@ -57,9 +59,9 @@ CREATE POLICY "public_insert_familias" ON public.familias
     AND email ~ '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$'
     AND cedula   IS NOT NULL AND char_length(cedula)   BETWEEN 3 AND 40
     AND telefono IS NOT NULL AND char_length(telefono) BETWEEN 6 AND 30
-    -- NUEVO (C1): edad mínima legal del solicitante — Ley 46 de 2013.
+    -- NUEVO (C1): edad mínima legal del solicitante (mayoría de edad) — Ley 46 de 2013.
     AND fecha_nacimiento IS NOT NULL
-    AND fecha_nacimiento <= (current_date - interval '25 years')::date
+    AND fecha_nacimiento <= (current_date - interval '18 years')::date
     -- La fecha de nacimiento no puede estar en el futuro.
     AND fecha_nacimiento <= current_date
   );
